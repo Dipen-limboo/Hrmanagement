@@ -67,7 +67,7 @@ public class WebConfig {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> 
         		auth
-        		.requestMatchers("/api/user/**").permitAll()
+        		.requestMatchers("/api/users/**").permitAll()
         		.requestMatchers("/api/question/**").permitAll()
         		.requestMatchers("/api/questionset/**").permitAll()
         		.requestMatchers("/api/forgot-password/**").permitAll()
