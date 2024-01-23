@@ -1,13 +1,23 @@
 package com.humanresourcemanagement.ResourceMangement.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.FormDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.NewPasswordDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.RestPasswordDto;
@@ -53,5 +63,36 @@ public class UserController {
 	@PostMapping("/reset-password")
 	public ResponseEntity<?> resetPassword(@Valid @RequestBody NewPasswordDto passwordDto){
 		return passwordService.reset(passwordDto);
+	}
+	
+	@GetMapping("/listOfuser")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> listOfUsers(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir,
+			@RequestParam(required=false) String userRole
+		) {
+			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+			Pageable pageable = PageRequest.of(page -1, size, sort);
+			return userService.getUserLists(userRole, pageable);
+	}
+	
+	@PutMapping("/userRole/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> changeUserRole(@PathVariable Long id){
+		return userService.changeRole(id);
+	}
+	
+	@PostMapping("/add_department")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> saveDepartment(@Valid @RequestBody DepartmentDto departmentDto){
+		return userService.addDepartment(departmentDto);
+	}
+	
+	@PostMapping("/add_designation")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> saveDesignation(@Valid @RequestBody DesignationDto designationDto){
+		return userService.addDesgination(designationDto);
 	}
 }
