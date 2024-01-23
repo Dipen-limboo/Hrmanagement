@@ -109,6 +109,7 @@ public class ResetPasswordService {
 	
 	public void expireToken(ResetPassword resetPassword) {
 		resetPassword.setExpireDate(new Date());
+		resetPassword.setToken(null);
 		resetRepo.save(resetPassword);
 	}
 }

@@ -14,19 +14,21 @@ public class JwtResponse {
 	private String username;
 	private String email;
 	private List<String> roles;
+	private String status;
+	private String gender;
+	private String martial;
 
-
-	public String getToken() {
-		return token;
+	
+	
+	public JwtResponse() {
+		super();
+		// TODO Auto-generated constructor stub
 	}
-
-	public void setToken(String token) {
-		this.token = token;
-	}
-
+	
 
 	public JwtResponse(String token, Long id, String firstname, String middlename, String lastname, Date dateOfbirth,
-			String phone, String username, String email, List<String> roles) {
+			String phone, String username, String email, List<String> roles, String status, String gender,
+			String martial) {
 		super();
 		this.token = token;
 		this.id = id;
@@ -38,6 +40,18 @@ public class JwtResponse {
 		this.username = username;
 		this.email = email;
 		this.roles = roles;
+		this.status = status;
+		this.gender = gender;
+		this.martial = martial;
+	}
+
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
 	}
 
 	public Long getId() {
@@ -111,5 +125,36 @@ public class JwtResponse {
 	public void setRoles(List<String> roles) {
 		this.roles = roles;
 	}
+
+
+	public String getStatus() {
+		return status;
+	}
+
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+
+	public String getGender() {
+		return gender;
+	}
+
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+
+	public String getMartial() {
+		return martial;
+	}
+
+
+	public void setMartial(String martial) {
+		this.martial = martial;
+	}
+	
 	
 }

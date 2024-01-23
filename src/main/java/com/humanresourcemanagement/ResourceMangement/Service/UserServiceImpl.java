@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Enum.ERole;
+import com.humanresourcemanagement.ResourceMangement.Enum.Gender;
+import com.humanresourcemanagement.ResourceMangement.Enum.Martial;
 import com.humanresourcemanagement.ResourceMangement.Enum.Status;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.FormDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.VerifiedTokenDto;
@@ -63,11 +65,11 @@ public class UserServiceImpl {
 					if (userDetails.getStatus().equals(Status.DEACTIVE)) {
 					    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new MessageResponse("Error: You are deactivated by admin"));
 					}
-					String jwt = jwtUtils.generateJwtToken(authentication);
+					String token = jwtUtils.generateJwtToken(authentication);
 					List<String> roles = userDetails.getAuthorities().stream()
 							.map(item -> item.getAuthority())
 							.collect(Collectors.toList());
-					return ResponseEntity.ok(new JwtResponse(jwt, 
+					return ResponseEntity.ok(new JwtResponse(token, 
 							userDetails.getId(),
 							userDetails.getFirstname(),
 							userDetails.getMiddlename(),
@@ -76,7 +78,10 @@ public class UserServiceImpl {
 							userDetails.getPhone(),
 							userDetails.getUsername(),
 							userDetails.getEmail(),
-							roles)
+							roles,
+							userDetails.getStatus().toString(),
+							userDetails.getGender().toString(),
+							userDetails.getMartial().toString())
 							);
 	}
 
@@ -97,6 +102,39 @@ public class UserServiceImpl {
 		user.setBirthDate(signUpRequest.getDateOfBirth());
 		user.setPhone(signUpRequest.getPhone());
 		user.setEmail(signUpRequest.getEmail());
+		
+		Set<String> genderStr = signUpRequest.getGender();
+		if(genderStr == null) {
+			user.setGender(null);
+		} else {
+			genderStr.forEach(gender ->{
+				switch(gender) {
+				case "male":
+					user.setGender(Gender.MALE);
+					break;
+				case "female":
+					user.setGender(Gender.FEMALE);
+					break;
+				default:
+					user.setGender(Gender.OTHER);
+				}
+			});
+		}
+		
+		Set<String> martialStr = signUpRequest.getMaritalStatus();
+		if(martialStr == null) {
+			user.setMartialStatus(null);
+		} else {
+			martialStr.forEach(martial -> {
+				switch (martial) {
+				case "single":
+					user.setMartialStatus(Martial.SINGLE);	
+					break;
+				default:
+					user.setMartialStatus(Martial.MARRIED);
+				}
+			});
+		}
 		user.setPassword(encoder.encode(signUpRequest.getPassword()));
 		user.setVerifiedDate(new Date());
 		//verifying the singup by generating token 
@@ -118,7 +156,7 @@ public class UserServiceImpl {
 					user.setRole(ERole.ROLE_ADMIN);
 					break;
 				case "mod":
-					user.setRole(ERole.ROLE_MODERATOR);
+					user.setRole(ERole.ROLE_EMPLOYEE);
 					break;
 				default:
 					user.setRole(ERole.ROLE_USER);

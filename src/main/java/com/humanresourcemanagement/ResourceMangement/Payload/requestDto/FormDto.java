@@ -30,8 +30,8 @@ public class FormDto {
 	    private Date dateOfBirth;
 
 	    @NotBlank
-	    @Pattern(regexp = "^(98|97)\\d{8}$",
-	            message = "{The phone number must be a number starting with 97 or 98, it must contain 10 numbers}")
+	    @Pattern(regexp = "^\\d{10}$",
+	            message = "{The phone number must contain 10 numbers}")
 	    private String phone;
 
 	    @NotBlank
@@ -40,6 +40,10 @@ public class FormDto {
 	    private String email;
 
 	    private Set<String> role;
+	    
+	    private Set<String> gender;
+	    
+	    private Set<String> marital;
 
 	    @NotBlank
 	    @Size(min = 6, max = 40, message = "Password length should be between 6 and 50 ")
@@ -139,5 +143,20 @@ public class FormDto {
 		public void setConfirmPassword(String confirmPassword) {
 			this.confirmPassword = confirmPassword;
 		}
-	    
+
+		public Set<String> getGender() {
+			return gender;
+		}
+
+		public void setGender(Set<String> gender) {
+			this.gender = gender;
+		}
+
+		public Set<String> getMaritalStatus() {
+			return marital;
+		}
+
+		public void setMaritalStatus(Set<String> maritalStatus) {
+			this.marital = maritalStatus;
+		}
 }

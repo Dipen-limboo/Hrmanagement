@@ -12,20 +12,17 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
+import com.humanresourcemanagement.ResourceMangement.Enum.Gender;
+import com.humanresourcemanagement.ResourceMangement.Enum.Martial;
 import com.humanresourcemanagement.ResourceMangement.Enum.Status;
 
 public class UserDetailsImpl implements UserDetails {
 	  private static final long serialVersionUID = 1L;
-
 	  private Long id;
-
 	  private String username;
-
 	  private String email;
-
 	  @JsonIgnore
 	  private String password;
-	  
 	  private boolean isVerified;
 	  private Status status;
 	  private String firstname;
@@ -33,13 +30,16 @@ public class UserDetailsImpl implements UserDetails {
 	  private String lastname;
 	  private Date dateOfbirth;
 	  private String phone;
-
+	  private Gender gender;
+	  private Martial martial;
 	  private Collection<? extends GrantedAuthority> authorities;
 	  
 
+	  
+
 	  public UserDetailsImpl(Long id, String username, String email, String password, boolean isVerified, Status status,
-			String firstname, String middlename, String lastname, Date dateOfbirth, String phone,
-			Collection<? extends GrantedAuthority> authorities) {
+			String firstname, String middlename, String lastname, Date dateOfbirth, String phone, Gender gender,
+			Martial martial, Collection<? extends GrantedAuthority> authorities) {
 		super();
 		this.id = id;
 		this.username = username;
@@ -52,10 +52,12 @@ public class UserDetailsImpl implements UserDetails {
 		this.lastname = lastname;
 		this.dateOfbirth = dateOfbirth;
 		this.phone = phone;
+		this.gender = gender;
+		this.martial = martial;
 		this.authorities = authorities;
-	  }
+	}
 
-	  public static UserDetailsImpl build(User user) {
+	public static UserDetailsImpl build(User user) {
 		  List<GrantedAuthority> authorities = Collections.singletonList(
 			        new SimpleGrantedAuthority(user.getRole().name())
 			    );
@@ -72,6 +74,8 @@ public class UserDetailsImpl implements UserDetails {
 	        user.getLastName(),
 	        user.getBirthDate(),
 	        user.getPhone(),
+	        user.getGender(),
+	        user.getMartialStatus(),
 	        authorities);
 	  }
 
@@ -97,25 +101,33 @@ public class UserDetailsImpl implements UserDetails {
 		  return status;
 	  }
 	
-		public String getMiddlename() {
-			return middlename;
-		}
+	  public String getMiddlename() {
+		  return middlename;
+	  }
 	
-		public String getLastname() {
-			return lastname;
-		}
+	  public String getLastname() {
+		  return lastname;
+	  }
 	
-		public Date getDateOfbirth() {
-			return dateOfbirth;
-		}
+	  public Date getDateOfbirth() {
+		  return dateOfbirth;
+	  }
 	
-		public String getPhone() {
-			return phone;
-		}
+	  public String getPhone() {
+		  return phone;
+	  }
 	
-		public boolean isVerified() {
-			return true;
-		}
+	  public boolean isVerified() {
+		  return true;
+	  }
+
+	  public Gender getGender() {
+		  return gender;
+	  }
+
+	  public Martial getMartial() {
+		  return martial;
+	  }
 
 	  @Override
 	  public String getPassword() {

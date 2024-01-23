@@ -2,9 +2,10 @@ package com.humanresourcemanagement.ResourceMangement.Entity;
 
 import java.util.Date;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.humanresourcemanagement.ResourceMangement.Enum.ERole;
+import com.humanresourcemanagement.ResourceMangement.Enum.Gender;
+import com.humanresourcemanagement.ResourceMangement.Enum.Martial;
 import com.humanresourcemanagement.ResourceMangement.Enum.Status;
 
 import jakarta.persistence.Column;
@@ -66,9 +67,6 @@ public class User {
   private String ConfirmPassword;
   
   @Column(name= "phone")
-  @Pattern(regexp="^(98|97)\\d{8}$",
-  message="{The phone number must be number start with 97 or 98, it must contains 10 number}"
-  )
   private String phone;
   
   @Enumerated(EnumType.STRING)
@@ -89,6 +87,14 @@ public class User {
   @Enumerated(EnumType.STRING)
   @Column(name="status")
   private Status status = Status.ACTIVE;  
+  
+  @Enumerated(EnumType.STRING)
+  @Column(name="gender")
+  private Gender gender;
+  
+  @Enumerated(EnumType.STRING)
+  @Column(name="martial_status")
+  private Martial martialStatus;
   
   public User() {
   }
@@ -219,5 +225,22 @@ public String getFirstName() {
   public void setStatus(Status status) {
 	  this.status = status;
   }
+
+  public Gender getGender() {
+	  return gender;
+  }
+	
+  public void setGender(Gender gender) {
+	  this.gender = gender;
+  }
+	
+  public Martial getMartialStatus() {
+	  return martialStatus;
+  }
+
+  public void setMartialStatus(Martial martialStatus) {
+	  this.martialStatus = martialStatus;
+  }
+  
   
 }
