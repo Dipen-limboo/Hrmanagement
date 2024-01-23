@@ -1,18 +1,27 @@
 package com.humanresourcemanagement.ResourceMangement.Payload.requestDto;
 
+import java.time.LocalDate;
+import java.util.Set;
+
 public class ChangeRoleDto {
 	private Long id;
 	
-	private int department;
+	private Set<String>	 role;
 	
-	private int designation;
+	private LocalDate joinDate;
+	
+	private LocalDate endDate; 
+	
+	private Long department;
+	
+	private Long designation;
 
 	public ChangeRoleDto() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public ChangeRoleDto(Long id, int department, int designation) {
+	public ChangeRoleDto(Long id, Long department, Long designation) {
 		super();
 		this.id = id;
 		this.department = department;
@@ -27,20 +36,44 @@ public class ChangeRoleDto {
 		this.id = id;
 	}
 
-	public int getDepartment() {
+	public Long getDepartment() {
 		return department;
 	}
 
-	public void setDepartment(int department) {
+	public void setDepartment(Long department) {
 		this.department = department;
 	}
 
-	public int getDesignation() {
+	public Long getDesignation() {
 		return designation;
 	}
 
-	public void setDesignation(int designation) {
+	public void setDesignation(Long designation) {
 		this.designation = designation;
+	}
+
+	public Set<String> getRole() {
+		return role;
+	}
+
+	public void setRole(Set<String> role) {
+		this.role = role;
+	}
+
+	public LocalDate getJoinDate() {
+		return joinDate;
+	}
+
+	public void setJoinDate(LocalDate joinDate) {
+		this.joinDate = joinDate;
+	}
+
+	public LocalDate getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(LocalDate endDate) {
+		this.endDate = endDate;
 	}
 	
 	

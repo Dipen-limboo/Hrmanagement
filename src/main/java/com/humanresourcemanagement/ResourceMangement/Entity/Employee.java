@@ -21,7 +21,7 @@ public class Employee {
 	private Long id;
 	
 	@OneToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="employee_name")
+	@JoinColumn(name="employee_id")
 	private User username; 
 	
 	@Column(name="join_date")
@@ -106,5 +106,14 @@ public class Employee {
 	public void setDesignation(Designation designation) {
 		this.designation = designation;
 	}
+
+	public User getApprover() {
+		return approver;
+	}
+
+	public void setApprover(User approver) {
+		this.approver = approver;
+	}
+	
 		
 }

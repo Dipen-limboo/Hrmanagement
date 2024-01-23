@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.ChangeRoleDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.FormDto;
@@ -78,12 +80,6 @@ public class UserController {
 			return userService.getUserLists(userRole, pageable);
 	}
 	
-	@PutMapping("/userRole/{id}")
-	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<?> changeUserRole(@PathVariable Long id){
-		return userService.changeRole(id);
-	}
-	
 	@PostMapping("/add_department")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> saveDepartment(@Valid @RequestBody DepartmentDto departmentDto){
@@ -94,5 +90,12 @@ public class UserController {
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> saveDesignation(@Valid @RequestBody DesignationDto designationDto){
 		return userService.addDesgination(designationDto);
+	}
+	
+	@PutMapping("/userRole/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	@Transactional
+	public ResponseEntity<?> changeUserRole(@PathVariable Long id, @RequestBody ChangeRoleDto changeRoleDto, Authentication auth){
+		return userService.changeRole(id, changeRoleDto, auth);
 	}
 }

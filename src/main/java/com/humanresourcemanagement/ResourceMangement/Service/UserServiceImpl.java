@@ -31,6 +31,7 @@ import com.humanresourcemanagement.ResourceMangement.Enum.ERole;
 import com.humanresourcemanagement.ResourceMangement.Enum.Gender;
 import com.humanresourcemanagement.ResourceMangement.Enum.Martial;
 import com.humanresourcemanagement.ResourceMangement.Enum.Status;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.ChangeRoleDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.FormDto;
@@ -269,15 +270,6 @@ public class UserServiceImpl {
 		}
 	}
 
-	public ResponseEntity<?> changeRole(Long id) {
-		Optional<User> optionalUser = userRepository.findById(id);
-		if(optionalUser.isPresent()) {
-			User user = optionalUser.get();
-			
-		}
-		return null;
-	}
-
 	public ResponseEntity<?> addDepartment(@Valid DepartmentDto departmentDto) {
 		Department department = new Department();
 		department.setName(departmentDto.getName());
@@ -299,6 +291,58 @@ public class UserServiceImpl {
 		}
 		designationRepo.save(designation);
 		return ResponseEntity.ok().body(designation);
+	}
+	
+	public ResponseEntity<?> changeRole(Long id, ChangeRoleDto changeRoleDto, Authentication auth) {
+		Optional<User> optionalUser = userRepository.findById(id);
+		if(optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			Set<String> strRole = changeRoleDto.getRole();
+			if(strRole == null) {
+				user.setRole(ERole.ROLE_USER);
+			} else {
+		        if (strRole.contains("admin")) {
+		            user.setRole(ERole.ROLE_ADMIN);
+		        } else if (strRole.contains("employee")) {
+		            user.setRole(ERole.ROLE_EMPLOYEE);
+		        } else {
+		            // Handle other roles if needed
+		            user.setRole(ERole.ROLE_USER);
+		        }
+		    }
+			userRepository.save(user);
+			UserDetailsImpl userDetailsImpl = (UserDetailsImpl) auth.getPrincipal();
+			if(strRole.contains("employee")) {
+				Employee employee = new Employee();
+				employee.setUsername(user);
+				employee.setJoinDate(changeRoleDto.getJoinDate());
+				employee.setLeaveDate(changeRoleDto.getEndDate());
+				
+				Optional<Department> optionalDepartment = departRepo.findById(changeRoleDto.getDepartment());
+				if(optionalDepartment.isPresent()) {
+					employee.setDepartment(optionalDepartment.get());
+					Optional<Designation> optionalDesignation= designationRepo.findById(changeRoleDto.getDesignation());
+					if(optionalDesignation.isPresent()) {
+						employee.setDesignation(optionalDesignation.get());
+					} else {
+						return ResponseEntity.badRequest().body(new MessageResponse("Error: designation not found by id " + changeRoleDto.getDesignation()));
+					}
+				} else {
+					return ResponseEntity.badRequest().body(new MessageResponse("Error: department not found by id " + changeRoleDto.getDepartment()));
+				}
+				Long userId = userDetailsImpl.getId();
+				Optional<User> optionUser = userRepository.findById(userId);
+				if(optionUser.isPresent()) {
+					User authUser = optionUser.get();
+					employee.setApprover(authUser);
+				} 
+				employeeRepo.save(employee);
+			}
+			return ResponseEntity.ok().body("Succesfully changed Role");
+
+		} else {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id " + id));
+		}
 	}
 	
 }
