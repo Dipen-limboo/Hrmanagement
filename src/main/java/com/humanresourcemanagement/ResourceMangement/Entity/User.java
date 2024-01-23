@@ -15,6 +15,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
@@ -95,6 +96,9 @@ public class User {
   @Enumerated(EnumType.STRING)
   @Column(name="martial_status")
   private Martial martialStatus;
+  
+  @OneToOne(mappedBy="username")
+  private Employee employee;
   
   public User() {
   }
