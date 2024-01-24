@@ -248,7 +248,7 @@ public class UserServiceImpl {
 				List<EmployeeInfoDto> employeeInfoDtoLists = new ArrayList<>();
 				for(User user: userLists) {
 					Long id = user.getId();
-					Optional<Employee> optionalEmployee = employeeRepo.findById(id);
+					Optional<Employee> optionalEmployee = employeeRepo.findByUsername(user);
 					if(optionalEmployee.isPresent()) {
 						Employee employee = optionalEmployee.get();
 						EmployeeInfoDto employeeInfoDto = new EmployeeInfoDto();
