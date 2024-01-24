@@ -7,4 +7,6 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Department;
 
 public interface DepartmentRepo extends JpaRepository<Department, Long>, JpaSpecificationExecutor<Department>{
 
+	boolean existsByName(String name);
+
 }

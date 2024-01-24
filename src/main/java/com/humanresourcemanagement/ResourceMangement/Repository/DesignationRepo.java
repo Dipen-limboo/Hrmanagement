@@ -7,4 +7,6 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 
 public interface DesignationRepo extends JpaRepository<Designation, Long>, JpaSpecificationExecutor<Designation>{
 
+	boolean existsByName(String name);
+
 }

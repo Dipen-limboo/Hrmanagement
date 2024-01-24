@@ -80,18 +80,6 @@ public class UserController {
 			return userService.getUserLists(userRole, pageable);
 	}
 	
-	@PostMapping("/add_department")
-	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<?> saveDepartment(@Valid @RequestBody DepartmentDto departmentDto){
-		return userService.addDepartment(departmentDto);
-	}
-	
-	@PostMapping("/add_designation")
-	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<?> saveDesignation(@Valid @RequestBody DesignationDto designationDto){
-		return userService.addDesgination(designationDto);
-	}
-	
 	@PutMapping("/userRole/{id}")
 	@PreAuthorize("hasRole('ADMIN')")
 	@Transactional

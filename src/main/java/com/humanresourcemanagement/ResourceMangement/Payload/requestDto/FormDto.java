@@ -44,6 +44,8 @@ public class FormDto {
 	    private Set<String> gender;
 	    
 	    private Set<String> marital;
+	    
+	    private String address;
 
 	    @NotBlank
 	    @Size(min = 6, max = 40, message = "Password length should be between 6 and 50 ")
@@ -159,4 +161,13 @@ public class FormDto {
 		public void setMaritalStatus(Set<String> maritalStatus) {
 			this.marital = maritalStatus;
 		}
+
+		public String getAddress() {
+			return address;
+		}
+
+		public void setAddress(String address) {
+			this.address = address;
+		}
+		
 }

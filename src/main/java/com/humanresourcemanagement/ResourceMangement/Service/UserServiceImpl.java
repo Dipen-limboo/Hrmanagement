@@ -127,7 +127,7 @@ public class UserServiceImpl {
 		user.setBirthDate(signUpRequest.getDateOfBirth());
 		user.setPhone(signUpRequest.getPhone());
 		user.setEmail(signUpRequest.getEmail());
-		
+		user.setAddress(signUpRequest.getAddress());
 		Set<String> genderStr = signUpRequest.getGender();
 		if(genderStr == null) {
 			user.setGender(null);
@@ -270,28 +270,7 @@ public class UserServiceImpl {
 		}
 	}
 
-	public ResponseEntity<?> addDepartment(@Valid DepartmentDto departmentDto) {
-		Department department = new Department();
-		department.setName(departmentDto.getName());
-		department.setBranch(departmentDto.getBranch());
-		department.setAddress(departmentDto.getAddress());
-		department.setPhone(departmentDto.getTel());
-		departRepo.save(department);
-		return ResponseEntity.ok().body(departmentDto);
-	}
-
-	public ResponseEntity<?> addDesgination(@Valid DesignationDto designationDto) {
-		Designation designation = new Designation();
-		designation.setName(designationDto.getName());
-		Long id = designationDto.getDepartment();
-		Optional<Department> optionalDepartment = departRepo.findById(id);
-		if (optionalDepartment.isPresent()) {
-			Department department = optionalDepartment.get();
-			designation.setDepartment(department);
-		}
-		designationRepo.save(designation);
-		return ResponseEntity.ok().body(designation);
-	}
+	
 	
 	public ResponseEntity<?> changeRole(Long id, ChangeRoleDto changeRoleDto, Authentication auth) {
 		Optional<User> optionalUser = userRepository.findById(id);

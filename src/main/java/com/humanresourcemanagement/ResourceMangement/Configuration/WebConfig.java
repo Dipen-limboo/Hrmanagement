@@ -68,7 +68,7 @@ public class WebConfig {
         .authorizeHttpRequests(auth -> 
         		auth
         		.requestMatchers("/api/users/**").permitAll()
-        		.requestMatchers("/api/question/**").permitAll()
+        		.requestMatchers("/api/create/**").permitAll()
         		.requestMatchers("/api/questionset/**").permitAll()
         		.requestMatchers("/api/forgot-password/**").permitAll()
         		.requestMatchers("/api/answer/**").permitAll()

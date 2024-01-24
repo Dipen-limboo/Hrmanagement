@@ -70,6 +70,9 @@ public class User {
   @Column(name= "phone")
   private String phone;
   
+  @Column(name="address")
+  private String address;
+  
   @Enumerated(EnumType.STRING)
   @Column(name="role")
   private ERole role = ERole.ROLE_USER;
@@ -143,14 +146,14 @@ public class User {
 
 
   public ERole getRole() {
-	return role;
-}
+	  return role;
+  }
 
-public void setRole(ERole role) {
-	this.role = role;
-}
+  public void setRole(ERole role) {
+	  this.role = role;
+  }	
 
-public String getFirstName() {
+  public String getFirstName() {
 	  return firstName;
   }
 
@@ -245,6 +248,13 @@ public String getFirstName() {
   public void setMartialStatus(Martial martialStatus) {
 	  this.martialStatus = martialStatus;
   }
-  
-  
+
+  public String getAddress() {
+	  return address;
+  }
+
+  public void setAddress(String address) {
+	  this.address = address;
+  }
+    
 }
