@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.AdditionalDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.FamilyInfoDto;
 import com.humanresourcemanagement.ResourceMangement.Service.CreatingService;
 
 import jakarta.validation.Valid;
@@ -57,5 +59,17 @@ public class CreatingController {
 		    @RequestPart("file") MultipartFile file,
 		    Authentication auth){
 		return createService.addDocument(citizenship, pan, nationalityId, issuedDate, issuedPlace, file, auth);
+	}
+	
+	@PostMapping("/add_familyInfo")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+	public ResponseEntity<?> saveFamilyInfo(@Valid @RequestBody FamilyInfoDto familyInfoDto, Authentication auth){
+		return createService.addFamily(familyInfoDto, auth);
+	}
+	
+	@PostMapping("/add_additionalInfo")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+	public ResponseEntity<?> saveAdditionalInfo(@Valid @RequestBody AdditionalDto additionalDto, Authentication auth){
+		return createService.addAdditional(additionalDto, auth);
 	}
 }
