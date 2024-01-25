@@ -1,6 +1,6 @@
 package com.humanresourcemanagement.ResourceMangement.Payload.requestDto;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -27,7 +27,7 @@ public class FormDto {
 	    
 	    @NotNull
 	    @JsonFormat(pattern="yyyy/mm/dd")
-	    private Date dateOfBirth;
+	    private LocalDate dateOfBirth;
 
 	    @NotBlank
 	    @Pattern(regexp = "^\\d{10}$",
@@ -98,11 +98,11 @@ public class FormDto {
 			this.username = username;
 		}
 
-		public Date getDateOfBirth() {
+		public LocalDate getDateOfBirth() {
 			return dateOfBirth;
 		}
 
-		public void setDateOfBirth(Date dateOfBirth) {
+		public void setDateOfBirth(LocalDate dateOfBirth) {
 			this.dateOfBirth = dateOfBirth;
 		}
 

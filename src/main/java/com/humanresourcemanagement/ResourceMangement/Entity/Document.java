@@ -38,10 +38,6 @@ public class Document {
 	@Column(name="file_path")
 	private String filePath;
 	
-	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="user_id")
-	private User user;
-	
 	public Document() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -113,14 +109,6 @@ public class Document {
 
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;
-	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
 	}
 	
 }	

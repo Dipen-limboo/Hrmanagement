@@ -36,18 +36,13 @@ public class FamilyInfo {
 	
 	@Column(name="phone")
 	private String phone;
-	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="user_id")
-	private User user;
 
 	public FamilyInfo() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public FamilyInfo(Long id, String firstName, String middleName, String lastName, Relation relation, String phone,
-			User user) {
+	public FamilyInfo(Long id, String firstName, String middleName, String lastName, Relation relation, String phone) {
 		super();
 		this.id = id;
 		this.firstName = firstName;
@@ -55,7 +50,6 @@ public class FamilyInfo {
 		LastName = lastName;
 		this.relation = relation;
 		this.phone = phone;
-		this.user = user;
 	}
 
 	public Long getId() {
@@ -105,13 +99,4 @@ public class FamilyInfo {
 	public void setPhone(String phone) {
 		this.phone = phone;
 	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	}
-
 }

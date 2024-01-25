@@ -39,17 +39,14 @@ public class AdditionalInfo {
 	@Column(name="end_date")
 	private LocalDate endDate;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="user_id")
-	private User user;
-
+	
 	public AdditionalInfo() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public AdditionalInfo(Long id, Type type, String name, String level, LocalDate joinDate, LocalDate endDate,
-			User user) {
+
+	public AdditionalInfo(Long id, Type type, String name, String level, LocalDate joinDate, LocalDate endDate) {
 		super();
 		this.id = id;
 		this.type = type;
@@ -57,64 +54,66 @@ public class AdditionalInfo {
 		this.level = level;
 		this.joinDate = joinDate;
 		this.endDate = endDate;
-		this.user = user;
 	}
+
 
 	public Long getId() {
 		return id;
 	}
 
+
 	public void setId(Long id) {
 		this.id = id;
 	}
+
 
 	public Type getType() {
 		return type;
 	}
 
+
 	public void setType(Type type) {
 		this.type = type;
 	}
+
 
 	public String getName() {
 		return name;
 	}
 
+
 	public void setName(String name) {
 		this.name = name;
 	}
+
 
 	public String getLevel() {
 		return level;
 	}
 
+
 	public void setLevel(String level) {
 		this.level = level;
 	}
+
 
 	public LocalDate getJoinDate() {
 		return joinDate;
 	}
 
+
 	public void setJoinDate(LocalDate joinDate) {
 		this.joinDate = joinDate;
 	}
+
 
 	public LocalDate getEndDate() {
 		return endDate;
 	}
 
+
 	public void setEndDate(LocalDate endDate) {
 		this.endDate = endDate;
 	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	}
-	
 	
 }

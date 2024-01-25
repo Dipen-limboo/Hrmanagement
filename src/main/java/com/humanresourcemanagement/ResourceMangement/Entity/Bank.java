@@ -23,10 +23,6 @@ public class Bank {
 	@Column(name="holder_name")
 	private String holderName;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="user_id")
-	private User user;
-	
 	public Bank() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -80,13 +76,5 @@ public class Bank {
 	public void setHolderName(String holderName) {
 		this.holderName = holderName;
 	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	} 
-
+	
 }

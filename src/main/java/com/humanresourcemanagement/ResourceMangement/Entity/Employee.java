@@ -1,9 +1,17 @@
 package com.humanresourcemanagement.ResourceMangement.Entity;
 
 import java.time.LocalDate;
+import java.util.Date;
+
+import com.humanresourcemanagement.ResourceMangement.Enum.ERole;
+import com.humanresourcemanagement.ResourceMangement.Enum.Gender;
+import com.humanresourcemanagement.ResourceMangement.Enum.Martial;
+import com.humanresourcemanagement.ResourceMangement.Enum.Status;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,6 +20,11 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="employees")
@@ -19,10 +32,46 @@ public class Employee {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
-	@OneToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="employee_id")
-	private User username; 
+	 
+	@NotBlank
+    @Column(name="first_name")
+    private String firstName;
+	  
+    @Column(name="middle_name")
+    private String middleName;
+  
+    @NotBlank
+    @Column(name="last_name")
+    private String lastName;
+  
+    @Size(max = 20)
+    private String username;
+  
+    @Column(name="birth_date")
+    private Date birthDate;
+
+    @NotBlank
+    @Size(max = 50)
+    @Email
+    private String email;
+
+  
+    @Size(max = 120)
+    @Pattern(regexp="^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$")
+    private String password;
+  
+    @Transient
+    private String ConfirmPassword;
+  
+    @Column(name= "phone")
+    private String phone;
+  
+    @Column(name="address")
+    private String address;
+  
+    @Enumerated(EnumType.STRING)
+    @Column(name="role")
+    private ERole role = ERole.ROLE_USER;
 	
 	@Column(name="join_date")
 	private LocalDate joinDate;
@@ -38,25 +87,53 @@ public class Employee {
 	@JoinColumn(name="designation")
 	private Designation designation;
 	
-	@OneToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="approvedBy")
-	private User approver; 
+	@Column(name="approvedBy")
+	private String approver; 
 
+	@Enumerated(EnumType.STRING)
+	@Column(name="status")
+	private Status status = Status.ACTIVE;  
+	  
+	@Enumerated(EnumType.STRING)
+	@Column(name="gender")
+	private Gender gender;
+	  
+	@Enumerated(EnumType.STRING)
+	@Column(name="martial_status")
+	private Martial martialStatus;
+	
 	public Employee() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public Employee(Long id, User username, LocalDate joinDate, LocalDate leaveDate, Department department,
-			Designation designation, User approver) {
+	public Employee(Long id, @NotBlank String firstName, String middleName, @NotBlank String lastName,
+			@Size(max = 20) String username, Date birthDate, @NotBlank @Size(max = 50) @Email String email,
+			@Size(max = 120) @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$") String password,
+			String confirmPassword, String phone, String address, ERole role, LocalDate joinDate, LocalDate leaveDate,
+			Department department, Designation designation, String approver, Status status, Gender gender,
+			Martial martialStatus) {
 		super();
 		this.id = id;
+		this.firstName = firstName;
+		this.middleName = middleName;
+		this.lastName = lastName;
 		this.username = username;
+		this.birthDate = birthDate;
+		this.email = email;
+		this.password = password;
+		ConfirmPassword = confirmPassword;
+		this.phone = phone;
+		this.address = address;
+		this.role = role;
 		this.joinDate = joinDate;
 		this.leaveDate = leaveDate;
 		this.department = department;
 		this.designation = designation;
 		this.approver = approver;
+		this.status = status;
+		this.gender = gender;
+		this.martialStatus = martialStatus;
 	}
 
 	public Long getId() {
@@ -67,12 +144,92 @@ public class Employee {
 		this.id = id;
 	}
 
-	public User getUsername() {
+	public String getFirstName() {
+		return firstName;
+	}
+
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getMiddleName() {
+		return middleName;
+	}
+
+	public void setMiddleName(String middleName) {
+		this.middleName = middleName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
+	}
+
+	public String getUsername() {
 		return username;
 	}
 
-	public void setUsername(User username) {
+	public void setUsername(String username) {
 		this.username = username;
+	}
+
+	public Date getBirthDate() {
+		return birthDate;
+	}
+
+	public void setBirthDate(Date birthDate) {
+		this.birthDate = birthDate;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getConfirmPassword() {
+		return ConfirmPassword;
+	}
+
+	public void setConfirmPassword(String confirmPassword) {
+		ConfirmPassword = confirmPassword;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public ERole getRole() {
+		return role;
+	}
+
+	public void setRole(ERole role) {
+		this.role = role;
 	}
 
 	public LocalDate getJoinDate() {
@@ -107,13 +264,38 @@ public class Employee {
 		this.designation = designation;
 	}
 
-	public User getApprover() {
+	public String getApprover() {
 		return approver;
 	}
 
-	public void setApprover(User approver) {
+	public void setApprover(String approver) {
 		this.approver = approver;
 	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+
+	public Gender getGender() {
+		return gender;
+	}
+
+	public void setGender(Gender gender) {
+		this.gender = gender;
+	}
+
+	public Martial getMartialStatus() {
+		return martialStatus;
+	}
+
+	public void setMartialStatus(Martial martialStatus) {
+		this.martialStatus = martialStatus;
+	}
 	
-		
+	
+	
 }
