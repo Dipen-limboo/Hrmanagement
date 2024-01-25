@@ -3,6 +3,7 @@ package com.humanresourcemanagement.ResourceMangement.Entity;
 import java.time.LocalDate;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.humanresourcemanagement.ResourceMangement.Enum.ERole;
 import com.humanresourcemanagement.ResourceMangement.Enum.Gender;
 import com.humanresourcemanagement.ResourceMangement.Enum.Martial;
@@ -71,7 +72,7 @@ public class Employee {
   
     @Enumerated(EnumType.STRING)
     @Column(name="role")
-    private ERole role = ERole.ROLE_USER;
+    private ERole role = ERole.ROLE_EMPLOYEE;
 	
 	@Column(name="join_date")
 	private LocalDate joinDate;
@@ -93,7 +94,19 @@ public class Employee {
 	@Enumerated(EnumType.STRING)
 	@Column(name="status")
 	private Status status = Status.ACTIVE;  
+	
+
+	 
+    @Column(name="is_verified")
+	private boolean isVerified =false;
 	  
+	@Column(name="verified_date")
+	@JsonFormat(pattern = "yyyy/MM/dd")
+	private Date verifiedDate;
+	  
+	@Column(name="verified_token")
+	private String verifiedToken;
+	
 	@Enumerated(EnumType.STRING)
 	@Column(name="gender")
 	private Gender gender;
@@ -101,6 +114,9 @@ public class Employee {
 	@Enumerated(EnumType.STRING)
 	@Column(name="martial_status")
 	private Martial martialStatus;
+	
+	@Column(name="token")
+	private String token;
 	
 	public Employee() {
 		super();
@@ -295,7 +311,37 @@ public class Employee {
 	public void setMartialStatus(Martial martialStatus) {
 		this.martialStatus = martialStatus;
 	}
-	
-	
-	
+
+	public boolean isVerified() {
+		return isVerified;
+	}
+
+	public void setVerified(boolean isVerified) {
+		this.isVerified = isVerified;
+	}
+
+	public Date getVerifiedDate() {
+		return verifiedDate;
+	}
+
+	public void setVerifiedDate(Date verifiedDate) {
+		this.verifiedDate = verifiedDate;
+	}
+
+	public String getVerifiedToken() {
+		return verifiedToken;
+	}
+
+	public void setVerifiedToken(String verifiedToken) {
+		this.verifiedToken = verifiedToken;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
 }

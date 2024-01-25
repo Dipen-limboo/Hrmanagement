@@ -27,8 +27,7 @@ public class JwtResponse {
 	
 
 	public JwtResponse(String token, Long id, String firstname, String middlename, String lastname, Date dateOfbirth,
-			String phone, String username, String email, List<String> roles, String status, String gender,
-			String martial) {
+			String phone, String username, String email, List<String> roles, String status) {
 		super();
 		this.token = token;
 		this.id = id;
@@ -41,8 +40,7 @@ public class JwtResponse {
 		this.email = email;
 		this.roles = roles;
 		this.status = status;
-		this.gender = gender;
-		this.martial = martial;
+	
 	}
 
 

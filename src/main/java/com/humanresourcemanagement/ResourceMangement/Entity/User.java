@@ -1,5 +1,6 @@
 package com.humanresourcemanagement.ResourceMangement.Entity;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -12,9 +13,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
@@ -75,8 +79,24 @@ public class User {
   
   @Enumerated(EnumType.STRING)
   @Column(name="role")
-  private ERole role = ERole.ROLE_USER;
+  private ERole role = ERole.ROLE_EMPLOYEE;
   
+  @Column(name="join_date")
+  private LocalDate joinDate;
+	
+  @Column(name="leave_date")
+  private LocalDate leaveDate;
+	
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name="department")
+  private Department department;
+	
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name="designation")
+  private Designation designation;
+	
+  @Column(name="approvedBy")
+  private String approver; 
  
   @Column(name="is_verified")
   private boolean isVerified =false;
@@ -100,8 +120,8 @@ public class User {
   @Column(name="martial_status")
   private Martial martialStatus;
   
-  @OneToOne(mappedBy="username")
-  private Employee employee;
+  @Column(name="is_password_change")
+  private boolean passwordChange = false;
   
   public User() {
   }
@@ -255,6 +275,54 @@ public class User {
 
   public void setAddress(String address) {
 	  this.address = address;
+  }
+
+  public LocalDate getJoinDate() {
+ 	  return joinDate;
+  }
+
+  public void setJoinDate(LocalDate joinDate) {
+	  this.joinDate = joinDate;
+  }
+
+  public LocalDate getLeaveDate() {
+	  return leaveDate;
+  }
+
+  public void setLeaveDate(LocalDate leaveDate) {
+	  this.leaveDate = leaveDate;
+  }
+
+  public Department getDepartment() {
+	  return department;
+  }
+
+  public void setDepartment(Department department) {
+	  this.department = department;
+  }
+
+  public Designation getDesignation() {
+	  return designation;
+ } 
+
+  public void setDesignation(Designation designation) {
+	  this.designation = designation;
+  }
+
+  public String getApprover() {
+	  return approver;
+  }
+
+  public void setApprover(String approver) {
+	  this.approver = approver;
+  }
+
+  public boolean isPasswordChange() {
+	  return passwordChange;
+  }
+
+  public void setPasswordChange(boolean passwordChange) {
+	  this.passwordChange = passwordChange;
   }
     
 }

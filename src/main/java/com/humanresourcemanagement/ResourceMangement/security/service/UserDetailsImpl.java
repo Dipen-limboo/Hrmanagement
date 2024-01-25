@@ -24,6 +24,7 @@ public class UserDetailsImpl implements UserDetails {
 	  @JsonIgnore
 	  private String password;
 	  private boolean isVerified;
+	  private boolean isChanged;
 	  private Status status;
 	  private String firstname;
 	  private String middlename;
@@ -37,7 +38,7 @@ public class UserDetailsImpl implements UserDetails {
 
 	  
 
-	  public UserDetailsImpl(Long id, String username, String email, String password, boolean isVerified, Status status,
+	  public UserDetailsImpl(Long id, String username, String email, String password, boolean isVerified, boolean isChanged, Status status,
 			String firstname, String middlename, String lastname, Date dateOfbirth, String phone, Gender gender,
 			Martial martial, Collection<? extends GrantedAuthority> authorities) {
 		super();
@@ -46,6 +47,7 @@ public class UserDetailsImpl implements UserDetails {
 		this.email = email;
 		this.password = password;
 		this.isVerified = isVerified;
+		this.isChanged = isChanged;
 		this.status = status;
 		this.firstname = firstname;
 		this.middlename = middlename;
@@ -68,6 +70,7 @@ public class UserDetailsImpl implements UserDetails {
 	        user.getEmail(),
 	        user.getPassword(), 
 	        user.isVerified(),
+	        user.isPasswordChange(),
 	        user.getStatus(),
 	        user.getFirstName(),
 	        user.getMiddleName(),
@@ -120,6 +123,10 @@ public class UserDetailsImpl implements UserDetails {
 	  public boolean isVerified() {
 		  return true;
 	  }
+	  
+	  public boolean isChanged() {
+		return isChanged;
+	  }
 
 	  public Gender getGender() {
 		  return gender;
@@ -136,7 +143,7 @@ public class UserDetailsImpl implements UserDetails {
 
 	  @Override
 	  public String getUsername() {
-	    return username;
+	    return email;
 	  }
 
 	  @Override

@@ -1,5 +1,7 @@
 package com.humanresourcemanagement.ResourceMangement.Controller;
 
+import java.io.UnsupportedEncodingException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,16 +20,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.ChangeRoleDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.FormDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.ChangedPasswordDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeRegisterDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.NewPasswordDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.RestPasswordDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.VerifiedTokenDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.ResponseFormDto;
 import com.humanresourcemanagement.ResourceMangement.Service.ResetPasswordService;
 import com.humanresourcemanagement.ResourceMangement.Service.UserServiceImpl;
 
+import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
@@ -47,13 +49,15 @@ public class UserController {
 	}
 
 	@PostMapping("/signup")
-	public ResponseEntity<?> registerUser(@Valid @RequestBody FormDto signUpRequest) {
-		return userService.signup(signUpRequest);
+//	@PreAuthorize("hasRole('SUPERADMIN')")
+	public ResponseEntity<?> registerUser(@Valid @RequestBody EmployeeRegisterDto employeeDto, Authentication auth, HttpServletRequest request) throws UnsupportedEncodingException, MessagingException {
+		return userService.signup(employeeDto, auth, request);
 	}
 	
-	@PostMapping("/verifiedToken")
-	public ResponseEntity<?> verifyingSignUpRequest(@RequestBody VerifiedTokenDto verifiedDto){
-		return userService.verified(verifiedDto);
+		
+	@PostMapping("/changePassword")
+	public ResponseEntity<?> verifyingSignUpRequest(@RequestParam(required = true) String token,@Valid @RequestBody ChangedPasswordDto verifiedDto){
+		return userService.verified(token, verifiedDto);
 	}
 	
 	@PostMapping("/generate-token")

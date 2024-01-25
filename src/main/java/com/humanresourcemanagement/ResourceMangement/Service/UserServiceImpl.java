@@ -1,13 +1,13 @@
 package com.humanresourcemanagement.ResourceMangement.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,15 +28,10 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.Employee;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Enum.ERole;
-import com.humanresourcemanagement.ResourceMangement.Enum.Gender;
-import com.humanresourcemanagement.ResourceMangement.Enum.Martial;
 import com.humanresourcemanagement.ResourceMangement.Enum.Status;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.ChangeRoleDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.FormDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.VerifiedTokenDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EmployeeInfoDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.ChangedPasswordDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeRegisterDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.JwtResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.ResponseFormDto;
@@ -49,7 +44,10 @@ import com.humanresourcemanagement.ResourceMangement.Specification.UserSpecifica
 import com.humanresourcemanagement.ResourceMangement.security.jwt.JwtUtils;
 import com.humanresourcemanagement.ResourceMangement.security.service.UserDetailsImpl;
 
+import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import net.bytebuddy.utility.RandomString;
 
 @Service
 public class UserServiceImpl {
@@ -90,6 +88,10 @@ public class UserServiceImpl {
 					if (userDetails.getStatus().equals(Status.DEACTIVE)) {
 					    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new MessageResponse("Error: You are deactivated by admin"));
 					}
+					
+					if(!userDetails.isChanged()) {
+						return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new MessageResponse("ERROR: Changed your password to singIn first"));
+					}
 					String token = jwtUtils.generateJwtToken(authentication);
 					List<String> roles = userDetails.getAuthorities().stream()
 							.map(item -> item.getAuthority())
@@ -104,115 +106,60 @@ public class UserServiceImpl {
 							userDetails.getUsername(),
 							userDetails.getEmail(),
 							roles,
-							userDetails.getStatus().toString(),
-							userDetails.getGender().toString(),
-							userDetails.getMartial().toString())
+							userDetails.getStatus().toString())
 							);
 	}
 
-	public ResponseEntity<?> signup(@Valid FormDto signUpRequest) {
-		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
+	public ResponseEntity<?> signup(@Valid EmployeeRegisterDto employeeDto, Authentication auth, HttpServletRequest request) throws UnsupportedEncodingException, MessagingException {
+		
+		if(userRepository.existsByEmail(employeeDto.getEmail())) {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: "+employeeDto.getEmail() +" already exists."));
 		}
-
-		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
-		}
-
 		User user = new User();
-		user.setFirstName(signUpRequest.getFirstName());
-		user.setMiddleName(signUpRequest.getMiddleName());
-		user.setLastName(signUpRequest.getLastName());
-		user.setUsername(signUpRequest.getUsername());
-		user.setBirthDate(signUpRequest.getDateOfBirth());
-		user.setPhone(signUpRequest.getPhone());
-		user.setEmail(signUpRequest.getEmail());
-		user.setAddress(signUpRequest.getAddress());
-		Set<String> genderStr = signUpRequest.getGender();
-		if(genderStr == null) {
-			user.setGender(null);
-		} else {
-			genderStr.forEach(gender ->{
-				switch(gender) {
-				case "male":
-					user.setGender(Gender.MALE);
-					break;
-				case "female":
-					user.setGender(Gender.FEMALE);
-					break;
-				default:
-					user.setGender(Gender.OTHER);
-				}
-			});
-		}
-		
-		Set<String> martialStr = signUpRequest.getMaritalStatus();
-		if(martialStr == null) {
-			user.setMartialStatus(null);
-		} else {
-			martialStr.forEach(martial -> {
-				switch (martial) {
-				case "single":
-					user.setMartialStatus(Martial.SINGLE);	
-					break;
-				default:
-					user.setMartialStatus(Martial.MARRIED);
-				}
-			});
-		}
-		user.setPassword(encoder.encode(signUpRequest.getPassword()));
-		user.setVerifiedDate(new Date());
-		//verifying the singup by generating token 
-		String token = UUID.randomUUID().toString();
-		
-		String email = signUpRequest.getEmail();
-		sendTokenToEmail(token, email);
+		user.setFirstName(employeeDto.getFirstName());
+		user.setMiddleName(employeeDto.getMiddleName());
+		user.setLastName(employeeDto.getLastName());
+		user.setEmail(employeeDto.getEmail());
+		String randomPassword = RandomStringUtils.randomAlphanumeric(8);
+	    user.setPassword(encoder.encode(randomPassword)); 
+		String token = RandomString.make(64);
 		user.setVerifiedToken(token);
-		
-		Set<String> strRoles = signUpRequest.getRole();
-	
-
-		if (strRoles == null) {
-			user.setRole(ERole.ROLE_USER);
-		} else {
-			strRoles.forEach(role -> {
-				switch (role) {
-				case "admin":
-					user.setRole(ERole.ROLE_ADMIN);
-					break;
-				case "mod":
-					user.setRole(ERole.ROLE_EMPLOYEE);
-					break;
-				default:
-					user.setRole(ERole.ROLE_USER);
-				}
-			});
-		}
+		String email = employeeDto.getEmail();
+		sendTokenToEmail(token, email, randomPassword);
 		userRepository.save(user);
-		return ResponseEntity.ok(new MessageResponse("Check you mail and verified to register!"));
+		return ResponseEntity.ok().body("Check your email");
 	}
 
-
-	public ResponseEntity<?> verified(VerifiedTokenDto verifiedDto) {
-		Optional<User> optionalUser = userRepository.findByVerifiedToken(verifiedDto.getToken());
+	public ResponseEntity<?> verified(String token, @Valid ChangedPasswordDto verifiedDto) {
+		
+		Optional<User> optionalUser = userRepository.findByVerifiedTokenAndEmail(token, verifiedDto.getEmail());
 		if(optionalUser.isPresent()) {
 			User user = optionalUser.get();
 			user.setVerifiedToken(null);
 			user.setVerified(true);
+			user.setPasswordChange(true);
+			String password = verifiedDto.getPassword();
+			String confirmPassword = verifiedDto.getConfirmPassword();
+			if(password.equals(confirmPassword)) {
+				user.setPassword(encoder.encode(confirmPassword));
+			} else {
+				return ResponseEntity.badRequest().body(new MessageResponse("ERROR: Password and Confirm password must be same"));
+			}
 			userRepository.save(user);
-			return ResponseEntity.ok().body(new MessageResponse(user.getEmail() + " is verified!!"));
+			return ResponseEntity.ok().body(new MessageResponse(user.getEmail() + " has changed password succesfully"));
 		} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("ERROR: Invalid token"));
+			return ResponseEntity.badRequest().body(new MessageResponse("ERROR: Invalid token for the " + verifiedDto.getEmail()));
 		}
 	}
 	
-	private void sendTokenToEmail(String token, String email) {
+	private void sendTokenToEmail(String token, String email, String randomPassword) {
 		SimpleMailMessage mailMessage = new SimpleMailMessage();
 		mailMessage.setFrom("dipenlimboo564@gmail.com");
 		mailMessage.setTo(email);
 		String subject = "User Verification Request";
-		String text = "To verified your register request, click the following link: "
-                + "http://localhost:8081/api/user/verifiedToken?token=" + token;
+		String text = "Your password is " +randomPassword+ "   "
+				+ " To verified your register request, click the following link: "
+                + "http://localhost:8081/api/user/changePassword?token=" + token;
 		mailMessage.setSubject(subject);
 		mailMessage.setText(text);
 		mailSender.send(mailMessage);
@@ -220,7 +167,7 @@ public class UserServiceImpl {
 
 	public ResponseEntity<?> getUserLists(String userRole, Pageable pageable) {
 		Specification<User> filters = Specification.where(userRole!=null ? UserSpecification.getByRole(userRole) :null);
-		if(userRole == null  || !userRole.equals("ROLE_EMPLOYEE") ) {
+//		if(userRole == null  || !userRole.equals("ROLE_EMPLOYEE") ) {
 			Page<User> userLists = userRepository.findAll(filters, pageable);
 			
 			if(userLists.isEmpty()) {
@@ -240,34 +187,34 @@ public class UserServiceImpl {
 				}
 				return ResponseEntity.ok().body(userInfoDtolists);
 			}
-		} else {
-			Page<User> userLists = userRepository.findAll(filters, pageable);
-			if(userLists.isEmpty()) {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: User List of employee is empty"));
-			} else {
-				List<EmployeeInfoDto> employeeInfoDtoLists = new ArrayList<>();
-				for(User user: userLists) {
-					Long id = user.getId();
-					Optional<Employee> optionalEmployee = employeeRepo.findByUsername(user);
-					if(optionalEmployee.isPresent()) {
-						Employee employee = optionalEmployee.get();
-						EmployeeInfoDto employeeInfoDto = new EmployeeInfoDto();
-						employeeInfoDto.setId(employee.getId());
-						employeeInfoDto.setUsername(employee.getUsername().getUsername());
-						employeeInfoDto.setEmail(employee.getUsername().getEmail());
-						employeeInfoDto.setDepartment(employee.getDepartment().getName());
-						employeeInfoDto.setDesignation(employee.getDesignation().getName());
-						employeeInfoDto.setJoinDate(employee.getJoinDate());
-						employeeInfoDto.setLeaveDate(employee.getLeaveDate());
-						employeeInfoDto.setApprovedBy(employee.getUsername().getUsername());
-						employeeInfoDtoLists.add(employeeInfoDto);
-					} else {
-						return ResponseEntity.badRequest().body(new MessageResponse("Error: Employee not found by id" + id));
-					}
-				}
-				return ResponseEntity.ok().body(employeeInfoDtoLists);
-			}
-		}
+//		} else {
+//			Page<User> userLists = userRepository.findAll(filters, pageable);
+//			if(userLists.isEmpty()) {
+//				return ResponseEntity.badRequest().body(new MessageResponse("Error: User List of employee is empty"));
+//			} else {
+//				List<EmployeeInfoDto> employeeInfoDtoLists = new ArrayList<>();
+//				for(User user: userLists) {
+//					Long id = user.getId();
+//					Optional<Employee> optionalEmployee = employeeRepo.findByUsername(user);
+//					if(optionalEmployee.isPresent()) {
+//						Employee employee = optionalEmployee.get();
+//						EmployeeInfoDto employeeInfoDto = new EmployeeInfoDto();
+//						employeeInfoDto.setId(employee.getId());
+//						employeeInfoDto.setUsername(employee.getUsername().getUsername());
+//						employeeInfoDto.setEmail(employee.getUsername().getEmail());
+//						employeeInfoDto.setDepartment(employee.getDepartment().getName());
+//						employeeInfoDto.setDesignation(employee.getDesignation().getName());
+//						employeeInfoDto.setJoinDate(employee.getJoinDate());
+//						employeeInfoDto.setLeaveDate(employee.getLeaveDate());
+//						employeeInfoDto.setApprovedBy(employee.getUsername().getUsername());
+//						employeeInfoDtoLists.add(employeeInfoDto);
+//					} else {
+//						return ResponseEntity.badRequest().body(new MessageResponse("Error: Employee not found by id" + id));
+//					}
+//				}
+//				return ResponseEntity.ok().body(employeeInfoDtoLists);
+//			}
+//		}
 	}
 
 	
@@ -293,7 +240,7 @@ public class UserServiceImpl {
 			UserDetailsImpl userDetailsImpl = (UserDetailsImpl) auth.getPrincipal();
 			if(strRole.contains("employee")) {
 				Employee employee = new Employee();
-				employee.setUsername(user);
+//				employee.setUsername(user);
 				employee.setJoinDate(changeRoleDto.getJoinDate());
 				employee.setLeaveDate(changeRoleDto.getEndDate());
 				
@@ -313,7 +260,7 @@ public class UserServiceImpl {
 				Optional<User> optionUser = userRepository.findById(userId);
 				if(optionUser.isPresent()) {
 					User authUser = optionUser.get();
-					employee.setApprover(authUser);
+//					employee.setApprover(authUser);
 				} 
 				employeeRepo.save(employee);
 			}

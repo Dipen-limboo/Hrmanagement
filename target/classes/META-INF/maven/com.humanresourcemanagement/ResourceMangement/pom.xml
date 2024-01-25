@@ -92,9 +92,9 @@
 		  <version>6.2.0</version>
 		</dependency>
 		<dependency>
-			<groupId>com.example</groupId>
-			<artifactId>demo</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+		    <groupId>net.bytebuddy</groupId>
+		    <artifactId>byte-buddy</artifactId>
+		    <version>1.14.9</version>
 		</dependency>
 	</dependencies>
 
