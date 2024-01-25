@@ -96,7 +96,7 @@ public class User {
   private Designation designation;
 	
   @Column(name="approvedBy")
-  private String approver; 
+  private Long approver; 
  
   @Column(name="is_verified")
   private boolean isVerified =false;
@@ -309,11 +309,11 @@ public class User {
 	  this.designation = designation;
   }
 
-  public String getApprover() {
+  public Long getApprover() {
 	  return approver;
   }
 
-  public void setApprover(String approver) {
+  public void setApprover(Long approver) {
 	  this.approver = approver;
   }
 

@@ -126,6 +126,7 @@ public class UserServiceImpl {
 		user.setVerifiedToken(token);
 		String email = employeeDto.getEmail();
 		sendTokenToEmail(token, email, randomPassword);
+		
 		userRepository.save(user);
 		return ResponseEntity.ok().body("Check your email");
 	}
@@ -167,7 +168,7 @@ public class UserServiceImpl {
 
 	public ResponseEntity<?> getUserLists(String userRole, Pageable pageable) {
 		Specification<User> filters = Specification.where(userRole!=null ? UserSpecification.getByRole(userRole) :null);
-//		if(userRole == null  || !userRole.equals("ROLE_EMPLOYEE") ) {
+
 			Page<User> userLists = userRepository.findAll(filters, pageable);
 			
 			if(userLists.isEmpty()) {
@@ -187,34 +188,6 @@ public class UserServiceImpl {
 				}
 				return ResponseEntity.ok().body(userInfoDtolists);
 			}
-//		} else {
-//			Page<User> userLists = userRepository.findAll(filters, pageable);
-//			if(userLists.isEmpty()) {
-//				return ResponseEntity.badRequest().body(new MessageResponse("Error: User List of employee is empty"));
-//			} else {
-//				List<EmployeeInfoDto> employeeInfoDtoLists = new ArrayList<>();
-//				for(User user: userLists) {
-//					Long id = user.getId();
-//					Optional<Employee> optionalEmployee = employeeRepo.findByUsername(user);
-//					if(optionalEmployee.isPresent()) {
-//						Employee employee = optionalEmployee.get();
-//						EmployeeInfoDto employeeInfoDto = new EmployeeInfoDto();
-//						employeeInfoDto.setId(employee.getId());
-//						employeeInfoDto.setUsername(employee.getUsername().getUsername());
-//						employeeInfoDto.setEmail(employee.getUsername().getEmail());
-//						employeeInfoDto.setDepartment(employee.getDepartment().getName());
-//						employeeInfoDto.setDesignation(employee.getDesignation().getName());
-//						employeeInfoDto.setJoinDate(employee.getJoinDate());
-//						employeeInfoDto.setLeaveDate(employee.getLeaveDate());
-//						employeeInfoDto.setApprovedBy(employee.getUsername().getUsername());
-//						employeeInfoDtoLists.add(employeeInfoDto);
-//					} else {
-//						return ResponseEntity.badRequest().body(new MessageResponse("Error: Employee not found by id" + id));
-//					}
-//				}
-//				return ResponseEntity.ok().body(employeeInfoDtoLists);
-//			}
-//		}
 	}
 
 	
@@ -231,39 +204,15 @@ public class UserServiceImpl {
 		            user.setRole(ERole.ROLE_ADMIN);
 		        } else if (strRole.contains("employee")) {
 		            user.setRole(ERole.ROLE_EMPLOYEE);
-		        } else {
+		        } else if (strRole.contains("superadmin")){
 		            // Handle other roles if needed
-		            user.setRole(ERole.ROLE_USER);
+		            user.setRole(ERole.ROLE_SUPERADMIN);
+		        } else {
+		        	user.setRole(null);
 		        }
 		    }
 			userRepository.save(user);
-			UserDetailsImpl userDetailsImpl = (UserDetailsImpl) auth.getPrincipal();
-			if(strRole.contains("employee")) {
-				Employee employee = new Employee();
-//				employee.setUsername(user);
-				employee.setJoinDate(changeRoleDto.getJoinDate());
-				employee.setLeaveDate(changeRoleDto.getEndDate());
-				
-				Optional<Department> optionalDepartment = departRepo.findById(changeRoleDto.getDepartment());
-				if(optionalDepartment.isPresent()) {
-					employee.setDepartment(optionalDepartment.get());
-					Optional<Designation> optionalDesignation= designationRepo.findById(changeRoleDto.getDesignation());
-					if(optionalDesignation.isPresent()) {
-						employee.setDesignation(optionalDesignation.get());
-					} else {
-						return ResponseEntity.badRequest().body(new MessageResponse("Error: designation not found by id " + changeRoleDto.getDesignation()));
-					}
-				} else {
-					return ResponseEntity.badRequest().body(new MessageResponse("Error: department not found by id " + changeRoleDto.getDepartment()));
-				}
-				Long userId = userDetailsImpl.getId();
-				Optional<User> optionUser = userRepository.findById(userId);
-				if(optionUser.isPresent()) {
-					User authUser = optionUser.get();
-//					employee.setApprover(authUser);
-				} 
-				employeeRepo.save(employee);
-			}
+			
 			return ResponseEntity.ok().body("Succesfully changed Role");
 
 		} else {

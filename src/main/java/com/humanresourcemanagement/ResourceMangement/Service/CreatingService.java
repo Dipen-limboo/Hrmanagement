@@ -117,7 +117,7 @@ public class CreatingService {
 		Long userId = userDetails.getId();
 		Optional<User> optionalUser = userRepo.findById(userId);
 		if(optionalUser.isPresent()) {
-//			bank.setUser(optionalUser.get());
+			bank.setUser(optionalUser.get());
 		} else {
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: Usernot found by  id" + userId));
 		}
@@ -152,17 +152,17 @@ public class CreatingService {
 			
 			Document document = new Document();
 			if(citizenship!=null) {
-				document.setCitizenship(encryptSer.encrypt(citizenship));
+				document.setCitizenship(EncryptDecrypt.encrypt(citizenship));
 			} else {
 				document.setCitizenship(null);
 			}
 			if(pan!=null) {
-				document.setPan(encryptSer.encrypt(pan));
+				document.setPan(EncryptDecrypt.encrypt(pan));
 			} else {
 				document.setPan(null);
 			}
 			if(nationalityId!=null) {
-				document.setNationality(encryptSer.encrypt(nationalityId));
+				document.setNationality(EncryptDecrypt.encrypt(nationalityId));
 			} else {
 				document.setNationality(null);
 			}
@@ -171,7 +171,7 @@ public class CreatingService {
 			document.setFilePath(filePath.toString());
 			
 			if(optionalUser.isPresent()) {
-//			document.setUser(optionalUser.get());	
+			document.setUser(optionalUser.get());	
 			}
 			documentRepo.save(document);
 			return ResponseEntity.ok().body(document);
@@ -224,7 +224,7 @@ public class CreatingService {
 		Long userId = userDetails.getId();
 		Optional<User> optionalUser = userRepo.findById(userId);
 		if(optionalUser.isPresent()) {
-//			family.setUser(optionalUser.get());
+			family.setUser(optionalUser.get());
 		}
 		familyRepo.save(family);
 		return ResponseEntity.ok().body("Successfully added Family information of " + optionalUser.get().getUsername());
@@ -239,7 +239,7 @@ public class CreatingService {
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
 		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
 		if(optionalUser.isPresent()) {
-//			additional.setUser(optionalUser.get());
+			additional.setUser(optionalUser.get());
 		}
 		Set<String> strType = additionalDto.getType();
 		if(strType==null) {
@@ -262,7 +262,7 @@ public class CreatingService {
 			});
 		}
 		additionalRepo.save(additional);
-		return ResponseEntity.ok().body("Successfully added to the additional info of " + userDetails.getUsername());
+		return ResponseEntity.ok().body("Successfully added to the additional info of " + optionalUser.get().getUsername());
 	}
 
 	

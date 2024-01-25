@@ -44,13 +44,13 @@ public class CreatingController {
 	}
 	
 	@PostMapping("/add_bank")
-	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> saveBank(@Valid @RequestBody BankDto bankDto, Authentication auth){
 		return createService.addBank(bankDto, auth);
 	}
 	
 	@PostMapping("/add_documents")
-	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> saveDocuments(@RequestParam(name="citizenship", required=false) String citizenship,
 			@RequestParam(name="pan", required=false)String pan,
 			@RequestParam(name="nationalityId", required=false) String nationalityId,
@@ -62,13 +62,13 @@ public class CreatingController {
 	}
 	
 	@PostMapping("/add_familyInfo")
-	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> saveFamilyInfo(@Valid @RequestBody FamilyInfoDto familyInfoDto, Authentication auth){
 		return createService.addFamily(familyInfoDto, auth);
 	}
 	
 	@PostMapping("/add_additionalInfo")
-	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN')")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> saveAdditionalInfo(@Valid @RequestBody AdditionalDto additionalDto, Authentication auth){
 		return createService.addAdditional(additionalDto, auth);
 	}

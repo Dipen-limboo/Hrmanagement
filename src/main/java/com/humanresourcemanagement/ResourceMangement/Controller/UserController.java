@@ -49,7 +49,7 @@ public class UserController {
 	}
 
 	@PostMapping("/signup")
-//	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('SUPERADMIN')")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody EmployeeRegisterDto employeeDto, Authentication auth, HttpServletRequest request) throws UnsupportedEncodingException, MessagingException {
 		return userService.signup(employeeDto, auth, request);
 	}
@@ -72,7 +72,7 @@ public class UserController {
 	}
 	
 	@GetMapping("/listOfuser")
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> listOfUsers(@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "10") int size,
 			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
@@ -85,7 +85,7 @@ public class UserController {
 	}
 	
 	@PutMapping("/userRole/{id}")
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('SUPERADMIN')")
 	@Transactional
 	public ResponseEntity<?> changeUserRole(@PathVariable Long id, @RequestBody ChangeRoleDto changeRoleDto, Authentication auth){
 		return userService.changeRole(id, changeRoleDto, auth);

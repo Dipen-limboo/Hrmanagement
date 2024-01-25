@@ -16,7 +16,6 @@ public class ChangedPasswordDto {
 	
 	public ChangedPasswordDto() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public ChangedPasswordDto(@NotEmpty String email, @NotEmpty String password, String confirmPassword) {
