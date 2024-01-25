@@ -1,5 +1,6 @@
 package com.humanresourcemanagement.ResourceMangement.security.service;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -29,7 +30,7 @@ public class UserDetailsImpl implements UserDetails {
 	  private String firstname;
 	  private String middlename;
 	  private String lastname;
-	  private Date dateOfbirth;
+	  private LocalDate dateOfbirth;
 	  private String phone;
 	  private Gender gender;
 	  private Martial martial;
@@ -39,7 +40,7 @@ public class UserDetailsImpl implements UserDetails {
 	  
 
 	  public UserDetailsImpl(Long id, String username, String email, String password, boolean isVerified, boolean isChanged, Status status,
-			String firstname, String middlename, String lastname, Date dateOfbirth, String phone, Gender gender,
+			String firstname, String middlename, String lastname, LocalDate dateOfbirth, String phone, Gender gender,
 			Martial martial, Collection<? extends GrantedAuthority> authorities) {
 		super();
 		this.id = id;
@@ -112,7 +113,7 @@ public class UserDetailsImpl implements UserDetails {
 		  return lastname;
 	  }
 	
-	  public Date getDateOfbirth() {
+	  public LocalDate getDateOfbirth() {
 		  return dateOfbirth;
 	  }
 	

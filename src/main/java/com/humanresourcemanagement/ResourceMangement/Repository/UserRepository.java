@@ -20,8 +20,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 	  Optional<User> findByEmail(@Param("email") String email);
 	  
 	  Optional<User> findById(Long id);
-
+	  
 	  Optional<User> findByVerifiedToken(String token);
 
-	Optional<User> findByVerifiedTokenAndEmail(String token, String email); 
+	  Optional<User> findByVerifiedTokenAndEmail(String token, String email); 
 }

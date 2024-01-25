@@ -1,6 +1,6 @@
 package com.humanresourcemanagement.ResourceMangement.Payload.responseDto;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public class JwtResponse {
@@ -9,7 +9,7 @@ public class JwtResponse {
 	private String firstname;
 	private String middlename;
 	private String lastname;
-	private Date dateOfbirth;
+	private LocalDate dateOfbirth;
 	private String phone;
 	private String username;
 	private String email;
@@ -26,7 +26,7 @@ public class JwtResponse {
 	}
 	
 
-	public JwtResponse(String token, Long id, String firstname, String middlename, String lastname, Date dateOfbirth,
+	public JwtResponse(String token, Long id, String firstname, String middlename, String lastname, LocalDate dateOfbirth,
 			String phone, String username, String email, List<String> roles, String status) {
 		super();
 		this.token = token;
@@ -104,11 +104,11 @@ public class JwtResponse {
 		this.lastname = lastname;
 	}
 
-	public Date getDateOfbirth() {
+	public LocalDate getDateOfbirth() {
 		return dateOfbirth;
 	}
 
-	public void setDateOfbirth(Date dateOfbirth) {
+	public void setDateOfbirth(LocalDate dateOfbirth) {
 		this.dateOfbirth = dateOfbirth;
 	}
 

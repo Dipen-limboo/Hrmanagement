@@ -24,7 +24,9 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.ChangedP
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeRegisterDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.NewPasswordDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.RestPasswordDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.UserFormDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.ResponseFormDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.UserInfoDto;
 import com.humanresourcemanagement.ResourceMangement.Service.ResetPasswordService;
 import com.humanresourcemanagement.ResourceMangement.Service.UserServiceImpl;
 
@@ -89,5 +91,18 @@ public class UserController {
 	@Transactional
 	public ResponseEntity<?> changeUserRole(@PathVariable Long id, @RequestBody ChangeRoleDto changeRoleDto, Authentication auth){
 		return userService.changeRole(id, changeRoleDto, auth);
+	}
+	
+	
+	@GetMapping("/getUser")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> getUserInfo(Authentication auth){
+		return userService.getUser(auth);
+	}
+	
+	@PutMapping("/getUser")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> updatePersonalInfo(Authentication auth, @Valid @RequestBody UserFormDto formDto){
+		return userService.updateUser(auth, formDto);
 	}
 }

@@ -56,7 +56,7 @@ public class User {
   
   @NotBlank
   @Column(name="birth_date")
-  private Date birthDate;
+  private LocalDate birthDate;
 
   @NotBlank
   @Size(max = 50)
@@ -213,11 +213,11 @@ public class User {
 	  this.phone = phone;
   }
 
-  public Date getBirthDate() {
+  public LocalDate getBirthDate() {
 	  return birthDate;
   }
 
-  public void setBirthDate(Date birthDate) {
+  public void setBirthDate(LocalDate birthDate) {
 	  this.birthDate = birthDate;
   }
 
