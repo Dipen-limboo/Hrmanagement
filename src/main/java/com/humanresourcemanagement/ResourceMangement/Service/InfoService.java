@@ -1,6 +1,5 @@
 package com.humanresourcemanagement.ResourceMangement.Service;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -8,20 +7,24 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.humanresourcemanagement.ResourceMangement.Entity.AdditionalInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Bank;
 import com.humanresourcemanagement.ResourceMangement.Entity.Department;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
+import com.humanresourcemanagement.ResourceMangement.Entity.Document;
 import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.AdditionalDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.DocumentResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.FamilyDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Repository.AdditionalRepo;
@@ -31,6 +34,7 @@ import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DocumentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.FamilyRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
+import com.humanresourcemanagement.ResourceMangement.security.service.UserDetailsImpl;
 
 @Service
 public class InfoService {
@@ -75,8 +79,8 @@ public class InfoService {
 		}
 	}
 
-	public ResponseEntity<?> findAllDesgination() {
-		List<Designation> designationList = designationRepo.findAll();
+	public ResponseEntity<?> findAllDesgination(Pageable pageable) {
+		Page<Designation> designationList = designationRepo.findAll(pageable);
 		List<DesignationDto> designationDtoList = new ArrayList<>();
 		
 		if(!designationList.isEmpty()) {
@@ -96,8 +100,8 @@ public class InfoService {
 		}
 	}
 
-	public ResponseEntity<?> findAllaccountsOfStaff() {
-		List<Bank> bankList = bankRepo.findAll();
+	public ResponseEntity<?> findAllaccountsOfStaff(Pageable pageable) {
+		Page<Bank> bankList = bankRepo.findAll(pageable);
 		List<BankDto> bankDtoList = new ArrayList<>();
 		
 		if(!bankList.isEmpty()) {
@@ -120,8 +124,8 @@ public class InfoService {
 		}
 	}
 
-	public ResponseEntity<?> findAlladditionalListofUser() {
-		List<AdditionalInfo> additionalList = additionalRepo.findAll();
+	public ResponseEntity<?> findAlladditionalListofUser(Pageable pageable) {
+		Page<AdditionalInfo> additionalList = additionalRepo.findAll(pageable);
 		List<AdditionalDto> additionalDtoList = new ArrayList<>();
 		
 		if(!additionalList.isEmpty()) {
@@ -155,8 +159,8 @@ public class InfoService {
 		}
 	}
 
-	public ResponseEntity<?> findAllfamilyInfoListofUser() {
-		List<FamilyInfo> familyList = familyRepo.findAll();
+	public ResponseEntity<?> findAllfamilyInfoListofUser(Pageable pageable) {
+		Page<FamilyInfo> familyList = familyRepo.findAll(pageable);
 		List<FamilyDto> familyDtoList = new ArrayList<>();
 		
 		if(!familyList.isEmpty()) {
@@ -187,5 +191,40 @@ public class InfoService {
 		} else {
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any family details of any employees"));
 		}
+	}
+
+	public ResponseEntity<?> findAllDocumentListOfUser(Pageable pageable) {
+		Page<Document> documentList = documentRepo.findAll(pageable);
+		List<DocumentResponseDto> documentResponseDtoList = new ArrayList<>();
+		
+		if(!documentList.isEmpty()) {
+			for(Document document: documentList) {
+				DocumentResponseDto documentResponseDto= new DocumentResponseDto();
+				documentResponseDto.setCitizenship(document.getCitizenship());
+				documentResponseDto.setPan(document.getPan());
+				documentResponseDto.setNationalityId(document.getNationality());
+				documentResponseDto.setIssuedDate(document.getIssuedDate());
+				documentResponseDto.setIssuedPlace(document.getIssuedPlace());
+				documentResponseDto.setPath(document.getFilePath());
+				Optional<User> user = userRepo.findById(document.getUser().getId());
+				if(user.isPresent()) {
+					documentResponseDto.setUserId(user.get().getId());
+				}
+				documentResponseDtoList.add(documentResponseDto);
+			}
+			return ResponseEntity.ok().body(documentResponseDtoList);
+		} else {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any document of any employees"));
+		}
+	}
+
+	public ResponseEntity<?> delete(Long id, Authentication auth) {
+		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userdetails.getId());
+		if(optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			bankRepo.deleteByIdAndUser(id, user);
+		}
+		return ResponseEntity.ok().body("Succesfully deleted the account id" + id);
 	}
 }

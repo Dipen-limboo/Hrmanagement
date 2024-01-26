@@ -14,6 +14,8 @@ public interface BankRepo extends JpaRepository<Bank, Long>, JpaSpecificationExe
 
 	Optional<Bank> findByUser(User user);
 
+	void deleteByIdAndUser(Long id, User user);
+
 
 
 }
