@@ -1,5 +1,6 @@
 package com.humanresourcemanagement.ResourceMangement.Repository;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,5 +24,7 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
 	  
 	  Optional<User> findByVerifiedToken(String token);
 
-	  Optional<User> findByVerifiedTokenAndEmail(String token, String email); 
+	  Optional<User> findByVerifiedTokenAndEmail(String token, String email);
+
+	  Boolean existsByImagePath(String filePath); 
 }

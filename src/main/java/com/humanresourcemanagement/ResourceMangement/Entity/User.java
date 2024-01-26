@@ -123,6 +123,9 @@ public class User {
   @Column(name="is_password_change")
   private boolean passwordChange = false;
   
+  @Column(name="images_path")
+  private String imagePath;
+  
   public User() {
   }
 
@@ -324,5 +327,15 @@ public class User {
   public void setPasswordChange(boolean passwordChange) {
 	  this.passwordChange = passwordChange;
   }
+
+  public String getImagePath() {
+	  return imagePath;
+  }
+
+  public void setImagePath(String imagePath) {
+	  this.imagePath = imagePath;
+  }
+  
+  
     
 }

@@ -1,5 +1,7 @@
 package com.humanresourcemanagement.ResourceMangement.Entity;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
 
 import jakarta.persistence.Column;
@@ -40,6 +42,9 @@ public class FamilyInfo {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="user_id")
 	private User user;
+	
+	@Column(name="image_path")
+	private String file;
 
 	public FamilyInfo() {
 		super();
@@ -113,5 +118,14 @@ public class FamilyInfo {
 	public void setUser(User user) {
 		this.user = user;
 	}
+
+	public String getFile() {
+		return file;
+	}
+
+	public void setFile(String file) {
+		this.file = file;
+	}
+	
 
 }

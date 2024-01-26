@@ -1,6 +1,9 @@
 package com.humanresourcemanagement.ResourceMangement.Controller;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -10,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,15 +22,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.ChangeRoleDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.ChangedPasswordDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeRegisterDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.NewPasswordDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.RestPasswordDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.UserFormDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.ResponseFormDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.UserInfoDto;
 import com.humanresourcemanagement.ResourceMangement.Service.ResetPasswordService;
 import com.humanresourcemanagement.ResourceMangement.Service.UserServiceImpl;
 
@@ -102,7 +105,28 @@ public class UserController {
 	
 	@PutMapping("/getUser")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-	public ResponseEntity<?> updatePersonalInfo(Authentication auth, @Valid @RequestBody UserFormDto formDto){
-		return userService.updateUser(auth, formDto);
+	public ResponseEntity<?> updatePersonalInfo(Authentication auth, 
+			@RequestParam(required=false) String firstName,
+			@RequestParam(required=false) String middleName,
+			@RequestParam(required=false) String lastName,
+			@RequestParam(required=false) String username,
+			@RequestParam(required=false) MultipartFile imagePath,
+			@RequestParam(required=false) LocalDate dateOfBirth,
+			@RequestParam(required=false) String phone,
+			@RequestParam(required=false) String email,
+			@RequestParam(required=false) Set<String> gender,
+			@RequestParam(required=false) Set<String> martial,
+			@RequestParam(required=false) String address
+			) throws IOException{
+		return userService.updateUser(auth, firstName, middleName, lastName,
+				username, imagePath, dateOfBirth, phone, email, gender, 
+				martial, address);
+	}
+	
+	
+	@DeleteMapping("/deleteUser/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> deleteUserById(@PathVariable Long id) throws IOException{
+		return userService.delete(id);
 	}
 }

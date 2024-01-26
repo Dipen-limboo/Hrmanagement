@@ -3,9 +3,9 @@ package com.humanresourcemanagement.ResourceMangement.Payload.requestDto;
 import java.time.LocalDate;
 import java.util.Set;
 
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.Email;
-
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
@@ -22,7 +22,7 @@ public class UserFormDto {
 	    @Size(min = 3, max = 20)
 	    private String username;
 	    
-	    
+	    private MultipartFile imagePath;
 	    
 	    private LocalDate dateOfBirth;
 
@@ -128,5 +128,15 @@ public class UserFormDto {
 		public void setAddress(String address) {
 			this.address = address;
 		}
+
+		public MultipartFile getImagePath() {
+			return imagePath;
+		}
+
+		public void setImagePath(MultipartFile imagePath) {
+			this.imagePath = imagePath;
+		}
+		
+		
 		
 }

@@ -1,5 +1,6 @@
 package com.humanresourcemanagement.ResourceMangement.Service;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -29,7 +30,6 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Addition
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.FamilyInfoDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Repository.AdditionalRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
@@ -128,13 +128,13 @@ public class CreatingService {
 	public ResponseEntity<?> addDocument(String citizenship, String pan, String nationalityId, LocalDate issuedDate,
 			String issuedPlace, MultipartFile file, Authentication auth) {
 		try {
-			if(documentRepo.existsByCitizenship(citizenship)) {
+			if(documentRepo.existsByCitizenship(citizenship)  && citizenship != null) {
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: Citizenship already exists."));
 			}
-			if(documentRepo.existsByPan(pan)) {
+			if(documentRepo.existsByPan(pan) && pan != null) {
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: Pan already exists."));
 			}
-			if(documentRepo.existsByNationality(nationalityId)) {
+			if(documentRepo.existsByNationality(nationalityId) && nationalityId !=null) {
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: Nationality id already exists."));
 			}
 			Path uploadsDir = Paths.get("Document");
@@ -144,6 +144,9 @@ public class CreatingService {
 			
 			String fileName = StringUtils.cleanPath(file.getOriginalFilename());
 			Path filePath = uploadsDir.resolve(fileName);
+			if(documentRepo.existsByFilePath(filePath.toString())) {
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: Documents already exists with " + file));
+			}
 			Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 			
 			UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
@@ -180,55 +183,7 @@ public class CreatingService {
 		}
 	}
 
-	public ResponseEntity<?> addFamily(@Valid FamilyInfoDto familyInfoDto, Authentication auth) {
-		FamilyInfo family = new FamilyInfo();
-		family.setFirstName(familyInfoDto.getFirstname());
-		family.setMiddleName(familyInfoDto.getMiddlename());
-		family.setLastName(familyInfoDto.getLastname());
-		Set<String> strRelation = familyInfoDto.getRelation();
-		if(strRelation==null) {
-			family.setRelation(null);
-		} else {
-			strRelation.forEach(relation -> {
-				switch(relation) {
-				case "father":
-					family.setRelation(Relation.FATHER);
-					break;
-				case "mother":
-					family.setRelation(Relation.MOTHER);
-					break;
-				case "brother":
-					family.setRelation(Relation.BROTHER);
-					break;
-				case "sister":
-					family.setRelation(Relation.SISTER);
-					break;
-				case "grandmother":
-					family.setRelation(Relation.GRANDMOTHER);
-					break;
-				case "grandfather":
-					family.setRelation(Relation.GRANDFATHER);
-					break;	
-				case "wife":
-					family.setRelation(Relation.WIFE);
-					break;	
-				default:
-					family.setRelation(null);
-				}
-			});
-		}
-		
-		family.setPhone(familyInfoDto.getPhone());
-		
-		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-		Long userId = userDetails.getId();
-		Optional<User> optionalUser = userRepo.findById(userId);
-		if(optionalUser.isPresent()) {
-			family.setUser(optionalUser.get());
-		}
-		familyRepo.save(family);
-		return ResponseEntity.ok().body("Successfully added Family information of " + optionalUser.get().getUsername());
-	}
+	
 
 	public ResponseEntity<?> addAdditional(@Valid AdditionalDto additionalDto, Authentication auth) {
 		AdditionalInfo additional = new AdditionalInfo();
@@ -263,6 +218,72 @@ public class CreatingService {
 		}
 		additionalRepo.save(additional);
 		return ResponseEntity.ok().body("Successfully added to the additional info of " + optionalUser.get().getUsername());
+	}
+
+	public ResponseEntity<?> addFamily(@Valid String firstName, String middleName, String lastName,
+			Set<String> relation, String phone, MultipartFile file, Authentication auth) throws IOException {
+		FamilyInfo family = new FamilyInfo();
+		family.setFirstName(firstName);
+		family.setMiddleName(middleName);
+		family.setLastName(lastName);
+		Set<String> strRelation = relation;
+		if(strRelation==null) {
+			family.setRelation(null);
+		} else {
+			strRelation.forEach(relations -> {
+				switch(relations) {
+				case "father":
+					family.setRelation(Relation.FATHER);
+					break;
+				case "mother":
+					family.setRelation(Relation.MOTHER);
+					break;
+				case "brother":
+					family.setRelation(Relation.BROTHER);
+					break;
+				case "sister":
+					family.setRelation(Relation.SISTER);
+					break;
+				case "grandmother":
+					family.setRelation(Relation.GRANDMOTHER);
+					break;
+				case "grandfather":
+					family.setRelation(Relation.GRANDFATHER);
+					break;	
+				case "wife":
+					family.setRelation(Relation.WIFE);
+					break;	
+				default:
+					family.setRelation(null);
+				}
+			});
+		}
+		
+		family.setPhone(phone);
+		
+		Path uploadsDir = Paths.get("Images");
+		if(!Files.exists(uploadsDir)) {
+			Files.createDirectories(uploadsDir);
+		}
+		
+		String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+		Path filePath = uploadsDir.resolve(fileName);
+		
+		if(familyRepo.existsByFile(filePath.toString())) {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Image already exists with " + file));
+		}
+		Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+		
+		
+		family.setFile(filePath.toString());
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Long userId = userDetails.getId();
+		Optional<User> optionalUser = userRepo.findById(userId);
+		if(optionalUser.isPresent()) {
+			family.setUser(optionalUser.get());
+		}
+		familyRepo.save(family);
+		return ResponseEntity.ok().body("Successfully added Family information of " + optionalUser.get().getUsername());
 	}
 
 	

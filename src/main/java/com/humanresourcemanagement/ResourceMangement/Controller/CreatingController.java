@@ -1,6 +1,8 @@
 package com.humanresourcemanagement.ResourceMangement.Controller;
 
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +21,6 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Addition
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.FamilyInfoDto;
 import com.humanresourcemanagement.ResourceMangement.Service.CreatingService;
 
 import jakarta.validation.Valid;
@@ -63,8 +64,13 @@ public class CreatingController {
 	
 	@PostMapping("/add_familyInfo")
 	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
-	public ResponseEntity<?> saveFamilyInfo(@Valid @RequestBody FamilyInfoDto familyInfoDto, Authentication auth){
-		return createService.addFamily(familyInfoDto, auth);
+	public ResponseEntity<?> saveFamilyInfo(@Valid @RequestParam(required=false) String firstName,
+			@RequestParam(required=false) String middleName,
+			@RequestParam(required=false) String lastName,
+			@RequestParam(required=false) Set<String> relation,
+			@RequestParam(required=false) String phone,
+			@RequestParam(required=false) MultipartFile file, Authentication auth) throws IOException{
+		return createService.addFamily(firstName, middleName, lastName, relation, phone, file, auth);
 	}
 	
 	@PostMapping("/add_additionalInfo")

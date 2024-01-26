@@ -1,6 +1,11 @@
 package com.humanresourcemanagement.ResourceMangement.Service;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +28,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.humanresourcemanagement.ResourceMangement.Entity.AdditionalInfo;
+import com.humanresourcemanagement.ResourceMangement.Entity.Bank;
+import com.humanresourcemanagement.ResourceMangement.Entity.Document;
+import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
+import com.humanresourcemanagement.ResourceMangement.Entity.ResetPassword;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Enum.ERole;
 import com.humanresourcemanagement.ResourceMangement.Enum.Gender;
@@ -32,14 +44,17 @@ import com.humanresourcemanagement.ResourceMangement.Enum.Status;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.ChangeRoleDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.ChangedPasswordDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeRegisterDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.UserFormDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.JwtResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.ResponseFormDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.UserInfoDto;
+import com.humanresourcemanagement.ResourceMangement.Repository.AdditionalRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
-import com.humanresourcemanagement.ResourceMangement.Repository.EmployeeRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.DocumentRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.FamilyRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.ResetpasswordRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
 import com.humanresourcemanagement.ResourceMangement.Specification.UserSpecification;
 import com.humanresourcemanagement.ResourceMangement.security.jwt.JwtUtils;
@@ -59,7 +74,19 @@ public class UserServiceImpl {
 	UserRepository userRepository;
 	
 	@Autowired
-	EmployeeRepo employeeRepo;
+	AdditionalRepo additionalRepo;
+	
+	@Autowired
+	BankRepo bankRepo;
+	
+	@Autowired
+	DocumentRepo documentRepo;
+	
+	@Autowired 
+	FamilyRepo familyRepo;
+	
+	@Autowired
+	ResetpasswordRepo resetRepo;
 	
 	@Autowired
 	DepartmentRepo departRepo;
@@ -199,7 +226,7 @@ public class UserServiceImpl {
 			User user = optionalUser.get();
 			Set<String> strRole = changeRoleDto.getRole();
 			if(strRole == null) {
-				user.setRole(ERole.ROLE_USER);
+				user.setRole(ERole.ROLE_EMPLOYEE);
 			} else {
 		        if (strRole.contains("admin")) {
 		            user.setRole(ERole.ROLE_ADMIN);
@@ -247,26 +274,52 @@ public class UserServiceImpl {
 		return ResponseEntity.ok().body(userInfoDto);
 	}
 	
-	public ResponseEntity<?> updateUser(Authentication auth, @Valid UserFormDto formDto) {
+	public ResponseEntity<?> updateUser(Authentication auth, String firstName, String middleName, String lastName,
+			String username, MultipartFile imagePath, LocalDate dateOfBirth, String phone, String email,
+			Set<String> gender, Set<String> martial, String address) throws IOException {
 		UserDetailsImpl userDetails= (UserDetailsImpl) auth.getPrincipal();
 		Long id = userDetails.getId();
 		Optional<User> optionalUser = userRepository.findById(id);
 		if(optionalUser.isPresent()) {
 			User user = optionalUser.get();
-			user.setFirstName(formDto.getFirstName());
-			user.setMiddleName(user.getMiddleName());
-			user.setLastName(formDto.getLastName());
+			if (firstName == null) {
+				user.setFirstName(user.getFirstName());
+			}else {
+				user.setFirstName(firstName);
+			}
+			if(middleName == null) {
+				user.setMiddleName(user.getMiddleName());
+			} else {
+				user.setMiddleName(middleName);
+			}
+			if(lastName == null) {
+				user.setLastName(user.getLastName());
+			} else {
+				user.setLastName(lastName);
+			}	
 			LocalDate currentDate = LocalDate.now();
-			if(currentDate.isAfter(formDto.getDateOfBirth())) {
-				user.setBirthDate(formDto.getDateOfBirth());
-				user.setAddress(formDto.getAddress());
-				user.setEmail(formDto.getEmail());
-				Set<String> strGender= formDto.getGender();
-				if(strGender == null) {
-					user.setGender(null);
+			if(currentDate.isAfter(dateOfBirth)) {
+				if(dateOfBirth== null) {
+					user.setBirthDate(user.getBirthDate());
 				} else {
-					strGender.forEach(gender -> {
-						switch(gender) {
+					user.setBirthDate(dateOfBirth);
+				}
+				if(address == null) {
+					user.setAddress(user.getAddress());
+				} else {
+					user.setAddress(address);
+				}
+				if(email == null) {
+					user.setEmail(user.getEmail()); 
+				} else {
+					user.setEmail(email);
+				}
+				Set<String> strGender= gender;
+				if(strGender == null) {
+					user.setGender(user.getGender());
+				} else {
+					strGender.forEach(genders -> {
+						switch(genders) {
 						case "male":
 							user.setGender(Gender.MALE);
 							break;
@@ -282,12 +335,12 @@ public class UserServiceImpl {
 					});
 				}
 				
-				Set<String> strMartial = formDto.getMartial();
+				Set<String> strMartial = martial;
 				if(strMartial == null) {
-					user.setMartialStatus(null);
+					user.setMartialStatus(user.getMartialStatus());
 				} else {
-					strMartial.forEach(martial -> {
-						switch(martial) {
+					strMartial.forEach(martials -> {
+						switch(martials) {
 						case "single": 
 							user.setMartialStatus(Martial.SINGLE);
 							break;
@@ -299,8 +352,34 @@ public class UserServiceImpl {
 						}
 					});
 				}
-				user.setPhone(formDto.getPhone());
-				user.setUsername(formDto.getUsername());
+				if(phone == null) {
+					user.setPhone(user.getPhone());
+				} else {
+					user.setPhone(phone);
+				}
+				if(username == null) {
+					user.setUsername(user.getUsername());
+				} else {
+					user.setUsername(username);
+				}
+				if(imagePath == null) {
+					user.setImagePath(user.getImagePath());
+				} else {
+					Path uploadsDir = Paths.get("Images");
+					if(!Files.exists(uploadsDir)) {
+						Files.createDirectories(uploadsDir);
+					}
+					
+					String fileName = StringUtils.cleanPath(imagePath.getOriginalFilename());
+					Path filePath = uploadsDir.resolve(fileName);
+					
+					if(userRepository.existsByImagePath(filePath.toString())) {
+						return ResponseEntity.badRequest().body(new MessageResponse("Error: Already exists with " + imagePath + " in Image folder"));
+					} else {
+					Files.copy(imagePath.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+					user.setImagePath(filePath.toString());
+					}
+				}
 				userRepository.save(user);
 			} else {
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: Date of birth should be in AD. Check if you have set the year more than current date "));
@@ -309,7 +388,53 @@ public class UserServiceImpl {
 		} else {
 			return ResponseEntity.badRequest().body(new MessageResponse("Error:User not found by id"+ id));
 		}
-		
+	}
+
+	public ResponseEntity<?> delete(Long id) throws IOException {
+		Optional<User> optionalUser = userRepository.findById(id);
+		if(optionalUser.isPresent()) {
+			Optional<AdditionalInfo> additional = additionalRepo.findByUser(optionalUser.get()); 
+			if(additional.isPresent()) {
+				additionalRepo.deleteById(additional.get().getId());
+			}
+			Optional<Bank> bank = bankRepo.findByUser(optionalUser.get());
+			if(bank.isPresent()) {
+				bankRepo.deleteById(bank.get().getId());
+			}
+			
+			Optional<Document> optionaldocument = documentRepo.findByUser(optionalUser.get());
+			if(optionaldocument.isPresent()) {
+				String filePath = optionaldocument.get().getFilePath();
+				if(filePath != null && !filePath.isEmpty()) {
+					Files.deleteIfExists(Paths.get(filePath));
+				}
+				documentRepo.deleteById(optionaldocument.get().getId());
+			}
+			
+			Optional<FamilyInfo> optionalFamily = familyRepo.findByUser(optionalUser.get());
+			if(optionalFamily.isPresent()) {
+				String filePath = optionalFamily.get().getFile();
+				if(filePath != null && !filePath.isEmpty()) {
+					Files.deleteIfExists(Paths.get(filePath));
+					}
+				familyRepo.deleteById(optionalFamily.get().getId());
+			}
+			
+			Optional<ResetPassword> reset = resetRepo.findByUser(optionalUser.get());
+			if(reset.isPresent()) {
+				resetRepo.deleteById(reset.get().getId());
+			}
+						
+			String filePath = optionalUser.get().getImagePath();
+			if(filePath != null && !filePath.isEmpty()) {
+				Files.deleteIfExists(Paths.get(filePath));
+				userRepository.deleteById(id);
+			}
+			
+		return ResponseEntity.ok().body("Deleted Succesfully user Id " +id);
+		} else {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by user id " +id));
+		}
 	}
 
 	

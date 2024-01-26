@@ -2,6 +2,8 @@ package com.humanresourcemanagement.ResourceMangement.Payload.requestDto;
 
 import java.util.Set;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import jakarta.validation.constraints.NotEmpty;
 
 public class FamilyInfoDto {
@@ -17,6 +19,8 @@ public class FamilyInfoDto {
 	private Set<String> relation;
 	
 	private String phone;
+	
+	private MultipartFile file;
 
 	public FamilyInfoDto() {
 		super();
@@ -71,6 +75,14 @@ public class FamilyInfoDto {
 
 	public void setPhone(String phone) {
 		this.phone = phone;
+	}
+
+	public MultipartFile getFile() {
+		return file;
+	}
+
+	public void setFile(MultipartFile file) {
+		this.file = file;
 	}
 	
 	
