@@ -20,5 +20,9 @@ public interface DocumentRepo extends JpaRepository<Document, Long>, JpaSpecific
 
 	boolean existsByFilePath(String string);
 
+	void deleteByIdAndUser(Long id, User user);
+
+	Optional<Document> findByIdAndUser(Long id, User user);
+
 	
 }

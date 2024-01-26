@@ -1,5 +1,8 @@
 package com.humanresourcemanagement.ResourceMangement.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -218,6 +221,16 @@ public class InfoService {
 		}
 	}
 
+	public ResponseEntity<?> deleteDepartmentById(Long id) {
+		departRepo.deleteById(id);
+		return ResponseEntity.ok().body("You have succesfully deleted department id: " +id);
+	}
+
+	public ResponseEntity<?> deleteDesignationById(Long id) {
+		designationRepo.deleteById(id);
+		return ResponseEntity.ok().body("You have succesfully deleted designation id: " +id);
+	}
+	
 	public ResponseEntity<?> delete(Long id, Authentication auth) {
 		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
 		Optional<User> optionalUser = userRepo.findById(userdetails.getId());
@@ -227,4 +240,54 @@ public class InfoService {
 		}
 		return ResponseEntity.ok().body("Succesfully deleted the account id" + id);
 	}
+
+	public ResponseEntity<?> deleteAdditional(Long id, Authentication auth) {
+		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userdetails.getId());
+		if(optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			additionalRepo.deleteByIdAndUser(id, user);
+		}
+		return ResponseEntity.ok().body("Succesfully deleted the additional info with id" + id);
+	}
+
+	public ResponseEntity<?> deleteDocument(Long id, Authentication auth) throws IOException {
+		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userdetails.getId());
+		if(optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			Optional<Document> optionaldocument = documentRepo.findByIdAndUser(id, user);
+			if(optionaldocument.isPresent()) {
+				String filePath = optionaldocument.get().getFilePath();
+				if(filePath != null && !filePath.isEmpty()) {
+					Files.deleteIfExists(Paths.get(filePath));
+				}
+			documentRepo.deleteByIdAndUser(id, user);
+			} else {
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: You cannot delete this document."));
+			}
+		}
+		return ResponseEntity.ok().body("Succesfully deleted the Document with id" + id);
+	}
+
+	public ResponseEntity<?> deleteFamilyInfo(Long id, Authentication auth) throws IOException {
+		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userdetails.getId());
+		if(optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			Optional<FamilyInfo> optionalFamily = familyRepo.findByIdAndUser(id, user);
+			if(optionalFamily.isPresent()) {
+				String filePath = optionalFamily.get().getFile();
+				if(filePath != null && !filePath.isEmpty()) {
+					Files.deleteIfExists(Paths.get(filePath));
+					}
+			
+			familyRepo.deleteByIdAndUser(id, user);
+			} else {
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: You cannot delete this information."));
+			}
+		}
+		return ResponseEntity.ok().body("Succesfully deleted the Family info with id" + id);
+	}
 }
+	

@@ -1,5 +1,7 @@
 package com.humanresourcemanagement.ResourceMangement.Controller;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -93,11 +95,44 @@ public class PersonalInfoController {
 		return infoService.findAllDocumentListOfUser(pageable);
 	}
 	
+	@DeleteMapping("deleteDepartment/{id}")
+	@PreAuthorize("hasRole('SUPERADMIN')")
+	public ResponseEntity<?> deleteDepartment(@PathVariable Long id){
+		return infoService.deleteDepartmentById(id);
+	}
+	
+	@DeleteMapping("deleteDesignation/{id}")
+	@PreAuthorize("hasRole('SUPERADMIN')")
+	public ResponseEntity<?> deleteDesignation(@PathVariable Long id){
+		return infoService.deleteDesignationById(id);
+	}
+
 	@DeleteMapping("/deleteAccount/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
 	@Transactional
 	public ResponseEntity<?> deleteAccount(@PathVariable Long id, Authentication auth){
 		return infoService.delete(id, auth);
+	}
+	
+	@DeleteMapping("/deleteAdditional/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@Transactional
+	public ResponseEntity<?> deleteAdditionalInfo(@PathVariable Long id, Authentication auth){
+		return infoService.deleteAdditional(id, auth);
+	}
+	
+	@DeleteMapping("/deleteDocument/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@Transactional
+	public ResponseEntity<?> deleteDocument(@PathVariable Long id, Authentication auth) throws IOException{
+		return infoService.deleteDocument(id, auth);
+	}
+	
+	@DeleteMapping("/deleteFamilyInfo/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@Transactional
+	public ResponseEntity<?> deleteFamilyInfo(@PathVariable Long id, Authentication auth) throws IOException{
+		return infoService.deleteFamilyInfo(id, auth);
 	}
 	
 }

@@ -14,4 +14,8 @@ public interface FamilyRepo extends JpaRepository<FamilyInfo, Long>, JpaSpecific
 
 	boolean existsByFile(String string);
 
+	void deleteByIdAndUser(Long id, User user);
+
+	Optional<FamilyInfo> findByIdAndUser(Long id, User user);
+
 }

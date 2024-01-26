@@ -12,6 +12,8 @@ public interface AdditionalRepo extends JpaRepository<AdditionalInfo, Long>, Jpa
 
 	Optional<AdditionalInfo> findByUser(User user);
 
+	void deleteByIdAndUser(Long id, User user);
+
 
 	
 }
