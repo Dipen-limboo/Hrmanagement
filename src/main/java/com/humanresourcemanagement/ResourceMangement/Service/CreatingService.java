@@ -137,7 +137,7 @@ public class CreatingService {
 			if(documentRepo.existsByNationality(nationalityId) && nationalityId !=null) {
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: Nationality id already exists."));
 			}
-			Path uploadsDir = Paths.get("Document");
+			Path uploadsDir = Paths.get("src/main/resources/static/Document");
 			if(!Files.exists(uploadsDir)) {
 				Files.createDirectories(uploadsDir);
 			}
@@ -261,7 +261,7 @@ public class CreatingService {
 		
 		family.setPhone(phone);
 		
-		Path uploadsDir = Paths.get("Images");
+		Path uploadsDir = Paths.get("src/main/resources/static/Images");
 		if(!Files.exists(uploadsDir)) {
 			Files.createDirectories(uploadsDir);
 		}
@@ -283,7 +283,7 @@ public class CreatingService {
 			family.setUser(optionalUser.get());
 		}
 		familyRepo.save(family);
-		return ResponseEntity.ok().body("Successfully added Family information of " + optionalUser.get().getUsername());
+		return ResponseEntity.ok().body("Successfully added Family information  ");
 	}
 
 	

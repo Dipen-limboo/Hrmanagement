@@ -67,6 +67,8 @@ public class WebConfig {
         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> 
         		auth
+        		.requestMatchers("/Document/**").permitAll()
+        		.requestMatchers("/Images/**").permitAll()
         		.requestMatchers("/api/users/**").permitAll()
         		.requestMatchers("/api/create/**").permitAll()
         		.requestMatchers("/api/questionset/**").permitAll()

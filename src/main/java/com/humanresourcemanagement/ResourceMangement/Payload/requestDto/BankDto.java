@@ -15,6 +15,8 @@ public class BankDto {
 	@NotEmpty
 	private String holderName;
 
+	private long user_id;
+	
 	public BankDto() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -59,6 +61,14 @@ public class BankDto {
 
 	public void setHolderName(String holderName) {
 		this.holderName = holderName;
+	}
+
+	public long getUser_id() {
+		return user_id;
+	}
+
+	public void setUser_id(long user_id) {
+		this.user_id = user_id;
 	}
 	
 	

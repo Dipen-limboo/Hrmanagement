@@ -365,7 +365,7 @@ public class UserServiceImpl {
 				if(imagePath == null) {
 					user.setImagePath(user.getImagePath());
 				} else {
-					Path uploadsDir = Paths.get("Images");
+					Path uploadsDir = Paths.get("src/main/resources/static/Images");
 					if(!Files.exists(uploadsDir)) {
 						Files.createDirectories(uploadsDir);
 					}
