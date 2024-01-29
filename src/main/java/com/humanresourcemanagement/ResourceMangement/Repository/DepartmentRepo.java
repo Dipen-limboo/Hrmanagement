@@ -9,4 +9,6 @@ public interface DepartmentRepo extends JpaRepository<Department, Long>, JpaSpec
 
 	boolean existsByName(String name);
 
+	boolean existsByPhone(String tel);
+
 }

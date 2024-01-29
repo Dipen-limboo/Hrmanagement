@@ -191,6 +191,7 @@ public class CreatingService {
 		additional.setLevel(additionalDto.getLevel());
 		additional.setJoinDate(additionalDto.getJoinDate());
 		additional.setEndDate(additionalDto.getEndDate());
+		
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
 		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
 		if(optionalUser.isPresent()) {
@@ -215,6 +216,14 @@ public class CreatingService {
 					additional.setType(null);
 				}
 			});
+		}
+		
+		if(strType.contains("education")) {
+			additional.setBoard(additionalDto.getBoard());
+			additional.setGpa(additionalDto.getGpa());
+		} else {
+			additional.setBoard(null);
+			additional.setGpa(0.00);
 		}
 		additionalRepo.save(additional);
 		return ResponseEntity.ok().body("Successfully added to the additional info of " + optionalUser.get().getUsername());

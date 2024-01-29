@@ -393,31 +393,32 @@ public class UserServiceImpl {
 	public ResponseEntity<?> delete(Long id) throws IOException {
 		Optional<User> optionalUser = userRepository.findById(id);
 		if(optionalUser.isPresent()) {
-			Optional<AdditionalInfo> additional = additionalRepo.findByUser(optionalUser.get()); 
-			if(additional.isPresent()) {
-				additionalRepo.deleteById(additional.get().getId());
+			if(additionalRepo.existsByUser(optionalUser.get())) {
+				additionalRepo.deleteByUser(optionalUser.get());
 			}
-			Optional<Bank> bank = bankRepo.findByUser(optionalUser.get());
-			if(bank.isPresent()) {
-				bankRepo.deleteById(bank.get().getId());
+			if(bankRepo.existsByUser(optionalUser.get())) {
+				bankRepo.deleteByUser(optionalUser.get());
 			}
-			
-			Optional<Document> optionaldocument = documentRepo.findByUser(optionalUser.get());
-			if(optionaldocument.isPresent()) {
-				String filePath = optionaldocument.get().getFilePath();
-				if(filePath != null && !filePath.isEmpty()) {
-					Files.deleteIfExists(Paths.get(filePath));
-				}
-				documentRepo.deleteById(optionaldocument.get().getId());
-			}
-			
-			Optional<FamilyInfo> optionalFamily = familyRepo.findByUser(optionalUser.get());
-			if(optionalFamily.isPresent()) {
-				String filePath = optionalFamily.get().getFile();
-				if(filePath != null && !filePath.isEmpty()) {
-					Files.deleteIfExists(Paths.get(filePath));
+			if(documentRepo.existsByUser(optionalUser.get())) {
+				List<Document> documentList = documentRepo.findByUser(optionalUser.get());
+				for(Document document: documentList) {
+					String filePath = document.getFilePath();
+					if(filePath != null && !filePath.isEmpty()) {
+						Files.deleteIfExists(Paths.get(filePath));
 					}
-				familyRepo.deleteById(optionalFamily.get().getId());
+					documentRepo.deleteById(document.getId());
+				}
+			}
+			
+			if(familyRepo.existsByUser(optionalUser.get())) {
+				List<FamilyInfo> familyList = familyRepo.findByUser(optionalUser.get());
+				for(FamilyInfo family: familyList) {
+					String filePath = family.getFile();
+					if(filePath != null && !filePath.isEmpty()) {
+						Files.deleteIfExists(Paths.get(filePath));
+					}
+					familyRepo.deleteById(family.getId());
+				}
 			}
 			
 			Optional<ResetPassword> reset = resetRepo.findByUser(optionalUser.get());

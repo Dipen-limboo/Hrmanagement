@@ -1,5 +1,6 @@
 package com.humanresourcemanagement.ResourceMangement.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,13 +17,15 @@ public interface DocumentRepo extends JpaRepository<Document, Long>, JpaSpecific
 
 	boolean existsByNationality(String nationalityId);
 
-	Optional<Document> findByUser(User user);
+	List<Document> findByUser(User user);
 
 	boolean existsByFilePath(String string);
 
 	void deleteByIdAndUser(Long id, User user);
 
 	Optional<Document> findByIdAndUser(Long id, User user);
+
+	boolean existsByUser(User user);
 
 	
 }

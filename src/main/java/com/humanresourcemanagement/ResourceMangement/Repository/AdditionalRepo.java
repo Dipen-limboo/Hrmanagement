@@ -1,5 +1,6 @@
 package com.humanresourcemanagement.ResourceMangement.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,9 +11,17 @@ import com.humanresourcemanagement.ResourceMangement.Entity.User;
 
 public interface AdditionalRepo extends JpaRepository<AdditionalInfo, Long>, JpaSpecificationExecutor<AdditionalInfo>{
 
-	Optional<AdditionalInfo> findByUser(User user);
+	List<AdditionalInfo> findByUser(User user);
 
 	void deleteByIdAndUser(Long id, User user);
+
+	List<AdditionalInfo> findByIdAndUser(Long id, User user);
+
+	boolean existsByUser(User user);
+
+	void deleteByUser(User user);
+
+	Optional<AdditionalInfo> findByUserAndId(User user, Long id);
 
 
 	

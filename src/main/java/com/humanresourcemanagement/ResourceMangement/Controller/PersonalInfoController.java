@@ -1,6 +1,7 @@
 package com.humanresourcemanagement.ResourceMangement.Controller;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -13,10 +14,18 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.AdditionalDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
 import com.humanresourcemanagement.ResourceMangement.Service.InfoService;
 
 import jakarta.transaction.Transactional;
@@ -28,6 +37,8 @@ public class PersonalInfoController {
 	
 	@Autowired
 	InfoService infoService;
+	
+	//get list
 	
 	@GetMapping("/departmentLists")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
@@ -95,6 +106,8 @@ public class PersonalInfoController {
 		return infoService.findAllDocumentListOfUser(pageable);
 	}
 	
+	//delete
+	
 	@DeleteMapping("deleteDepartment/{id}")
 	@PreAuthorize("hasRole('SUPERADMIN')")
 	public ResponseEntity<?> deleteDepartment(@PathVariable Long id){
@@ -135,4 +148,83 @@ public class PersonalInfoController {
 		return infoService.deleteFamilyInfo(id, auth);
 	}
 	
+	//get
+	
+	@GetMapping("/getDepartment/{id}")
+	@PreAuthorize("hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getDepartment(@PathVariable Long id){
+		return infoService.getDepartmentById(id);
+	}
+	
+	@GetMapping("/getDesignation/{id}")
+	@PreAuthorize("hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getDesignation(@PathVariable Long id){
+		return infoService.getDesignationById(id);
+	}
+	
+	@GetMapping("/getAdditionalInfo")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@Transactional
+	public ResponseEntity<?> getAddtionalinfoByauth(Authentication auth){
+		return infoService.getAdditionalInfo(auth);
+	}
+	
+	@GetMapping("/getDocuments")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@Transactional
+	public ResponseEntity<?> getDocumentsByAuth(Authentication auth){
+		return infoService.getDocuments(auth);
+	}
+	
+	@GetMapping("/getAccount")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@Transactional
+	public ResponseEntity<?> getAccountByAuth(Authentication auth){
+		return infoService.getAccount(auth);
+	}
+	
+	@GetMapping("/getFamilyInfos")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@Transactional
+	public ResponseEntity<?> getFamilyInfosByAuth(Authentication auth){
+		return infoService.getFamily(auth);
+	}
+	
+	//update
+	
+	@PutMapping("/getDepartment/{id}")
+	@PreAuthorize("hasRole('SUPERADMIN')")
+	public ResponseEntity<?> updateDepartmentById(@PathVariable Long id, @RequestBody DepartmentDto departmentDto){
+		return infoService.updateDepartment(id, departmentDto);
+	}
+	
+		@PutMapping("/getDesignation/{id}")
+	@PreAuthorize("hasRole('SUPERADMIN')")
+	public ResponseEntity<?> updateDesignationById(@PathVariable Long id, @RequestBody DesignationDto designationDto){
+		return infoService.updateDesignation(id, designationDto);
+	}
+	
+	@PutMapping("/getAdditionalInfo/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> updateAddtionalinfo(@PathVariable Long id, @RequestBody AdditionalDto additionalDto, Authentication auth){
+		return infoService.updateAdditionalInfo(id, additionalDto, auth);
+	}
+	
+	@PutMapping("/getDocuments/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> updateDocumentsById(@PathVariable Long id,
+			@RequestParam(name="citizenship", required=false) String citizenship,
+			@RequestParam(name="pan", required=false)String pan,
+			@RequestParam(name="nationalityId", required=false) String nationalityId,
+			@RequestParam(name="issuedDate", required=false) LocalDate issuedDate,
+			@RequestParam(name="issuedPlace", required=false) String issuedPlace,
+		    @RequestPart("file") MultipartFile file, Authentication auth){
+		return infoService.updateDocuments(id,citizenship, pan, nationalityId, issuedDate, issuedPlace, file, auth);
+	}
+	
+	@PutMapping("/getAccount/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> updateAccountById(@PathVariable Long id, @RequestBody BankDto bankDto, Authentication auth){
+		return infoService.updateAccount(id, bankDto, auth);
+	}
 }

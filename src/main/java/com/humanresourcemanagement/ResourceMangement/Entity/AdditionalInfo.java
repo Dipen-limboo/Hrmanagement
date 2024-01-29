@@ -42,7 +42,13 @@ public class AdditionalInfo {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="user_id")
 	private User user;
+	
+	@Column(name="board")
+	private String board;
 
+	@Column(name="gpa")
+	private double gpa;
+	
 	public AdditionalInfo() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -114,6 +120,22 @@ public class AdditionalInfo {
 
 	public void setUser(User user) {
 		this.user = user;
+	}
+
+	public String getBoard() {
+		return board;
+	}
+
+	public void setBoard(String board) {
+		this.board = board;
+	}
+
+	public double getGpa() {
+		return gpa;
+	}
+
+	public void setGpa(double gpa) {
+		this.gpa = gpa;
 	}
 	
 	
