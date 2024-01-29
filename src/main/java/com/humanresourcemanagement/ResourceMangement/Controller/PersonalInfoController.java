@@ -2,6 +2,7 @@ package com.humanresourcemanagement.ResourceMangement.Controller;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -226,5 +227,19 @@ public class PersonalInfoController {
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
 	public ResponseEntity<?> updateAccountById(@PathVariable Long id, @RequestBody BankDto bankDto, Authentication auth){
 		return infoService.updateAccount(id, bankDto, auth);
+	}
+	
+	
+	@PutMapping("/getFamily/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> updateFamilyById(@PathVariable Long id, 
+			@RequestParam(required=false) String firstName,
+			@RequestParam(required=false) String middleName,
+			@RequestParam(required=false) String lastName,
+			@RequestParam(required=false) Set<String> relation,
+			@RequestParam(required=false) String phone,
+			@RequestParam(required=false) MultipartFile file,
+			Authentication auth) throws IOException{
+		return infoService.updateFamily(id, firstName, middleName, lastName, relation, phone, file, auth);
 	}
 }

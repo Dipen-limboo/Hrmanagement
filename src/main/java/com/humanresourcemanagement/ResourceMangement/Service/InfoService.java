@@ -29,6 +29,7 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.Document;
 import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
+import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
 import com.humanresourcemanagement.ResourceMangement.Enum.Type;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.AdditionalDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
@@ -691,21 +692,25 @@ public class InfoService {
 						} else {
 							document.setIssuedPlace(issuedPlace);
 						}
-						Path uploadsDir = Paths.get("src/main/resources/static/Document");
-						if(!Files.exists(uploadsDir)) {
-							Files.createDirectories(uploadsDir);
-						}
-						String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-						Path filePath = uploadsDir.resolve(fileName);
-						if(documentRepo.existsByFilePath(filePath.toString())) {
-							return ResponseEntity.badRequest().body(new MessageResponse("Error: Documents already exists with " + file));
+						if(file == null) {
+							document.setFilePath(document.getFilePath());
 						} else {
-							String path = document.getFilePath();
-							if(path != null && !path.isEmpty()) {
-								Files.deleteIfExists(Paths.get(path));
+							Path uploadsDir = Paths.get("src/main/resources/static/Document");
+							if(!Files.exists(uploadsDir)) {
+								Files.createDirectories(uploadsDir);
 							}
-							Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-							document.setFilePath(filePath.toString());
+							String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+							Path filePath = uploadsDir.resolve(fileName);
+							if(documentRepo.existsByFilePath(filePath.toString())) {
+								return ResponseEntity.badRequest().body(new MessageResponse("Error: Documents already exists with " + file));
+							} else {
+								String path = document.getFilePath();
+								if(path != null && !path.isEmpty()) {
+									Files.deleteIfExists(Paths.get(path));
+								}
+								Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+								document.setFilePath(filePath.toString());
+							}
 						}
 						documentRepo.save(document);
 						return ResponseEntity.ok().body(document);
@@ -756,6 +761,104 @@ public class InfoService {
 				return ResponseEntity.ok().body(bank);
 			} else {
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: User id " + user.getId() + " doesnot have an authority to modify this bank details " +id));
+			}
+		} else {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
+		}
+	}
+
+	public ResponseEntity<?> updateFamily(Long id, String firstName, String middleName, String lastName,
+			Set<String> relation, String phone, MultipartFile file, Authentication auth) throws IOException {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			Optional<FamilyInfo> optionalFamily = familyRepo.findByIdAndUser(id, user);
+			if(optionalFamily.isPresent()) {
+				FamilyInfo family = optionalFamily.get();
+				if(firstName == null){
+					family.setFirstName(family.getFirstName());
+				} else {
+					family.setFirstName(firstName);
+				}
+				
+				if(middleName == null) {
+					family.setMiddleName(family.getMiddleName());
+				} else {
+					family.setMiddleName(middleName);
+				}
+				
+				if(lastName == null) {
+					family.setLastName(family.getLastName());
+				} else {
+					family.setLastName(lastName);
+				}
+				
+				if(relation == null) {
+					family.setRelation(family.getRelation());
+				} else {
+					Set<String> strRelation = relation;
+					strRelation.forEach(relations -> {
+						switch(relations) {
+						case "father":
+							family.setRelation(Relation.FATHER);
+							break;
+						case "mother":
+							family.setRelation(Relation.MOTHER);
+							break;
+						case "brother":
+							family.setRelation(Relation.BROTHER);
+							break;
+						case "sister":
+							family.setRelation(Relation.SISTER);
+							break;
+						case "grandmother":
+							family.setRelation(Relation.GRANDMOTHER);
+							break;
+						case "grandfather":
+							family.setRelation(Relation.GRANDFATHER);
+							break;	
+						case "wife":
+							family.setRelation(Relation.WIFE);
+							break;	
+						default:
+							family.setRelation(null);
+						}
+					});
+				}
+				
+				if(phone == null) {
+					family.setPhone(family.getPhone());
+				} else {
+					family.setPhone(phone);
+				}
+				
+				family.setUser(user);
+				
+				if(file==null) {
+					family.setFile(family.getFile());
+				} else {
+					Path uploadsDir = Paths.get("src/main/resources/static/Images");
+					if(!Files.exists(uploadsDir)) {
+						Files.createDirectories(uploadsDir);
+					}
+					String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+					Path filePath = uploadsDir.resolve(fileName);
+					if(familyRepo.existsByFile(filePath.toString())) {
+						return ResponseEntity.badRequest().body(new MessageResponse("Error: Documents already exists with " + file));
+					} else {
+						String path = family.getFile();
+						if(path != null && !path.isEmpty()) {
+							Files.deleteIfExists(Paths.get(path));
+						}
+						Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+						family.setFile(filePath.toString());
+					}
+				}
+				familyRepo.save(family);
+				return ResponseEntity.ok().body(family);
+			} else {
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: User id " + user.getId() + " doesnot have an authority to modify this family details " +id));
 			}
 		} else {
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));

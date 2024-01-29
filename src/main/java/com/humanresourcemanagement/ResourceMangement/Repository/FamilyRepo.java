@@ -21,4 +21,5 @@ public interface FamilyRepo extends JpaRepository<FamilyInfo, Long>, JpaSpecific
 
 	boolean existsByUser(User user);
 
+
 }
