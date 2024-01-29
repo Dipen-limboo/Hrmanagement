@@ -126,6 +126,7 @@ public class UserController {
 	
 	@DeleteMapping("/deleteUser/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	@Transactional
 	public ResponseEntity<?> deleteUserById(@PathVariable Long id) throws IOException{
 		return userService.delete(id);
 	}
