@@ -21,6 +21,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Addition
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Service.CreatingService;
 
 import jakarta.validation.Valid;
@@ -33,13 +34,19 @@ public class CreatingController {
 	CreatingService createService;
 
 	@PostMapping("/add_department")
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('SUPERADMIN')")
 	public ResponseEntity<?> saveDepartment(@Valid @RequestBody DepartmentDto departmentDto){
 		return createService.addDepartment(departmentDto);
 	}
 	
+	@PostMapping("/add_sub_department")
+	@PreAuthorize("hasRole('SUPERADMIN')")
+	public ResponseEntity<?> saveSubDepartment(@Valid @RequestBody SubDepartmentDto subDepartmentDto){
+		return createService.addSubDepartment(subDepartmentDto);
+	}
+	
 	@PostMapping("/add_designation")
-	@PreAuthorize("hasRole('ADMIN')")
+	@PreAuthorize("hasRole('SUPERADMIN')")
 	public ResponseEntity<?> saveDesignation(@Valid @RequestBody DesignationDto designationDto){
 		return createService.addDesgination(designationDto);
 	}

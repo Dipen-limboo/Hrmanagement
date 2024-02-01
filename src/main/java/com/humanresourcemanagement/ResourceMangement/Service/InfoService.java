@@ -65,53 +65,6 @@ public class InfoService {
 	@Autowired 
 	FamilyRepo familyRepo;
 	
-	@Autowired
-	DepartmentRepo departRepo;
-
-	@Autowired
-	DesignationRepo designationRepo;
-
-	public ResponseEntity<?> findDepartment() {
-		List<Department> departmentList = departRepo.findAll();
-		List<DepartmentDto> departmentDtoList = new ArrayList<>();
-		
-		if(!departmentList.isEmpty()) {
-			for(Department department: departmentList) {
-				DepartmentDto departmentDto = new DepartmentDto();
-				departmentDto.setName(department.getName());
-				departmentDto.setBranch(department.getBranch());
-				departmentDto.setAddress(department.getAddress());
-				departmentDto.setTel(department.getPhone());
-				
-				departmentDtoList.add(departmentDto);
-			}
-			return ResponseEntity.ok().body(departmentDtoList);
-		} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any department"));
-		}
-	}
-
-	public ResponseEntity<?> findAllDesgination(Pageable pageable) {
-		Page<Designation> designationList = designationRepo.findAll(pageable);
-		List<DesignationDto> designationDtoList = new ArrayList<>();
-		
-		if(!designationList.isEmpty()) {
-			for(Designation designation: designationList) {
-				DesignationDto designationDto = new DesignationDto();
-				designationDto.setName(designation.getName());
-				Department de = designation.getDepartment(); 
-				Optional<Department> department =departRepo.findById(de.getId()); 
-				if(department.isPresent()) {
-					designationDto.setDepartment(department.get().getId());
-				}
-				designationDtoList.add(designationDto);
-			}
-			return ResponseEntity.ok().body(designationDtoList);
-		} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any designation"));
-		}
-	}
-
 	public ResponseEntity<?> findAllaccountsOfStaff(Pageable pageable) {
 		Page<Bank> bankList = bankRepo.findAll(pageable);
 		List<BankDto> bankDtoList = new ArrayList<>();
@@ -246,15 +199,7 @@ public class InfoService {
 	
 	
 	//delete part
-	public ResponseEntity<?> deleteDepartmentById(Long id) {
-		departRepo.deleteById(id);
-		return ResponseEntity.ok().body("You have succesfully deleted department id: " +id);
-	}
 
-	public ResponseEntity<?> deleteDesignationById(Long id) {
-		designationRepo.deleteById(id);
-		return ResponseEntity.ok().body("You have succesfully deleted designation id: " +id);
-	}
 	
 	public ResponseEntity<?> delete(Long id, Authentication auth) {
 		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
@@ -315,36 +260,7 @@ public class InfoService {
 		return ResponseEntity.ok().body("Succesfully deleted the Family info with id" + id);
 	}
 
-	public ResponseEntity<?> getDepartmentById(Long id) {
-		Optional<Department> optionalDepartment = departRepo.findById(id);
-		if(optionalDepartment.isPresent()) {
-			Department department = optionalDepartment.get();
-			DepartmentDto departmentDto = new DepartmentDto();
-			departmentDto.setName(department.getName());
-			departmentDto.setBranch(department.getBranch());
-			departmentDto.setAddress(department.getAddress());
-			departmentDto.setTel(department.getPhone());
-			return ResponseEntity.ok().body(departmentDto);
-		} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: Department not found by id " + id));
-		}
-		
-	}
-
 	
-
-	public ResponseEntity<?> getDesignationById(Long id) {
-		Optional<Designation> optionalDesignation= designationRepo.findById(id);
-		if(optionalDesignation.isPresent()) {
-			Designation designation= optionalDesignation.get();
-			DesignationDto designationDto = new DesignationDto();
-			designationDto.setName(designation.getName());
-			designationDto.setDepartment(designation.getDepartment().getId());
-			return ResponseEntity.ok().body(designationDto);
-		} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: Designation not found by id " + id));
-		}
-	}
 	
 	public ResponseEntity<?> getAdditionalInfo(Authentication auth) {
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
@@ -480,76 +396,6 @@ public class InfoService {
 	}
 	
 	//update part
-	public ResponseEntity<?> updateDepartment(Long id, DepartmentDto departmentDto) {
-		Optional<Department> optionalDepartment = departRepo.findById(id);
-		if(optionalDepartment.isPresent()) {
-			Department department = optionalDepartment.get();
-			
-			if(departRepo.existsByName(departmentDto.getName())) {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: Department name already exists"));
-			} 
-			
-			if(departRepo.existsByPhone(departmentDto.getTel())){
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: Phone already exists" ));
-			}
-			if(departmentDto.getName() == null) {
-				department.setName(department.getName());
-			} else {
-				department.setName(departmentDto.getName());
-			}
-			
-			if(departmentDto.getBranch() == null) {
-				department.setBranch(department.getBranch());
-			}else {
-				department.setBranch(departmentDto.getBranch());
-			}
-			if(departmentDto.getAddress() == null) {
-				department.setAddress(department.getAddress());
-			} else {
-				department.setAddress(departmentDto.getAddress());
-			}
-			if(departmentDto.getTel() == null) {
-				department.setPhone(department.getPhone());
-			} else {
-				department.setPhone(departmentDto.getTel());
-			}
-			departRepo.save(department);
-			return ResponseEntity.ok().body(department);
-		} else {
-			return ResponseEntity.badRequest().body("Error: Department not found by id: " +id);
-		}
-	}
-
-	public ResponseEntity<?> updateDesignation(Long id, DesignationDto designationDto) {
-		Optional<Designation> optionalDesignation = designationRepo.findById(id);
-		if(optionalDesignation.isPresent()) {
-			Designation designation = optionalDesignation.get();
-			
-			if(designationRepo.existsByName(designationDto.getName())) {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: " + designation.getName() + " already exists"));
-			}
-			if(designationDto.getName() == null) {
-				designation.setName(designation.getName());
-			} else {
-				designation.setName(designationDto.getName());
-			} 
-			if(designationDto.getDepartment() == null) {
-				designation.setDepartment(designation.getDepartment());
-			} else {
-				Optional<Department> department = departRepo.findById(designationDto.getDepartment());
-				if(department.isPresent()) {
-					designation.setDepartment(department.get());
-				} else {
-					return ResponseEntity.badRequest().body("Error: Department not found by id: " +id);
-				}
-			}
-			designationRepo.save(designation);
-			return ResponseEntity.ok().body(designation);
-		}else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: Designation not found by id " + id));
-		}
-	}
-
 	public ResponseEntity<?> updateAdditionalInfo(Long id, AdditionalDto additionalDto, Authentication auth) {
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
 		Optional<User> user = userRepo.findById(userDetails.getId());

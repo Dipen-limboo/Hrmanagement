@@ -23,6 +23,7 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Department;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.Document;
 import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
+import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
 import com.humanresourcemanagement.ResourceMangement.Enum.Type;
@@ -30,6 +31,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Addition
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Repository.AdditionalRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
@@ -37,6 +39,7 @@ import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DocumentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.FamilyRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
 import com.humanresourcemanagement.ResourceMangement.security.service.UserDetailsImpl;
 
@@ -65,6 +68,9 @@ public class CreatingService {
 	
 	@Autowired
 	AdditionalRepo additionalRepo; 
+	
+	@Autowired
+	SubDepartmentRepo subDepartmentRepo; 	
 	
 	@Autowired
 	EncryptDecrypt encryptSer;
@@ -295,5 +301,23 @@ public class CreatingService {
 		return ResponseEntity.ok().body("Successfully added Family information  ");
 	}
 
+	
+	public ResponseEntity<?> addSubDepartment(@Valid SubDepartmentDto subDepartmentDto) {
+		if (subDepartmentRepo.existsByName(subDepartmentDto.getName())) {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: " + subDepartmentDto.getName() + " already exists."));
+		}
+		SubDepartment sub = new SubDepartment();
+		sub.setName(subDepartmentDto.getName());
+		Long departmentId = subDepartmentDto.getDepartment_id();
+		Optional<Department> optionalDepartment = departRepo.findById(departmentId);
+		if(optionalDepartment.isPresent()) {
+			sub.setDepartment(optionalDepartment.get());
+		} else {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Department Id " +departmentId+ " does not exists ."));
+		}
+		subDepartmentRepo.save(sub);
+		return ResponseEntity.ok().body(sub);
+
+	}
 	
 }
