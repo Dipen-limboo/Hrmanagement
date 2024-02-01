@@ -203,7 +203,7 @@ public class UserServiceImpl {
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: User List is empty"));
 			} else {
 				List<UserInfoDto> userInfoDtolists = new ArrayList<>();
-				for(User user: userLists) {
+				for(User user: userLists.getContent()) {
 					UserInfoDto userdto = new UserInfoDto();
 					userdto.setId(user.getId());
 					userdto.setFirstName(user.getFirstName());

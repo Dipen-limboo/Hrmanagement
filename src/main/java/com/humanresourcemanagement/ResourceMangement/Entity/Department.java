@@ -15,7 +15,7 @@ import jakarta.persistence.Table;
 public class Department {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private Long id;
+	private Long id; 
 	
 	@Column(name="branch")
 	private String branch;

@@ -1,14 +1,20 @@
 package com.humanresourcemanagement.ResourceMangement.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeUpdateDto;
@@ -38,4 +44,36 @@ public class EmployeeController {
 	public ResponseEntity<?> promoteUser(@PathVariable Long id, @Valid @RequestBody PromotionDto promotionDto, Authentication auth){
 		return empService.promoteEmployee(id, promotionDto, auth);
 	}
+	
+	@GetMapping("/getPromotionList")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN') ")
+	public ResponseEntity<?> listOfPromotionIndividual(Authentication auth){
+		return empService.getPromotionList(auth);
+	}
+	
+	@GetMapping("/getPromotionList/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') ")
+	public ResponseEntity<?> listOfPromotionById(@PathVariable Long id){
+		return empService.getPromotionListById(id);
+	}
+	
+	@GetMapping("/getAllPromotionList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') ")
+	public ResponseEntity<?> listOfAllPromotion(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
+		) {
+		Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+		Pageable pageable = PageRequest.of(page -1, size, sort);
+		return empService.getAllPromotionList(pageable);
+	}
+	
+	@PutMapping("/getPromotion/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') ")
+	@Transactional
+	public ResponseEntity<?> updatePromotionById(@PathVariable Long id, @Valid @RequestBody PromotionDto promotionDto){
+		return empService.updatePromotion(id, promotionDto);
+	}
+	
 }
