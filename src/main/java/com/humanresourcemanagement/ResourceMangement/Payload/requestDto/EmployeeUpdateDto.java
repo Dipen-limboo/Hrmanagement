@@ -7,14 +7,14 @@ import jakarta.validation.constraints.NotNull;
 
 public class EmployeeUpdateDto {
 	
-	@NotNull
+	
 	private LocalDate joinDate;
 	
-	private LocalDate leaveDate;
+	private LocalDate endDate;
 	
-	@NotNull
-	private Long department;
-	@NotNull
+	
+	private Long subDepartment;
+	
 	private Long designation;
 
 	public EmployeeUpdateDto() {
@@ -22,13 +22,14 @@ public class EmployeeUpdateDto {
 		// TODO Auto-generated constructor stub
 	}
 
-	public EmployeeUpdateDto(@NotBlank LocalDate joinDate, LocalDate leaveDate, Long department, Long designation) {
+	public EmployeeUpdateDto(LocalDate joinDate, LocalDate leaveDate, Long subdepartment, Long designation) {
 		super();
 		this.joinDate = joinDate;
-		this.leaveDate = leaveDate;
-		this.department = department;
+		this.endDate = leaveDate;
+		this.subDepartment = subdepartment;
 		this.designation = designation;
 	}
+
 
 	public LocalDate getJoinDate() {
 		return joinDate;
@@ -39,19 +40,19 @@ public class EmployeeUpdateDto {
 	}
 
 	public LocalDate getLeaveDate() {
-		return leaveDate;
+		return endDate;
 	}
 
 	public void setLeaveDate(LocalDate leaveDate) {
-		this.leaveDate = leaveDate;
+		this.endDate = leaveDate;
 	}
 
-	public Long getDepartment() {
-		return department;
+	public Long getSubDepartment() {
+		return subDepartment;
 	}
 
-	public void setDepartment(Long department) {
-		this.department = department;
+	public void setSubDepartment(Long subdepartment) {
+		this.subDepartment = subdepartment;
 	}
 
 	public Long getDesignation() {

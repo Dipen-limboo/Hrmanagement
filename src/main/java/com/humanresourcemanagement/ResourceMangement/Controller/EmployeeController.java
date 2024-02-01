@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Service.EmployeeService;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -26,6 +27,7 @@ public class EmployeeController {
 
 	@PostMapping("/createEmployee/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	@Transactional
 	public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody EmployeeUpdateDto employeeDto, Authentication auth){
 		return empService.saveEmployee(id, employeeDto, auth);
 	}

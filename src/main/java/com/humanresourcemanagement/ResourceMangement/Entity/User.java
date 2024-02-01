@@ -86,17 +86,6 @@ public class User {
 	
   @Column(name="leave_date")
   private LocalDate leaveDate;
-	
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name="department")
-  private Department department;
-	
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name="designation")
-  private Designation designation;
-	
-  @Column(name="approvedBy")
-  private Long approver; 
  
   @Column(name="is_verified")
   private boolean isVerified =false;
@@ -296,29 +285,6 @@ public class User {
 	  this.leaveDate = leaveDate;
   }
 
-  public Department getDepartment() {
-	  return department;
-  }
-
-  public void setDepartment(Department department) {
-	  this.department = department;
-  }
-
-  public Designation getDesignation() {
-	  return designation;
- } 
-
-  public void setDesignation(Designation designation) {
-	  this.designation = designation;
-  }
-
-  public Long getApprover() {
-	  return approver;
-  }
-
-  public void setApprover(Long approver) {
-	  this.approver = approver;
-  }
 
   public boolean isPasswordChange() {
 	  return passwordChange;
