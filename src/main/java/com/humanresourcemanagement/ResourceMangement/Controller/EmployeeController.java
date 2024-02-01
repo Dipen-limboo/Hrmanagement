@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeUpdateDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.PromotionDto;
 import com.humanresourcemanagement.ResourceMangement.Service.EmployeeService;
 
 import jakarta.transaction.Transactional;
@@ -30,5 +31,11 @@ public class EmployeeController {
 	@Transactional
 	public ResponseEntity<?> updateUser(@PathVariable Long id, @Valid @RequestBody EmployeeUpdateDto employeeDto, Authentication auth){
 		return empService.saveEmployee(id, employeeDto, auth);
+	}
+	
+	@PostMapping("/promoteEmployee/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> promoteUser(@PathVariable Long id, @Valid @RequestBody PromotionDto promotionDto, Authentication auth){
+		return empService.promoteEmployee(id, promotionDto, auth);
 	}
 }

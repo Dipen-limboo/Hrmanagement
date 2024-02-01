@@ -13,6 +13,7 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Promotion;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeUpdateDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.PromotionDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
@@ -103,6 +104,53 @@ public class EmployeeService {
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: user not found by id " + id));
 		}
 	
+	}
+	
+	
+	public ResponseEntity<?> promoteEmployee(Long id, @Valid PromotionDto promotionDto, Authentication auth) {
+		Optional<User> optionalUser = userRepo.findById(id);
+		if(optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			Promotion promotion = promotionRepo.findFirstByUserOrderByIdDesc(user);
+			Promotion newPromotion = new Promotion();
+				if(LocalDate.now().isAfter(promotionDto.getJoinDate())) {
+					promotion.setEndDate(promotionDto.getJoinDate());
+					newPromotion.setJoinDate(promotionDto.getJoinDate());
+				} else {
+					return ResponseEntity.badRequest().body(new MessageResponse("Error: Date must be in AD and is should not exceed the current date"));
+				}
+				newPromotion.setUser(user);
+				Optional<Designation> designation = designationRepo.findById(promotionDto.getDesignation());
+				if(designation.isPresent()) {
+					newPromotion.setDesignation(designation.get());
+				} else {
+					return ResponseEntity.badRequest().body(new MessageResponse("Error: Designation not found by id" + promotionDto.getDesignation()));
+				}
+				
+				Optional<SubDepartment> subDepartment = subDepartmentRepo.findById(promotionDto.getSubDepartment());
+				if(subDepartment.isPresent()) {
+					newPromotion.setSubDepartment(subDepartment.get());
+				} else {
+					return ResponseEntity.badRequest().body(new MessageResponse("Error: Sub Department not found by id" + promotionDto.getSubDepartment()));
+				}
+				
+				UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+				Optional<User> optionalUserr = userRepo.findById(userDetails.getId());
+				if(optionalUserr.isPresent()) {
+					newPromotion.setApprover(optionalUserr.get());
+				}
+				
+				if(newPromotion.getSubDepartment().getDepartment().getId() == newPromotion.getDesignation().getDepartment().getId()) {
+					promotionRepo.save(promotion);
+					promotionRepo.save(newPromotion);
+					return ResponseEntity.ok().body(newPromotion);
+				} else {
+					return ResponseEntity.badRequest().body(new MessageResponse("Error: department are different in subDepartment and desgination"));
+				}
+			
+		} else {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: user not found by id " + id));
+		}
 	}
 	
 	
