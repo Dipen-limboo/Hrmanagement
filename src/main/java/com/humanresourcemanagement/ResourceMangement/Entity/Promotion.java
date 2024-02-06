@@ -2,6 +2,8 @@ package com.humanresourcemanagement.ResourceMangement.Entity;
 
 import java.time.LocalDate;
 
+import com.humanresourcemanagement.ResourceMangement.Enum.Status;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -13,10 +15,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="promotions")
+@Table(name="Tbl_Promotion")
 public class Promotion {
 	@Id
 	@GeneratedValue(strategy =  GenerationType.IDENTITY)
+	@Column(name="promotion_id")
 	private Long id;
 	
 	@Column(name="joinDate")
@@ -34,13 +37,19 @@ public class Promotion {
 	private User approver;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="sub_department")
+	@JoinColumn(name="section")
 	private SubDepartment subDepartment;
 		
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="designation")
 	private Designation designation;
+	
+	@Column(name="promotion_status")
+	private boolean status = true;
 
+	@Column(name="remarks")
+	private String remarks;
+	
 	public Promotion() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -113,5 +122,22 @@ public class Promotion {
 	public void setDesignation(Designation designation) {
 		this.designation = designation;
 	}
+
+	public boolean isStatus() {
+		return status;
+	}
+
+	public void setStatus(boolean status) {
+		this.status = status;
+	}
+
+	public String getRemarks() {
+		return remarks;
+	}
+
+	public void setRemarks(String remarks) {
+		this.remarks = remarks;
+	}
 		
+	
 }

@@ -13,11 +13,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="documents")
+@Table(name="Tbl_Document")
 public class Document {
 	
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="document_id")
 	private Long id;
 	
 	@Column(name="citizenship_no")
@@ -35,7 +36,7 @@ public class Document {
 	@Column(name="issued_place")
 	private String issuedPlace;
 	
-	@Column(name="file_path")
+	@Column(name="document_filePath")
 	private String filePath;
 	
 	@ManyToOne(fetch=FetchType.LAZY)

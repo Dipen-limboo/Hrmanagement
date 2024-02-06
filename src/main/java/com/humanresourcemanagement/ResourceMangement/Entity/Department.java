@@ -10,23 +10,21 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="departments")
+@Table(name="Tbl_Departments")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Department {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="dep_id")
 	private Long id; 
 	
-	@Column(name="branch")
-	private String branch;
-	
-	@Column(name="name")
+	@Column(name="dep_name")
 	private String name;
 	
-	@Column(name="address")
+	@Column(name="dep_address")
 	private String address;
 	
-	@Column(name="tel")
+	@Column(name="dep_phone")
 	private String phone;
 
 	public Department() {
@@ -34,10 +32,9 @@ public class Department {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Department(Long id, String branch, String name, String address, String phone) {
+	public Department(Long id, String name, String address, String phone) {
 		super();
 		this.id = id;
-		this.branch = branch;
 		this.name = name;
 		this.address = address;
 		this.phone = phone;
@@ -49,14 +46,6 @@ public class Department {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public String getBranch() {
-		return branch;
-	}
-
-	public void setBranch(String branch) {
-		this.branch = branch;
 	}
 
 	public String getName() {

@@ -1,6 +1,5 @@
 package com.humanresourcemanagement.ResourceMangement.Entity;
 
-import org.springframework.web.multipart.MultipartFile;
 
 import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
 
@@ -17,33 +16,34 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="family_infos")
+@Table(name="Tbl_Emp_Family_infos")
 public class FamilyInfo {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="family_infos_id")
 	private Long id;
 	
-	@Column(name="first_name")
+	@Column(name="family_first_name")
 	private String firstName;
 	
-	@Column(name="middle_name")
+	@Column(name="family_middle_name")
 	private String middleName;
 	
-	@Column(name="last_name")
+	@Column(name="family_last_name")
 	private String LastName;
 	
 	@Enumerated(EnumType.STRING)
 	@Column(name= "relationship")
 	private Relation relation;
 	
-	@Column(name="phone")
+	@Column(name="family_phone")
 	private String phone;
 	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="user_id")
 	private User user;
 	
-	@Column(name="image_path")
+	@Column(name="family_image_path")
 	private String file;
 
 	public FamilyInfo() {

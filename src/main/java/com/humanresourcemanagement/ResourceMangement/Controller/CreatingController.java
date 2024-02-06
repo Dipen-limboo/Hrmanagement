@@ -17,11 +17,12 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.AdditionalDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Service.CreatingService;
 
 import jakarta.validation.Valid;
@@ -34,19 +35,19 @@ public class CreatingController {
 	CreatingService createService;
 
 	@PostMapping("/add_department")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> saveDepartment(@Valid @RequestBody DepartmentDto departmentDto){
 		return createService.addDepartment(departmentDto);
 	}
 	
-	@PostMapping("/add_sub_department")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PostMapping("/add_section")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> saveSubDepartment(@Valid @RequestBody SubDepartmentDto subDepartmentDto){
 		return createService.addSubDepartment(subDepartmentDto);
 	}
 	
 	@PostMapping("/add_designation")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> saveDesignation(@Valid @RequestBody DesignationDto designationDto){
 		return createService.addDesgination(designationDto);
 	}
@@ -79,10 +80,22 @@ public class CreatingController {
 			@RequestParam(required=false) MultipartFile file, Authentication auth) throws IOException{
 		return createService.addFamily(firstName, middleName, lastName, relation, phone, file, auth);
 	}
+//	
+//	@PostMapping("/add_additionalInfo")
+//	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
+//	public ResponseEntity<?> saveAdditionalInfo(@Valid @RequestBody AdditionalDto additionalDto, Authentication auth){
+//		return createService.addAdditional(additionalDto, auth);
+//	}
 	
-	@PostMapping("/add_additionalInfo")
-	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
-	public ResponseEntity<?> saveAdditionalInfo(@Valid @RequestBody AdditionalDto additionalDto, Authentication auth){
-		return createService.addAdditional(additionalDto, auth);
+	@PostMapping("/add_working_type")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> saveWorkingType (@Valid @RequestBody WorkTypeDto workDto){
+		return createService.saveWork(workDto);
+	}
+	
+	@PostMapping("/add_job_type")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> saveJobType (@Valid @RequestBody JobTypeDto jobDto){
+		return createService.saveJob(jobDto);
 	}
 }

@@ -13,14 +13,15 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="sub_departments")
+@Table(name="Tbl_Section")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class SubDepartment {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name="section_id")
 	private Long id;
 	
-	@Column(name="sub_department_name")
+	@Column(name="section_name")
 	private String name;
 	
 	@ManyToOne(fetch = FetchType.LAZY)

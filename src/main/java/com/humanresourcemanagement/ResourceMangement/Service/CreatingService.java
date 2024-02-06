@@ -17,30 +17,32 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.humanresourcemanagement.ResourceMangement.EncryptDecrypt.EncryptDecrypt;
-import com.humanresourcemanagement.ResourceMangement.Entity.AdditionalInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Bank;
 import com.humanresourcemanagement.ResourceMangement.Entity.Department;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.Document;
 import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
+import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
+import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
 import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
-import com.humanresourcemanagement.ResourceMangement.Enum.Type;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.AdditionalDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
-import com.humanresourcemanagement.ResourceMangement.Repository.AdditionalRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DocumentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.FamilyRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
+import com.humanresourcemanagement.ResourceMangement.Repository.WokingTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.security.service.UserDetailsImpl;
 
 import jakarta.validation.Valid;
@@ -65,12 +67,18 @@ public class CreatingService {
 	
 	@Autowired
 	FamilyRepo familyRepo;
-	
-	@Autowired
-	AdditionalRepo additionalRepo; 
+//	
+//	@Autowired
+//	AdditionalRepo additionalRepo; 
 	
 	@Autowired
 	SubDepartmentRepo subDepartmentRepo; 	
+	
+	@Autowired
+	WokingTypeRepo workRepo;
+	
+	@Autowired
+	JobTypeRepo jobRepo;
 	
 	@Autowired
 	EncryptDecrypt encryptSer;
@@ -86,7 +94,6 @@ public class CreatingService {
 		}
 		Department department = new Department();
 		department.setName(departmentDto.getName());
-		department.setBranch(departmentDto.getBranch());
 		department.setAddress(departmentDto.getAddress());
 		department.setPhone(departmentDto.getTel());
 		departRepo.save(department);
@@ -110,14 +117,14 @@ public class CreatingService {
 	}
 
 	public ResponseEntity<?> addBank(@Valid BankDto bankDto, Authentication auth) {
-		if(bankRepo.existsByNameAndHolderName(bankDto.getName(), bankDto.getHolderName())){
+		if(bankRepo.existsByNameAndAddress(bankDto.getName(), bankDto.getAddress())){
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: Already exists."));
 		}
 		Bank bank = new Bank();
 		bank.setName(bankDto.getName());
 		bank.setBranch(bankDto.getBranch());
 		bank.setAccountNumber(bankDto.getAccount());
-		bank.setHolderName(bankDto.getHolderName());
+		bank.setAddress(bankDto.getAddress());
 		
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
 		Long userId = userDetails.getId();
@@ -191,49 +198,49 @@ public class CreatingService {
 
 	
 
-	public ResponseEntity<?> addAdditional(@Valid AdditionalDto additionalDto, Authentication auth) {
-		AdditionalInfo additional = new AdditionalInfo();
-		additional.setName(additionalDto.getName());
-		additional.setLevel(additionalDto.getLevel());
-		additional.setJoinDate(additionalDto.getJoinDate());
-		additional.setEndDate(additionalDto.getEndDate());
-		
-		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
-		if(optionalUser.isPresent()) {
-			additional.setUser(optionalUser.get());
-		}
-		Set<String> strType = additionalDto.getType();
-		if(strType==null) {
-			additional.setType(null);
-		} else {
-			strType.forEach(type -> {
-				switch(type) {
-				case "education":
-					additional.setType(Type.EDUCATION);
-					break;
-				case "experience":
-					additional.setType(Type.EXPERIENCE);
-					break;
-				case "training":
-					additional.setType(Type.TRAINING);
-					break;
-				default:
-					additional.setType(null);
-				}
-			});
-		}
-		
-		if(strType.contains("education")) {
-			additional.setBoard(additionalDto.getBoard());
-			additional.setGpa(additionalDto.getGpa());
-		} else {
-			additional.setBoard(null);
-			additional.setGpa(0.00);
-		}
-		additionalRepo.save(additional);
-		return ResponseEntity.ok().body("Successfully added to the additional info of " + optionalUser.get().getUsername());
-	}
+//	public ResponseEntity<?> addAdditional(@Valid AdditionalDto additionalDto, Authentication auth) {
+//		AdditionalInfo additional = new AdditionalInfo();
+//		additional.setName(additionalDto.getName());
+//		additional.setLevel(additionalDto.getLevel());
+//		additional.setJoinDate(additionalDto.getJoinDate());
+//		additional.setEndDate(additionalDto.getEndDate());
+//		
+//		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+//		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+//		if(optionalUser.isPresent()) {
+//			additional.setUser(optionalUser.get());
+//		}
+//		Set<String> strType = additionalDto.getType();
+//		if(strType==null) {
+//			additional.setType(null);
+//		} else {
+//			strType.forEach(type -> {
+//				switch(type) {
+//				case "education":
+//					additional.setType(Type.EDUCATION);
+//					break;
+//				case "experience":
+//					additional.setType(Type.EXPERIENCE);
+//					break;
+//				case "training":
+//					additional.setType(Type.TRAINING);
+//					break;
+//				default:
+//					additional.setType(null);
+//				}
+//			});
+//		}
+//		
+//		if(strType.contains("education")) {
+//			additional.setBoard(additionalDto.getBoard());
+//			additional.setGpa(additionalDto.getGpa());
+//		} else {
+//			additional.setBoard(null);
+//			additional.setGpa(0.00);
+//		}
+//		additionalRepo.save(additional);
+//		return ResponseEntity.ok().body("Successfully added to the additional info of " + optionalUser.get().getUsername());
+//	}
 
 	public ResponseEntity<?> addFamily(@Valid String firstName, String middleName, String lastName,
 			Set<String> relation, String phone, MultipartFile file, Authentication auth) throws IOException {
@@ -318,6 +325,24 @@ public class CreatingService {
 		subDepartmentRepo.save(sub);
 		return ResponseEntity.ok().body(sub);
 
+	}
+
+	public ResponseEntity<?> saveWork(@Valid WorkTypeDto workDto) {
+		WorkingType work = new WorkingType();
+		if(workRepo.existsByWorkingType(workDto.getWorkType()))
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Already exists the work type"));
+		work.setWorkingType(workDto.getWorkType());
+		workRepo.save(work);
+		return ResponseEntity.ok().body(work);
+	}
+
+	public ResponseEntity<?> saveJob(@Valid JobTypeDto jobDto) {
+		JobType job = new JobType();
+		if(jobRepo.existsByJobType(jobDto.getJobType()))
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Already exists the job type"));
+		job.setJobType(jobDto.getJobType());
+		jobRepo.save(job);
+		return ResponseEntity.ok().body(job);
 	}
 	
 }

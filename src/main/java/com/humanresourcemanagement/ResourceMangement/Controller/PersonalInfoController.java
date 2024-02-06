@@ -51,17 +51,17 @@ public class PersonalInfoController {
 		return infoService.findAllaccountsOfStaff(pageable);
 	}
 	
-	@GetMapping("/informationLists")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
-	public ResponseEntity<?> additionalListInfo(@RequestParam(defaultValue = "1") int page,
-			@RequestParam(defaultValue = "10") int size,
-			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
-			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
-		) {
-			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
-			Pageable pageable = PageRequest.of(page -1, size, sort);
-		return infoService.findAlladditionalListofUser(pageable);
-	}
+//	@GetMapping("/informationLists")
+//	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+//	public ResponseEntity<?> additionalListInfo(@RequestParam(defaultValue = "1") int page,
+//			@RequestParam(defaultValue = "10") int size,
+//			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+//			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
+//		) {
+//			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+//			Pageable pageable = PageRequest.of(page -1, size, sort);
+//		return infoService.findAlladditionalListofUser(pageable);
+//	}
 	
 	@GetMapping("/familyInfoLists")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
@@ -96,12 +96,12 @@ public class PersonalInfoController {
 		return infoService.delete(id, auth);
 	}
 	
-	@DeleteMapping("/deleteAdditional/{id}")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-	@Transactional
-	public ResponseEntity<?> deleteAdditionalInfo(@PathVariable Long id, Authentication auth){
-		return infoService.deleteAdditional(id, auth);
-	}
+//	@DeleteMapping("/deleteAdditional/{id}")
+//	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+//	@Transactional
+//	public ResponseEntity<?> deleteAdditionalInfo(@PathVariable Long id, Authentication auth){
+//		return infoService.deleteAdditional(id, auth);
+//	}
 	
 	@DeleteMapping("/deleteDocument/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
@@ -118,12 +118,12 @@ public class PersonalInfoController {
 	}
 	
 	//get
-	@GetMapping("/getAdditionalInfo")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-	@Transactional
-	public ResponseEntity<?> getAddtionalinfoByauth(Authentication auth){
-		return infoService.getAdditionalInfo(auth);
-	}
+//	@GetMapping("/getAdditionalInfo")
+//	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+//	@Transactional
+//	public ResponseEntity<?> getAddtionalinfoByauth(Authentication auth){
+//		return infoService.getAdditionalInfo(auth);
+//	}
 	
 	@GetMapping("/getDocuments")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
@@ -147,11 +147,11 @@ public class PersonalInfoController {
 	}
 	
 	//update
-	@PutMapping("/getAdditionalInfo/{id}")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-	public ResponseEntity<?> updateAddtionalinfo(@PathVariable Long id, @RequestBody AdditionalDto additionalDto, Authentication auth){
-		return infoService.updateAdditionalInfo(id, additionalDto, auth);
-	}
+//	@PutMapping("/getAdditionalInfo/{id}")
+//	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+//	public ResponseEntity<?> updateAddtionalinfo(@PathVariable Long id, @RequestBody AdditionalDto additionalDto, Authentication auth){
+//		return infoService.updateAdditionalInfo(id, additionalDto, auth);
+//	}
 	
 	@PutMapping("/getDocuments/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")

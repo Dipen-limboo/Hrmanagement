@@ -54,7 +54,7 @@ public class UserController {
 	}
 
 	@PostMapping("/signup")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody EmployeeRegisterDto employeeDto, Authentication auth, HttpServletRequest request) throws UnsupportedEncodingException, MessagingException {
 		return userService.signup(employeeDto, auth, request);
 	}

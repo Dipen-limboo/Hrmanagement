@@ -2,34 +2,47 @@ package com.humanresourcemanagement.ResourceMangement.Payload.requestDto;
 
 import java.time.LocalDate;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 public class EmployeeUpdateDto {
 	
+	@NotEmpty
+	private String employeeId;
 	
 	private LocalDate joinDate;
 	
 	private LocalDate endDate;
 	
-	
+	@NotNull
 	private Long subDepartment;
 	
+	@NotNull
 	private Long designation;
+	
+	private String remarks;
+	
+	@NotNull
+	private Long workingType;
+	
+	@NotNull
+	private Long jobType;
 
 	public EmployeeUpdateDto() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-
-	public EmployeeUpdateDto(LocalDate joinDate, LocalDate leaveDate, Long subdepartment, Long designation) {
+	
+	public EmployeeUpdateDto(@NotEmpty String employeeId, LocalDate joinDate, LocalDate endDate,
+			@NotNull Long subDepartment, @NotNull Long designation, String remarks) {
 		super();
+		this.employeeId = employeeId;
 		this.joinDate = joinDate;
-		this.endDate = leaveDate;
-		this.subDepartment = subdepartment;
+		this.endDate = endDate;
+		this.subDepartment = subDepartment;
 		this.designation = designation;
+		this.remarks = remarks;
 	}
-
 
 	public LocalDate getJoinDate() {
 		return joinDate;
@@ -61,6 +74,38 @@ public class EmployeeUpdateDto {
 
 	public void setDesignation(Long designation) {
 		this.designation = designation;
+	}
+
+	public String getRemarks() {
+		return remarks;
+	}
+
+	public void setRemarks(String remarks) {
+		this.remarks = remarks;
+	}
+
+	public String getEmployeeId() {
+		return employeeId;
+	}
+
+	public void setEmployeeId(String employeeId) {
+		this.employeeId = employeeId;
+	}
+
+	public Long getWorkingType() {
+		return workingType;
+	}
+
+	public void setWorkingType(Long workingType) {
+		this.workingType = workingType;
+	}
+
+	public Long getJobType() {
+		return jobType;
+	}
+
+	public void setJobType(Long jobType) {
+		this.jobType = jobType;
 	}
 	
 	

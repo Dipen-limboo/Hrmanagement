@@ -13,15 +13,16 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="designations")
+@Table(name="Tbl_Designation")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Designation {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name="desgination_id")
 	private Long id;
 	
-	@Column(name="name")
+	@Column(name="designation_name")
 	private String name;
 	
 	@ManyToOne(fetch = FetchType.LAZY)

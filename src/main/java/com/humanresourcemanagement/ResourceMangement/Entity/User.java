@@ -29,7 +29,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "users",
+@Table(name = "Tbl_Emp_infos",
        uniqueConstraints = {
            @UniqueConstraint(columnNames = "username"),
            @UniqueConstraint(columnNames = "email")
@@ -37,6 +37,7 @@ import jakarta.validation.constraints.Size;
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name="emp_id")
   private Long id;
 
   @NotBlank
@@ -55,12 +56,13 @@ public class User {
   private String username;
   
   @NotBlank
-  @Column(name="birth_date")
+  @Column(name="emp_dob")
   private LocalDate birthDate;
 
   @NotBlank
   @Size(max = 50)
   @Email
+  @Column(name="emp_email")
   private String email;
 
   @NotBlank
@@ -71,7 +73,7 @@ public class User {
   @Transient
   private String ConfirmPassword;
   
-  @Column(name= "phone")
+  @Column(name= "emp_phone")
   private String phone;
   
   @Column(name="address")
@@ -98,11 +100,11 @@ public class User {
   private String verifiedToken;
   
   @Enumerated(EnumType.STRING)
-  @Column(name="status")
+  @Column(name="emp_status")
   private Status status = Status.ACTIVE;  
   
   @Enumerated(EnumType.STRING)
-  @Column(name="gender")
+  @Column(name="emp_gender")
   private Gender gender;
   
   @Enumerated(EnumType.STRING)

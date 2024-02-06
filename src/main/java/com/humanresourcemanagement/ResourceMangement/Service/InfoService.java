@@ -22,7 +22,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.humanresourcemanagement.ResourceMangement.EncryptDecrypt.EncryptDecrypt;
-import com.humanresourcemanagement.ResourceMangement.Entity.AdditionalInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Bank;
 import com.humanresourcemanagement.ResourceMangement.Entity.Department;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
@@ -39,7 +38,6 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Document
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.DocumentResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.FamilyDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
-import com.humanresourcemanagement.ResourceMangement.Repository.AdditionalRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
@@ -53,9 +51,9 @@ public class InfoService {
 	@Autowired
 	UserRepository userRepo;
 	
-	@Autowired
-	AdditionalRepo additionalRepo;
-	
+//	@Autowired
+//	AdditionalRepo additionalRepo;
+//	
 	@Autowired
 	BankRepo bankRepo;
 	
@@ -74,7 +72,7 @@ public class InfoService {
 				BankDto bankDto = new BankDto();
 				bankDto.setName(bank.getName());
 				bankDto.setBranch(bank.getBranch());
-				bankDto.setHolderName(bank.getHolderName());
+				bankDto.setAddress(bank.getAddress());
 				bankDto.setAccount(bank.getAccountNumber());
 				
 				Optional<User> user = userRepo.findById(bank.getUser().getId());
@@ -89,41 +87,41 @@ public class InfoService {
 		}
 	}
 
-	public ResponseEntity<?> findAlladditionalListofUser(Pageable pageable) {
-		Page<AdditionalInfo> additionalList = additionalRepo.findAll(pageable);
-		List<AdditionalDto> additionalDtoList = new ArrayList<>();
-		
-		if(!additionalList.isEmpty()) {
-			for(AdditionalInfo additional : additionalList) {
-				AdditionalDto additionalDto = new AdditionalDto();
-				additionalDto.setName(additional.getName());
-				
-				String type = additional.getType().toString();
-				String delimter = " ";
-				String[] elements = type.split(delimter);
-				Set<String> typeSet = new HashSet<>();
-				for(String element: elements) {
-					typeSet.add(element);
-				}
-				additionalDto.setType(typeSet);
-				
-				additionalDto.setJoinDate(additional.getJoinDate());
-				additionalDto.setEndDate(additional.getEndDate());
-				additionalDto.setLevel(additional.getLevel());
-				additionalDto.setBoard(additional.getBoard());
-				additionalDto.setGpa(additional.getGpa());
-				Optional<User> user= userRepo.findById(additional.getUser().getId());
-				if(user.isPresent()) {
-					additionalDto.setUserId(user.get().getId());
-				}
-								
- 				additionalDtoList.add(additionalDto);
-			}
-			return ResponseEntity.ok().body(additionalDtoList);
-		} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any addtional information of employees"));
-		}
-	}
+//	public ResponseEntity<?> findAlladditionalListofUser(Pageable pageable) {
+//		Page<AdditionalInfo> additionalList = additionalRepo.findAll(pageable);
+//		List<AdditionalDto> additionalDtoList = new ArrayList<>();
+//		
+//		if(!additionalList.isEmpty()) {
+//			for(AdditionalInfo additional : additionalList) {
+//				AdditionalDto additionalDto = new AdditionalDto();
+//				additionalDto.setName(additional.getName());
+//				
+//				String type = additional.getType().toString();
+//				String delimter = " ";
+//				String[] elements = type.split(delimter);
+//				Set<String> typeSet = new HashSet<>();
+//				for(String element: elements) {
+//					typeSet.add(element);
+//				}
+//				additionalDto.setType(typeSet);
+//				
+//				additionalDto.setJoinDate(additional.getJoinDate());
+//				additionalDto.setEndDate(additional.getEndDate());
+//				additionalDto.setLevel(additional.getLevel());
+//				additionalDto.setBoard(additional.getBoard());
+//				additionalDto.setGpa(additional.getGpa());
+//				Optional<User> user= userRepo.findById(additional.getUser().getId());
+//				if(user.isPresent()) {
+//					additionalDto.setUserId(user.get().getId());
+//				}
+//								
+// 				additionalDtoList.add(additionalDto);
+//			}
+//			return ResponseEntity.ok().body(additionalDtoList);
+//		} else {
+//			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any addtional information of employees"));
+//		}
+//	}
 
 	public ResponseEntity<?> findAllfamilyInfoListofUser(Pageable pageable) {
 		Page<FamilyInfo> familyList = familyRepo.findAll(pageable);
@@ -211,15 +209,15 @@ public class InfoService {
 		return ResponseEntity.ok().body("Succesfully deleted the account id" + id);
 	}
 
-	public ResponseEntity<?> deleteAdditional(Long id, Authentication auth) {
-		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
-		Optional<User> optionalUser = userRepo.findById(userdetails.getId());
-		if(optionalUser.isPresent()) {
-			User user = optionalUser.get();
-			additionalRepo.deleteByIdAndUser(id, user);
-		}
-		return ResponseEntity.ok().body("Succesfully deleted the additional info with id" + id);
-	}
+//	public ResponseEntity<?> deleteAdditional(Long id, Authentication auth) {
+//		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
+//		Optional<User> optionalUser = userRepo.findById(userdetails.getId());
+//		if(optionalUser.isPresent()) {
+//			User user = optionalUser.get();
+//			additionalRepo.deleteByIdAndUser(id, user);
+//		}
+//		return ResponseEntity.ok().body("Succesfully deleted the additional info with id" + id);
+//	}
 
 	public ResponseEntity<?> deleteDocument(Long id, Authentication auth) throws IOException {
 		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
@@ -262,38 +260,38 @@ public class InfoService {
 
 	
 	
-	public ResponseEntity<?> getAdditionalInfo(Authentication auth) {
-		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
-		if(optionalUser.isPresent()) {
-			User user = optionalUser.get();
-			if(additionalRepo.existsByUser(user)) {
-				List<AdditionalInfo> infoList = additionalRepo.findByUser(user);
-				List<AdditionalDto> additionalDtoList = new ArrayList<>();
-				for (AdditionalInfo additional: infoList) {
-					AdditionalDto additionalDto = new AdditionalDto();
-					String type = additional.getType().toString();
-					Set<String> str = new HashSet<>();
-					str.add(type);
-					additionalDto.setType(str);
-					additionalDto.setName(additional.getName());
-					additionalDto.setLevel(additional.getLevel());
-					additionalDto.setJoinDate(additional.getJoinDate());
-					additionalDto.setEndDate(additional.getEndDate());
-					additionalDto.setUserId(additional.getUser().getId());
-					additionalDto.setBoard(additional.getBoard());
-					additionalDto.setGpa(additional.getGpa());
-					additionalDtoList.add(additionalDto);
-				}
-				return ResponseEntity.ok().body(additionalDtoList);
-			} else {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: Additional Infos not found by user id" + user.getId()));
-			}
-			
-		} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
-		}
-	}
+//	public ResponseEntity<?> getAdditionalInfo(Authentication auth) {
+//		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+//		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+//		if(optionalUser.isPresent()) {
+//			User user = optionalUser.get();
+//			if(additionalRepo.existsByUser(user)) {
+//				List<AdditionalInfo> infoList = additionalRepo.findByUser(user);
+//				List<AdditionalDto> additionalDtoList = new ArrayList<>();
+//				for (AdditionalInfo additional: infoList) {
+//					AdditionalDto additionalDto = new AdditionalDto();
+//					String type = additional.getType().toString();
+//					Set<String> str = new HashSet<>();
+//					str.add(type);
+//					additionalDto.setType(str);
+//					additionalDto.setName(additional.getName());
+//					additionalDto.setLevel(additional.getLevel());
+//					additionalDto.setJoinDate(additional.getJoinDate());
+//					additionalDto.setEndDate(additional.getEndDate());
+//					additionalDto.setUserId(additional.getUser().getId());
+//					additionalDto.setBoard(additional.getBoard());
+//					additionalDto.setGpa(additional.getGpa());
+//					additionalDtoList.add(additionalDto);
+//				}
+//				return ResponseEntity.ok().body(additionalDtoList);
+//			} else {
+//				return ResponseEntity.badRequest().body(new MessageResponse("Error: Additional Infos not found by user id" + user.getId()));
+//			}
+//			
+//		} else {
+//			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
+//		}
+//	}
 	
 	public ResponseEntity<?> getDocuments(Authentication auth) {
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
@@ -348,7 +346,7 @@ public class InfoService {
 				
 				for(Bank bank: bankList) {
 					BankDto bankDto = new BankDto();
-					bankDto.setHolderName(bank.getHolderName());
+					bankDto.setAddress(bank.getAddress());
 					bankDto.setAccount(bank.getAccountNumber());
 					bankDto.setName(bank.getName());
 					bankDto.setBranch(bank.getBranch());
@@ -396,95 +394,95 @@ public class InfoService {
 	}
 	
 	//update part
-	public ResponseEntity<?> updateAdditionalInfo(Long id, AdditionalDto additionalDto, Authentication auth) {
-		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-		Optional<User> user = userRepo.findById(userDetails.getId());
-		if(user.isPresent()) {
-			Optional<AdditionalInfo> optionalInfo = additionalRepo.findByUserAndId(user.get(), id);
-			if(optionalInfo.isPresent()) {
-				AdditionalInfo additional = optionalInfo.get();
-				if(additionalDto.getType() == null) {
-					additional.setType(additional.getType());
-				} else {
-					Set<String> str = additionalDto.getType();
-					str.forEach(type -> {
-						switch(type) {
-						case "education":
-							additional.setType(Type.EDUCATION);
-						break;
-						case "experience":
-							additional.setType(Type.EXPERIENCE);
-						break;
-						case "training":
-							additional.setType(Type.TRAINING);
-						break;
-						default:
-							additional.setType(additional.getType());
-						}
-					});
-					if(str.contains("education")) {
-						if(additionalDto.getBoard() == null) {
-							additional.setBoard(additional.getBoard());
-						} else {
-							additional.setBoard(additionalDto.getBoard());
-						}
-						
-						if(additionalDto.getGpa()== 0.00){
-							additional.setGpa(additional.getGpa());
-						} else {
-							additional.setGpa(additionalDto.getGpa());
-						}
-					}
-				}
-				
-				LocalDate currentDate = LocalDate.now();
-				if(additionalDto.getName()==null) {
-					additional.setName(additional.getName());
-				} else {
-					additional.setName(additionalDto.getName());
-				}
-				
-				if(additionalDto.getLevel() == null) {
-					additional.setLevel(additional.getLevel());
-				} else {
-					additional.setLevel(additionalDto.getLevel());
-				}
-				
-				if(additionalDto.getBoard() == null) {
-					additional.setBoard(additional.getBoard());
-				} else {
-					additional.setBoard(additionalDto.getBoard());
-				}
-				
-				if(additionalDto.getJoinDate() == null) {
-					additional.setJoinDate(additional.getJoinDate());
-				} else {
-					if(currentDate.isAfter(additional.getJoinDate())) {
-						additional.setJoinDate(additionalDto.getJoinDate());
-					} else {
-						return ResponseEntity.badRequest().body(new MessageResponse("Error: Join date must not exceed " + currentDate));
-					}
-				}
-				
-				if(additionalDto.getEndDate() == null) {
-					additional.setEndDate(additional.getEndDate());
-				} else {
-					if(currentDate.isAfter(additional.getEndDate())) {
-						additional.setEndDate(additionalDto.getEndDate());
-					} else {
-						return ResponseEntity.badRequest().body(new MessageResponse("Error: End date must not exceed " + currentDate));
-					}
-				}
-				additional.setUser(additional.getUser());
-				additionalRepo.save(additional);
-				return ResponseEntity.ok().body(additional);
-				} else {
-					return ResponseEntity.badRequest().body(new MessageResponse("Error: User " + user.get().getId() + " has no authority to modify or update " + id));
-				}
-			} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
-		}
-	}
+//	public ResponseEntity<?> updateAdditionalInfo(Long id, AdditionalDto additionalDto, Authentication auth) {
+//		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+//		Optional<User> user = userRepo.findById(userDetails.getId());
+//		if(user.isPresent()) {
+//			Optional<AdditionalInfo> optionalInfo = additionalRepo.findByUserAndId(user.get(), id);
+//			if(optionalInfo.isPresent()) {
+//				AdditionalInfo additional = optionalInfo.get();
+//				if(additionalDto.getType() == null) {
+//					additional.setType(additional.getType());
+//				} else {
+//					Set<String> str = additionalDto.getType();
+//					str.forEach(type -> {
+//						switch(type) {
+//						case "education":
+//							additional.setType(Type.EDUCATION);
+//						break;
+//						case "experience":
+//							additional.setType(Type.EXPERIENCE);
+//						break;
+//						case "training":
+//							additional.setType(Type.TRAINING);
+//						break;
+//						default:
+//							additional.setType(additional.getType());
+//						}
+//					});
+//					if(str.contains("education")) {
+//						if(additionalDto.getBoard() == null) {
+//							additional.setBoard(additional.getBoard());
+//						} else {
+//							additional.setBoard(additionalDto.getBoard());
+//						}
+//						
+//						if(additionalDto.getGpa()== 0.00){
+//							additional.setGpa(additional.getGpa());
+//						} else {
+//							additional.setGpa(additionalDto.getGpa());
+//						}
+//					}
+//				}
+//				
+//				LocalDate currentDate = LocalDate.now();
+//				if(additionalDto.getName()==null) {
+//					additional.setName(additional.getName());
+//				} else {
+//					additional.setName(additionalDto.getName());
+//				}
+//				
+//				if(additionalDto.getLevel() == null) {
+//					additional.setLevel(additional.getLevel());
+//				} else {
+//					additional.setLevel(additionalDto.getLevel());
+//				}
+//				
+//				if(additionalDto.getBoard() == null) {
+//					additional.setBoard(additional.getBoard());
+//				} else {
+//					additional.setBoard(additionalDto.getBoard());
+//				}
+//				
+//				if(additionalDto.getJoinDate() == null) {
+//					additional.setJoinDate(additional.getJoinDate());
+//				} else {
+//					if(currentDate.isAfter(additional.getJoinDate())) {
+//						additional.setJoinDate(additionalDto.getJoinDate());
+//					} else {
+//						return ResponseEntity.badRequest().body(new MessageResponse("Error: Join date must not exceed " + currentDate));
+//					}
+//				}
+//				
+//				if(additionalDto.getEndDate() == null) {
+//					additional.setEndDate(additional.getEndDate());
+//				} else {
+//					if(currentDate.isAfter(additional.getEndDate())) {
+//						additional.setEndDate(additionalDto.getEndDate());
+//					} else {
+//						return ResponseEntity.badRequest().body(new MessageResponse("Error: End date must not exceed " + currentDate));
+//					}
+//				}
+//				additional.setUser(additional.getUser());
+//				additionalRepo.save(additional);
+//				return ResponseEntity.ok().body(additional);
+//				} else {
+//					return ResponseEntity.badRequest().body(new MessageResponse("Error: User " + user.get().getId() + " has no authority to modify or update " + id));
+//				}
+//			} else {
+//			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
+//		}
+//	}
 
 	public ResponseEntity<?> updateDocuments(Long id, String citizenship, String pan, String nationalityId,
 			LocalDate issuedDate, String issuedPlace, MultipartFile file, Authentication auth) {
@@ -582,10 +580,10 @@ public class InfoService {
 			Optional<Bank> optionalBank = bankRepo.findByIdAndUser(id, user);
 			if(optionalBank.isPresent()) {
 				Bank bank = optionalBank.get();
-				if(bankDto.getHolderName() == null) {
-					bank.setHolderName(bank.getHolderName());
+				if(bankDto.getAddress() == null) {
+					bank.setAddress(bank.getAddress());
 				} else {
-					bank.setHolderName(bankDto.getHolderName());
+					bank.setAddress(bankDto.getAddress());
 				} 
 				if(bankDto.getAccount() == null) {
 					bank.setAccountNumber(bank.getAccountNumber());

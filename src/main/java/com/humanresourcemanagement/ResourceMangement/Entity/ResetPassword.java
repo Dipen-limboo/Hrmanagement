@@ -12,20 +12,21 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="reset_passwords")
+@Table(name="Tbl_Reset_passwords")
 public class ResetPassword {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name="reset_id")
 	private Long id;
 	
-	@Column(name="token")
+	@Column(name="reset_token")
 	private String token;
 	
 	@ManyToOne
 	@JoinColumn(name="user_id")
 	private User user;
 	
-	@Column(name="expire_date")
+	@Column(name="reset_expire_date")
 	private Date expireDate;
 
 	public ResetPassword() {

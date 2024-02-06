@@ -13,18 +13,24 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
+import com.humanresourcemanagement.ResourceMangement.Entity.EmployeeOfficialInfo;
+import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
 import com.humanresourcemanagement.ResourceMangement.Entity.Promotion;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
+import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.PromotionDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.PromotionResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.EmployeeOfficialInfoRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.PromotionRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
+import com.humanresourcemanagement.ResourceMangement.Repository.WokingTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.security.service.UserDetailsImpl;
 
 import jakarta.transaction.Transactional;
@@ -47,6 +53,16 @@ public class EmployeeService {
 	
 	@Autowired
 	PromotionRepo promotionRepo;
+	
+	@Autowired
+	EmployeeOfficialInfoRepo empRepo;
+	
+	@Autowired
+	WokingTypeRepo workingRepo;
+	
+	@Autowired
+	JobTypeRepo jobRepo;
+	
 	//update user
 	public ResponseEntity<?> saveEmployee(Long id, @Valid EmployeeUpdateDto employeeDto, Authentication auth) {
 		Optional<User> optionalUser = userRepo.findById(id);
@@ -54,7 +70,11 @@ public class EmployeeService {
 			User user = optionalUser.get();
 			
 			Promotion promotedUser = new Promotion();
+			EmployeeOfficialInfo emp = new EmployeeOfficialInfo();
 			promotedUser.setUser(user);
+			emp.setUser(user);
+			
+			emp.setId("emp0"+employeeDto.getEmployeeId());
 			
 			LocalDate now = LocalDate.now();
 			if(employeeDto.getJoinDate() == null) {
@@ -74,6 +94,7 @@ public class EmployeeService {
 			Optional<User> optionalUserr = userRepo.findById(userDetails.getId());
 			if(optionalUserr.isPresent()) {
 				promotedUser.setApprover(optionalUserr.get());
+				
 			}
 			
 			if(employeeDto.getSubDepartment() == null) {
@@ -83,6 +104,7 @@ public class EmployeeService {
 				Optional<SubDepartment> optionalSubDepartment = subDepartmentRepo.findById(subdepartId);
 				if(optionalSubDepartment.isPresent()) {
 					promotedUser.setSubDepartment(optionalSubDepartment.get());
+					emp.setSection(optionalSubDepartment.get());
 				}  else {
 					return ResponseEntity.badRequest().body(new MessageResponse("Error: SubDepartment not found by id " + subdepartId));
 				}
@@ -94,14 +116,28 @@ public class EmployeeService {
 				Optional<Designation> designation = designationRepo.findById(employeeDto.getDesignation());
 				if(designation.isPresent()) {
 					promotedUser.setDesignation(designation.get());
+					emp.setDesignation(designation.get());
 				} else {
 					return ResponseEntity.badRequest().body(new MessageResponse("Error: Designation not found by id" + employeeDto.getDesignation()));
 				}
 			}
 			
+			Optional<WorkingType> workingType = workingRepo.findById(employeeDto.getWorkingType());
+			if(workingType.isEmpty())
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of work"));
+			Optional<JobType> jobType = jobRepo.findById(employeeDto.getJobType());
+			if(jobType.isEmpty())
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of job"));
+			
+			emp.setWorkingType(workingType.get());
+			emp.setJobType(jobType.get());
+			
+			promotedUser.setRemarks(employeeDto.getRemarks());
+			
 			if(promotedUser.getSubDepartment().getDepartment().getId()== promotedUser.getDesignation().getDepartment().getId()) {
 				userRepo.save(user);
 				promotionRepo.save(promotedUser);
+				empRepo.save(emp);
 				return ResponseEntity.ok().body(promotedUser);
 			} else {
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: department are different in subDepartment and desgination"));
@@ -118,10 +154,16 @@ public class EmployeeService {
 		if(optionalUser.isPresent()) {
 			User user = optionalUser.get();
 			
+			Optional<EmployeeOfficialInfo> employee = empRepo.findByUser(user); 
+			if(!employee.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: Doesnot have employee detials of user " + user.getId()));
+			EmployeeOfficialInfo emp = employee.get();
+			
 			Promotion promotion = promotionRepo.findFirstByUserOrderByIdDesc(user);
 			Promotion newPromotion = new Promotion();
 				if(LocalDate.now().isAfter(promotionDto.getJoinDate())) {
 					promotion.setEndDate(promotionDto.getJoinDate());
+					promotion.setStatus(false);
 					newPromotion.setJoinDate(promotionDto.getJoinDate());
 				} else {
 					return ResponseEntity.badRequest().body(new MessageResponse("Error: Date must be in AD and is should not exceed the current date"));
@@ -133,6 +175,7 @@ public class EmployeeService {
 						return ResponseEntity.badRequest().body(new MessageResponse("Error: User " + user.getUsername() + " have already " + designation.get().getName() + " designation"));
 					}
 					newPromotion.setDesignation(designation.get());
+					emp.setDesignation(designation.get());
 				} else {
 					return ResponseEntity.badRequest().body(new MessageResponse("Error: Designation not found by id" + promotionDto.getDesignation()));
 				}
@@ -140,6 +183,7 @@ public class EmployeeService {
 				Optional<SubDepartment> subDepartment = subDepartmentRepo.findById(promotionDto.getSubDepartment());
 				if(subDepartment.isPresent()) {
 					newPromotion.setSubDepartment(subDepartment.get());
+					emp.setSection(subDepartment.get());
 				} else {
 					return ResponseEntity.badRequest().body(new MessageResponse("Error: Sub Department not found by id" + promotionDto.getSubDepartment()));
 				}
@@ -151,6 +195,7 @@ public class EmployeeService {
 				}
 				
 				if(newPromotion.getSubDepartment().getDepartment().getId() == newPromotion.getDesignation().getDepartment().getId()) {
+					empRepo.save(emp);
 					promotionRepo.save(promotion);
 					promotionRepo.save(newPromotion);
 					return ResponseEntity.ok().body(newPromotion);
@@ -286,6 +331,18 @@ public class EmployeeService {
 		return ResponseEntity.ok().body(promotion);
 	     
 	    
+	}
+
+
+	public ResponseEntity<?> deletePromotion(Long id) {
+		Optional<Promotion> optionalPromotion = promotionRepo.findById(id);
+		if(optionalPromotion.isPresent()) {
+			promotionRepo.deleteById(id);
+			return ResponseEntity.ok().body("Succesfully deleted the promotion with id " +id);
+		} else {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any promotion with id " +id));
+		}
+		
 	}
 
 	

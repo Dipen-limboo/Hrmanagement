@@ -2,11 +2,15 @@ package com.humanresourcemanagement.ResourceMangement.Payload.requestDto;
 
 import java.time.LocalDate;
 
+import jakarta.validation.constraints.NotNull;
+
 public class PromotionDto {
 	private LocalDate joinDate;
 	
+	@NotNull
 	private Long subDepartment;
 	
+	@NotNull
 	private Long designation;
 
 	public PromotionDto() {

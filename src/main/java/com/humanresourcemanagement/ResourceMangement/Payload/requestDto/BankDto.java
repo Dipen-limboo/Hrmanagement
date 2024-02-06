@@ -13,7 +13,7 @@ public class BankDto {
 	private String account;
 	
 	@NotEmpty
-	private String holderName;
+	private String address;
 
 	private long user_id;
 	
@@ -23,12 +23,12 @@ public class BankDto {
 	}
 
 	public BankDto(@NotEmpty String name, @NotEmpty String branch, @NotEmpty String account,
-			@NotEmpty String holderName) {
+			@NotEmpty String address) {
 		super();
 		this.name = name;
 		this.branch = branch;
 		this.account = account;
-		this.holderName = holderName;
+		this.address = address;
 	}
 
 	public String getName() {
@@ -55,12 +55,12 @@ public class BankDto {
 		this.account = account;
 	}
 
-	public String getHolderName() {
-		return holderName;
+	public String getAddress() {
+		return address;
 	}
 
-	public void setHolderName(String holderName) {
-		this.holderName = holderName;
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
 	public long getUser_id() {

@@ -12,18 +12,26 @@ import org.springframework.stereotype.Service;
 
 import com.humanresourcemanagement.ResourceMangement.Entity.Department;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
+import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
+import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.JobTypeResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.WorkTypeResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
+import com.humanresourcemanagement.ResourceMangement.Repository.WokingTypeRepo;
 
 @Service
-public class SuperAdminService {
+public class AdminService {
 	@Autowired
 	UserRepository userRepo;
 	
@@ -36,6 +44,12 @@ public class SuperAdminService {
 	@Autowired
 	SubDepartmentRepo subDepartmentRepo;
 	
+	@Autowired
+	WokingTypeRepo workRepo;
+	
+	@Autowired
+	JobTypeRepo jobRepo;
+	
 	public ResponseEntity<?> findDepartment() {
 		List<Department> departmentList = departRepo.findAll();
 		List<DepartmentDto> departmentDtoList = new ArrayList<>();
@@ -44,7 +58,6 @@ public class SuperAdminService {
 			for(Department department: departmentList) {
 				DepartmentDto departmentDto = new DepartmentDto();
 				departmentDto.setName(department.getName());
-				departmentDto.setBranch(department.getBranch());
 				departmentDto.setAddress(department.getAddress());
 				departmentDto.setTel(department.getPhone());
 				
@@ -126,7 +139,6 @@ public class SuperAdminService {
 			Department department = optionalDepartment.get();
 			DepartmentDto departmentDto = new DepartmentDto();
 			departmentDto.setName(department.getName());
-			departmentDto.setBranch(department.getBranch());
 			departmentDto.setAddress(department.getAddress());
 			departmentDto.setTel(department.getPhone());
 			return ResponseEntity.ok().body(departmentDto);
@@ -180,11 +192,7 @@ public class SuperAdminService {
 				department.setName(departmentDto.getName());
 			}
 			
-			if(departmentDto.getBranch() == null) {
-				department.setBranch(department.getBranch());
-			}else {
-				department.setBranch(departmentDto.getBranch());
-			}
+		
 			if(departmentDto.getAddress() == null) {
 				department.setAddress(department.getAddress());
 			} else {
@@ -263,5 +271,93 @@ public class SuperAdminService {
 		} else {
 			return ResponseEntity.badRequest().body("Error: Sub Department not found by id: " +id);
 		}
+	}
+
+	public ResponseEntity<?> findWorkingType() {
+		List <WorkingType> workingTypeLists = workRepo.findAll();
+		List<WorkTypeResponseDto> workingTyperesponseDtoLists = new ArrayList<>();
+		
+		if(workingTypeLists.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: No any list of working type"));
+		for(WorkingType work : workingTypeLists) {
+			WorkTypeResponseDto workResponseDto = new WorkTypeResponseDto();
+			workResponseDto.setWork_type_id(work.getId());
+			workResponseDto.setWork_type(work.getWorkingType());
+			workingTyperesponseDtoLists.add(workResponseDto);
+		}	
+		return ResponseEntity.ok().body(workingTyperesponseDtoLists);
+	}
+
+	public ResponseEntity<?> deleteWorkTypeById(Long id) {
+		Optional<WorkingType> optionalWork = workRepo.findById(id);
+		if(optionalWork.isEmpty())
+			return ResponseEntity.badRequest().body("Error: Work Type not found by id: " +id);
+		workRepo.deleteById(id);
+		return ResponseEntity.ok().body("Succesfuully deleted the working type with id " + id);
+	}
+
+	public ResponseEntity<?> getWorkTypeId(Long id) {
+		Optional<WorkingType> optionalWork = workRepo.findById(id);
+		if(optionalWork.isEmpty())
+			return ResponseEntity.badRequest().body("Error: Work Type not found by id: " +id);
+		WorkingType work = optionalWork.get();
+		WorkTypeResponseDto workResponseDto = new WorkTypeResponseDto();
+		workResponseDto.setWork_type_id(work.getId());
+		workResponseDto.setWork_type(work.getWorkingType());
+		return ResponseEntity.ok().body(workResponseDto);
+	}
+
+	public ResponseEntity<?> updateWorkTypeById(Long id, WorkTypeDto workTypeDto) {
+		Optional<WorkingType> optionalWork = workRepo.findById(id);
+		if(optionalWork.isEmpty())
+			return ResponseEntity.badRequest().body("Error: Work Type not found by id: " +id);
+		WorkingType work = optionalWork.get();
+		work.setWorkingType(workTypeDto.getWorkType());
+		workRepo.save(work);
+		return ResponseEntity.ok().body(work);
+	}
+
+	public ResponseEntity<?> findJobType() {
+		List <JobType> jobTypeLists= jobRepo.findAll();
+		List<JobTypeResponseDto> jobTyperesponseDtoLists = new ArrayList<>();
+		
+		if(jobTypeLists.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: No any list of Job type"));
+		for(JobType job: jobTypeLists) {
+			JobTypeResponseDto jobResponseDto = new JobTypeResponseDto();
+			jobResponseDto.setJob_type_id(job.getId());
+			jobResponseDto.setJob_type_name(job.getJobType());
+			jobTyperesponseDtoLists.add(jobResponseDto);
+		}	
+		return ResponseEntity.ok().body(jobTyperesponseDtoLists);
+	}
+	
+	public ResponseEntity<?> deleteJobTypeById(Long id) {
+		Optional<JobType> optionalJob= jobRepo.findById(id);
+		if(optionalJob.isEmpty())
+			return ResponseEntity.badRequest().body("Error: Job Type not found by id: " +id);
+		jobRepo.deleteById(id);
+		return ResponseEntity.ok().body("Succesfuully deleted the job type with id " + id);
+	}
+	
+	public ResponseEntity<?> getJobTypeId(Long id) {
+		Optional<JobType> optionalJob= jobRepo.findById(id);
+		if(optionalJob.isEmpty())
+			return ResponseEntity.badRequest().body("Error: Job Type not found by id: " +id);
+		JobType job= optionalJob.get();
+		JobTypeResponseDto jobResponseDto = new JobTypeResponseDto();
+		jobResponseDto.setJob_type_id(job.getId());
+		jobResponseDto.setJob_type_name(job.getJobType());
+		return ResponseEntity.ok().body(jobResponseDto);
+	}
+
+	public ResponseEntity<?> updateJobTypeById(Long id, JobTypeDto jobTypeDto) {
+		Optional<JobType> optionalJob= jobRepo.findById(id);
+		if(optionalJob.isEmpty())
+			return ResponseEntity.badRequest().body("Error: Job Type not found by id: " +id);
+		JobType job= optionalJob.get();
+		job.setJobType(jobTypeDto.getJobType());
+		jobRepo.save(job);
+		return ResponseEntity.ok().body(job);
 	}
 }

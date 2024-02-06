@@ -71,6 +71,7 @@ public class WebConfig {
         		.requestMatchers("/Images/**").permitAll()
         		.requestMatchers("/api/users/**").permitAll()
         		.requestMatchers("/api/create/**").permitAll()
+        		.requestMatchers("/api/superAdmin/**").permitAll()
         		.requestMatchers("/api/questionset/**").permitAll()
         		.requestMatchers("/api/forgot-password/**").permitAll()
         		.requestMatchers("/api/answer/**").permitAll()

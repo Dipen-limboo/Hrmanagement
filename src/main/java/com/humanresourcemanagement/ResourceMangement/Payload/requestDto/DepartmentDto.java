@@ -6,10 +6,7 @@ import jakarta.validation.constraints.Pattern;
 public class DepartmentDto {
 	@NotEmpty
 	private String name;
-	
-	@NotEmpty
-	private String branch;
-	
+
 	@NotEmpty
 	private String address;
 	
@@ -23,11 +20,10 @@ public class DepartmentDto {
 		// TODO Auto-generated constructor stub
 	}
 
-	public DepartmentDto(@NotEmpty String name, @NotEmpty String branch, @NotEmpty String address,
+	public DepartmentDto(@NotEmpty String name,  @NotEmpty String address,
 			@NotEmpty @Pattern(regexp = "^\\d{9}$", message = "{The telephone number must contain 9 numbers}") String tel) {
 		super();
 		this.name = name;
-		this.branch = branch;
 		this.address = address;
 		this.tel = tel;
 	}
@@ -39,15 +35,7 @@ public class DepartmentDto {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	public String getBranch() {
-		return branch;
-	}
-
-	public void setBranch(String branch) {
-		this.branch = branch;
-	}
-
+	
 	public String getAddress() {
 		return address;
 	}

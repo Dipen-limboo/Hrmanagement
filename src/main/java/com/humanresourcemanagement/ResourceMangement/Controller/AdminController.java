@@ -18,16 +18,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
-import com.humanresourcemanagement.ResourceMangement.Service.SuperAdminService;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
+import com.humanresourcemanagement.ResourceMangement.Service.AdminService;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/superAdmin")
-public class SuperAdminController {
+public class AdminController {
 
 	@Autowired
-	SuperAdminService service;
+	AdminService service;
 	
 	
 	@GetMapping("/departmentLists")
@@ -54,67 +56,108 @@ public class SuperAdminController {
 		return service.findSubDepartment();
 	}
 	
+	@GetMapping("/getWorkingTypeLists")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> listOfWorkingType(){
+		return service.findWorkingType();
+	}
 	
-	
+	@GetMapping("/getJobTypeLists")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> listOfJobType(){
+		return service.findJobType();
+	}
 	
 	//delete
 	@DeleteMapping("deleteDepartment/{id}")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> deleteDepartment(@PathVariable Long id){
 		return service.deleteDepartmentById(id);
 	}
 	
 	@DeleteMapping("deleteDesignation/{id}")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> deleteDesignation(@PathVariable Long id){
 		return service.deleteDesignationById(id);
 	}
 	
 	@DeleteMapping("deleteSubDepartment/{id}")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> deleteSubDepartment(@PathVariable Long id){
 		return service.deleteSubDepartmentById(id);
 	}
 	
+	@DeleteMapping("/deleteWorkType/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> deleteWorkType(@PathVariable Long id){
+		return service.deleteWorkTypeById(id);
+	}
 	
+	@DeleteMapping("/deleteJobType/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> deleteJobType(@PathVariable Long id){
+		return service.deleteJobTypeById(id);
+	}
 	
 	//getById
 	@GetMapping("/getDepartment/{id}")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> getDepartment(@PathVariable Long id){
 		return service.getDepartmentById(id);
 	}
 	
 	@GetMapping("/getDesignation/{id}")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> getDesignation(@PathVariable Long id){
 		return service.getDesignationById(id);
 	}
 	
 	@GetMapping("/getSubDepartment/{id}")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> getSubDepartment(@PathVariable Long id){
 		return service.getSubDepartmentById(id);
 	}
 	
+	@GetMapping("/getWorkType/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getWorkType(@PathVariable Long id){
+		return service.getWorkTypeId(id);
+	}
 	
+	@GetMapping("/getJobType/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getJobType(@PathVariable Long id){
+		return service.getJobTypeId(id);
+	}
 	
 	//update
 	@PutMapping("/getDepartment/{id}")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> updateDepartmentById(@PathVariable Long id, @RequestBody DepartmentDto departmentDto){
 		return service.updateDepartment(id, departmentDto);
 	}
 	
 	@PutMapping("/getDesignation/{id}")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> updateDesignationById(@PathVariable Long id, @RequestBody DesignationDto designationDto){
 		return service.updateDesignation(id, designationDto);
 	}
 	
 	@PutMapping("/getSubDepartment/{id}")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> updateSubDepartmentById(@PathVariable Long id, @RequestBody SubDepartmentDto subDepartmentDto){
 		return service.updateSubDepartment(id, subDepartmentDto);
+	}
+	
+	@PutMapping("/getWorkType/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> updateWorkType(@PathVariable Long id, @RequestBody WorkTypeDto workTypeDto){
+		return service.updateWorkTypeById(id, workTypeDto);
+	}
+	
+	@PutMapping("/getJobType/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> updateJObType(@PathVariable Long id, @RequestBody JobTypeDto jobTypeDto){
+		return service.updateJobTypeById(id, jobTypeDto);
 	}
 }

@@ -11,7 +11,7 @@ import com.humanresourcemanagement.ResourceMangement.Entity.User;
 
 public interface BankRepo extends JpaRepository<Bank, Long>, JpaSpecificationExecutor<Bank>{
 
-	boolean existsByNameAndHolderName(String name, String holderName);
+	boolean existsByNameAndAddress(String name, String address);
 
 	List<Bank> findByUser(User user);
 
