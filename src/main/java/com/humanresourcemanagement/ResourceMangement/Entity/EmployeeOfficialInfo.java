@@ -27,7 +27,7 @@ public class EmployeeOfficialInfo {
 	private JobType jobType;
 	
 	@ManyToOne(fetch=FetchType.LAZY)
-	@JoinColumn(name="emp_id")
+	@JoinColumn(name="user_id")
 	private User user;
 
 	public EmployeeOfficialInfo() {

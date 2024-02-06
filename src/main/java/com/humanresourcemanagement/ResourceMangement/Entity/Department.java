@@ -10,7 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="Tbl_Departments")
+@Table(name="Tbl_Department")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Department {
 	@Id
