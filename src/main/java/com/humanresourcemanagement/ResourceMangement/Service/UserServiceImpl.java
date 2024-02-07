@@ -144,7 +144,7 @@ public class UserServiceImpl {
 		}
 		User user = new User();
 		user.setFirstName(employeeDto.getFirstName());
-		user.setMiddleName(employeeDto.getMiddleName());
+		if(employeeDto.getMiddleName()==null) {user.setMiddleName(" ");} else {user.setMiddleName(employeeDto.getMiddleName());}
 		user.setLastName(employeeDto.getLastName());
 		user.setEmail(employeeDto.getEmail());
 		String randomPassword = RandomStringUtils.randomAlphanumeric(8);
@@ -394,12 +394,7 @@ public class UserServiceImpl {
 	public ResponseEntity<?> delete(Long id) throws IOException {
 		Optional<User> optionalUser = userRepository.findById(id);
 		if(optionalUser.isPresent()) {
-//			if(additionalRepo.existsByUser(optionalUser.get())) {
-//				additionalRepo.deleteByUser(optionalUser.get());
-//			}
-			if(bankRepo.existsByUser(optionalUser.get())) {
-				bankRepo.deleteByUser(optionalUser.get());
-			}
+
 			if(documentRepo.existsByUser(optionalUser.get())) {
 				List<Document> documentList = documentRepo.findByUser(optionalUser.get());
 				for(Document document: documentList) {

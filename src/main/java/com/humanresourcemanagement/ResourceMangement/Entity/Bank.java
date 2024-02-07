@@ -15,29 +15,21 @@ public class Bank {
 	@Column(name="bank_name")
 	private String name;
 	
-	@Column(name="bank_branch")
-	private String branch;
-	
 	@Column(name="bank_account")
 	private String accountNumber;
 
 	@Column(name="bank_address")
 	private String address;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="user_id")
-	private User user;
-	
 	public Bank() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public Bank(Long id, @Size(max = 90) String name, String branch, String accountNumber, String address) {
+	public Bank(Long id, @Size(max = 90) String name, String accountNumber, String address) {
 		super();
 		this.id = id;
 		this.name = name;
-		this.branch = branch;
 		this.accountNumber = accountNumber;
 		this.address = address;
 	}
@@ -58,13 +50,6 @@ public class Bank {
 		this.name = name;
 	}
 
-	public String getBranch() {
-		return branch;
-	}
-
-	public void setBranch(String branch) {
-		this.branch = branch;
-	}
 
 	public String getAccountNumber() {
 		return accountNumber;
@@ -81,13 +66,5 @@ public class Bank {
 	public void setAddress(String holderName) {
 		this.address = holderName;
 	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	} 
 
 }

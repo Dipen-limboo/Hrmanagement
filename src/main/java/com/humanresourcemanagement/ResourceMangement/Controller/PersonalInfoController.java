@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +29,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Service.InfoService;
 
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -38,31 +40,6 @@ public class PersonalInfoController {
 	InfoService infoService;
 	
 	//get list
-
-	@GetMapping("/accountLists")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
-	public ResponseEntity<?> listOfaccounts(@RequestParam(defaultValue = "1") int page,
-			@RequestParam(defaultValue = "10") int size,
-			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
-			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
-		) {
-			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
-			Pageable pageable = PageRequest.of(page -1, size, sort);
-		return infoService.findAllaccountsOfStaff(pageable);
-	}
-	
-//	@GetMapping("/informationLists")
-//	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
-//	public ResponseEntity<?> additionalListInfo(@RequestParam(defaultValue = "1") int page,
-//			@RequestParam(defaultValue = "10") int size,
-//			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
-//			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
-//		) {
-//			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
-//			Pageable pageable = PageRequest.of(page -1, size, sort);
-//		return infoService.findAlladditionalListofUser(pageable);
-//	}
-	
 	@GetMapping("/familyInfoLists")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> familyInfoLists(@RequestParam(defaultValue = "1") int page,
@@ -87,27 +64,25 @@ public class PersonalInfoController {
 		return infoService.findAllDocumentListOfUser(pageable);
 	}
 	
-	//delete
-
-	@DeleteMapping("/deleteAccount/{id}")
+	@GetMapping("/accountLists")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-	@Transactional
-	public ResponseEntity<?> deleteAccount(@PathVariable Long id, Authentication auth){
-		return infoService.delete(id, auth);
+	public ResponseEntity<?> getAccountListOfUser(Authentication auth) {
+		return infoService.findAllAccountOfUser(auth);
 	}
 	
-//	@DeleteMapping("/deleteAdditional/{id}")
-//	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-//	@Transactional
-//	public ResponseEntity<?> deleteAdditionalInfo(@PathVariable Long id, Authentication auth){
-//		return infoService.deleteAdditional(id, auth);
-//	}
-	
+	//delete
 	@DeleteMapping("/deleteDocument/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
 	@Transactional
 	public ResponseEntity<?> deleteDocument(@PathVariable Long id, Authentication auth) throws IOException{
 		return infoService.deleteDocument(id, auth);
+	}
+	
+	@DeleteMapping("/deleteEmpBankAccount/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@Transactional
+	public ResponseEntity<?> deleteEmpbankAccount(@PathVariable Long id, Authentication auth) throws IOException{
+		return infoService.deleteEmpbankById(id, auth);
 	}
 	
 	@DeleteMapping("/deleteFamilyInfo/{id}")
@@ -118,25 +93,11 @@ public class PersonalInfoController {
 	}
 	
 	//get
-//	@GetMapping("/getAdditionalInfo")
-//	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-//	@Transactional
-//	public ResponseEntity<?> getAddtionalinfoByauth(Authentication auth){
-//		return infoService.getAdditionalInfo(auth);
-//	}
-	
 	@GetMapping("/getDocuments")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
 	@Transactional
 	public ResponseEntity<?> getDocumentsByAuth(Authentication auth){
 		return infoService.getDocuments(auth);
-	}
-	
-	@GetMapping("/getAccount")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-	@Transactional
-	public ResponseEntity<?> getAccountByAuth(Authentication auth){
-		return infoService.getAccount(auth);
 	}
 	
 	@GetMapping("/getFamilyInfos")
@@ -146,13 +107,17 @@ public class PersonalInfoController {
 		return infoService.getFamily(auth);
 	}
 	
-	//update
-//	@PutMapping("/getAdditionalInfo/{id}")
-//	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-//	public ResponseEntity<?> updateAddtionalinfo(@PathVariable Long id, @RequestBody AdditionalDto additionalDto, Authentication auth){
-//		return infoService.updateAdditionalInfo(id, additionalDto, auth);
-//	}
+	@GetMapping("/getEmpBank/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@Transactional
+	public ResponseEntity<?> getEmpBankByAuth(@PathVariable Long id, Authentication auth){
+		return infoService.getEmpBank(id, auth);
+	}
 	
+	
+	
+	//update
+
 	@PutMapping("/getDocuments/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
 	public ResponseEntity<?> updateDocumentsById(@PathVariable Long id,
@@ -165,13 +130,6 @@ public class PersonalInfoController {
 		return infoService.updateDocuments(id,citizenship, pan, nationalityId, issuedDate, issuedPlace, file, auth);
 	}
 	
-	@PutMapping("/getAccount/{id}")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-	public ResponseEntity<?> updateAccountById(@PathVariable Long id, @RequestBody BankDto bankDto, Authentication auth){
-		return infoService.updateAccount(id, bankDto, auth);
-	}
-	
-	
 	@PutMapping("/getFamily/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
 	public ResponseEntity<?> updateFamilyById(@PathVariable Long id, 
@@ -183,5 +141,16 @@ public class PersonalInfoController {
 			@RequestParam(required=false) MultipartFile file,
 			Authentication auth) throws IOException{
 		return infoService.updateFamily(id, firstName, middleName, lastName, relation, phone, file, auth);
+	}
+	
+	@PutMapping("/getEmpBank/{id}")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getEmpBank(@Valid @RequestParam(required=false) String emp_account_number,
+			@RequestParam(required=false) String emp_bank_branch, 
+			@RequestParam(required=false) MultipartFile qrPath,
+			@RequestParam(required=false) Long bank_id,
+			@PathVariable Long id,
+			Authentication auth) throws IOException{
+		return infoService.updateEmpBank(emp_account_number, emp_bank_branch, qrPath,  bank_id, id, auth);
 	}
 }

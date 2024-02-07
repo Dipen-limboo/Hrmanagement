@@ -21,8 +21,11 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Bank;
 import com.humanresourcemanagement.ResourceMangement.Entity.Department;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.Document;
+import com.humanresourcemanagement.ResourceMangement.Entity.EmpBank;
 import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
+import com.humanresourcemanagement.ResourceMangement.Entity.Grade;
 import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
+import com.humanresourcemanagement.ResourceMangement.Entity.Organization;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
@@ -30,6 +33,7 @@ import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
@@ -38,8 +42,11 @@ import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DocumentRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.EmpBankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.FamilyRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.GradeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.OrganizationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
 import com.humanresourcemanagement.ResourceMangement.Repository.WokingTypeRepo;
@@ -70,6 +77,8 @@ public class CreatingService {
 //	
 //	@Autowired
 //	AdditionalRepo additionalRepo; 
+	@Autowired
+	EmpBankRepo empBankRepo;
 	
 	@Autowired
 	SubDepartmentRepo subDepartmentRepo; 	
@@ -79,6 +88,12 @@ public class CreatingService {
 	
 	@Autowired
 	JobTypeRepo jobRepo;
+	
+	@Autowired
+	OrganizationRepo orgRepo;
+	
+	@Autowired
+	GradeRepo gradeRepo;
 	
 	@Autowired
 	EncryptDecrypt encryptSer;
@@ -116,24 +131,14 @@ public class CreatingService {
 		return ResponseEntity.ok().body(designation);
 	}
 
-	public ResponseEntity<?> addBank(@Valid BankDto bankDto, Authentication auth) {
+	public ResponseEntity<?> addBank(@Valid BankDto bankDto) {
 		if(bankRepo.existsByNameAndAddress(bankDto.getName(), bankDto.getAddress())){
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: Already exists."));
 		}
 		Bank bank = new Bank();
 		bank.setName(bankDto.getName());
-		bank.setBranch(bankDto.getBranch());
 		bank.setAccountNumber(bankDto.getAccount());
 		bank.setAddress(bankDto.getAddress());
-		
-		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-		Long userId = userDetails.getId();
-		Optional<User> optionalUser = userRepo.findById(userId);
-		if(optionalUser.isPresent()) {
-			bank.setUser(optionalUser.get());
-		} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: Usernot found by  id" + userId));
-		}
 		bankRepo.save(bank);
 		return ResponseEntity.ok().body(bank);
 	}
@@ -196,51 +201,6 @@ public class CreatingService {
 		}
 	}
 
-	
-
-//	public ResponseEntity<?> addAdditional(@Valid AdditionalDto additionalDto, Authentication auth) {
-//		AdditionalInfo additional = new AdditionalInfo();
-//		additional.setName(additionalDto.getName());
-//		additional.setLevel(additionalDto.getLevel());
-//		additional.setJoinDate(additionalDto.getJoinDate());
-//		additional.setEndDate(additionalDto.getEndDate());
-//		
-//		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-//		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
-//		if(optionalUser.isPresent()) {
-//			additional.setUser(optionalUser.get());
-//		}
-//		Set<String> strType = additionalDto.getType();
-//		if(strType==null) {
-//			additional.setType(null);
-//		} else {
-//			strType.forEach(type -> {
-//				switch(type) {
-//				case "education":
-//					additional.setType(Type.EDUCATION);
-//					break;
-//				case "experience":
-//					additional.setType(Type.EXPERIENCE);
-//					break;
-//				case "training":
-//					additional.setType(Type.TRAINING);
-//					break;
-//				default:
-//					additional.setType(null);
-//				}
-//			});
-//		}
-//		
-//		if(strType.contains("education")) {
-//			additional.setBoard(additionalDto.getBoard());
-//			additional.setGpa(additionalDto.getGpa());
-//		} else {
-//			additional.setBoard(null);
-//			additional.setGpa(0.00);
-//		}
-//		additionalRepo.save(additional);
-//		return ResponseEntity.ok().body("Successfully added to the additional info of " + optionalUser.get().getUsername());
-//	}
 
 	public ResponseEntity<?> addFamily(@Valid String firstName, String middleName, String lastName,
 			Set<String> relation, String phone, MultipartFile file, Authentication auth) throws IOException {
@@ -344,5 +304,73 @@ public class CreatingService {
 		jobRepo.save(job);
 		return ResponseEntity.ok().body(job);
 	}
-	
+
+	public ResponseEntity<?> saveOrg(@Valid String org_name, String org_address, String org_email, String org_phone,
+			String org_website, MultipartFile org_logo_path) throws IOException {
+		Organization org = new Organization();
+		org.setOrgName(org_name);
+		org.setOrgAddress(org_address);
+		org.setOrgEmail(org_email);
+		org.setOrgPhone(org_phone);
+		org.setOrgWebsite(org_website);
+		Path uploadsDir = Paths.get("src/main/resources/static/Images");
+		if(!Files.exists(uploadsDir)) {
+			Files.createDirectories(uploadsDir);
+		}
+		
+		String fileName = StringUtils.cleanPath(org_logo_path.getOriginalFilename());
+		Path filePath = uploadsDir.resolve(fileName);
+		
+		if(familyRepo.existsByFile(filePath.toString())) {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Image already exists with " + org_logo_path));
+		}
+		Files.copy(org_logo_path.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+		org.setPath(filePath.toString());
+		orgRepo.save(org);
+		return ResponseEntity.ok().body(org);
+	}
+
+	public ResponseEntity<?> saveGrad(@Valid GradeDto gradeDto) {
+		Grade grade = new Grade();
+		grade.setGrade(gradeDto.getGrade_type());
+		Optional<Department> department = departRepo.findById(gradeDto.getDepartment_id());
+		if(department.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("There is no such type of department"));
+		grade.setDepartment(department.get());
+		gradeRepo.save(grade);
+		return ResponseEntity.ok().body(grade);
+	}
+
+	public ResponseEntity<?> addEmpBank(@Valid String emp_account_number, String emp_bank_branch, MultipartFile qrPath,
+			 Long bank_id, Authentication auth) throws IOException {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			EmpBank empbank = new EmpBank();
+			empbank.setAccountNumber(emp_account_number);
+			empbank.setBranch(emp_bank_branch);
+			
+			Path uploadsDir = Paths.get("src/main/resources/static/QR");
+			if(!Files.exists(uploadsDir)) 
+				Files.createDirectories(uploadsDir);
+			String fileName = StringUtils.cleanPath(qrPath.getOriginalFilename());
+			Path filePath = uploadsDir.resolve(fileName);
+			
+			if(familyRepo.existsByFile(filePath.toString())) 
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: Image already exists with " + qrPath));
+			Files.copy(qrPath.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+			empbank.setQrPath(filePath.toString());
+			empbank.setUser(user);
+			Optional<Bank> bank = bankRepo.findById(bank_id);
+			if(bank.isEmpty())
+				return ResponseEntity.badRequest().body(new MessageResponse("Bank not found with id " +bank_id));
+			empbank.setBank(bank.get());
+			empBankRepo.save(empbank);
+			return ResponseEntity.ok().body(empbank);
+		} else {
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found by id " + userDetails.getId()));
+		}
+	}
+
 }

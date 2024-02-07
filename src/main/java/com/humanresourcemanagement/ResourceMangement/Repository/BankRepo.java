@@ -13,15 +13,4 @@ public interface BankRepo extends JpaRepository<Bank, Long>, JpaSpecificationExe
 
 	boolean existsByNameAndAddress(String name, String address);
 
-	List<Bank> findByUser(User user);
-
-	void deleteByIdAndUser(Long id, User user);
-
-	boolean existsByUser(User user);
-
-	void deleteByUser(User user);
-
-	Optional<Bank> findByIdAndUser(Long id, User user);
-
-
 }

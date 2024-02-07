@@ -1,5 +1,10 @@
 package com.humanresourcemanagement.ResourceMangement.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -9,26 +14,43 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.humanresourcemanagement.ResourceMangement.Entity.Bank;
 import com.humanresourcemanagement.ResourceMangement.Entity.Department;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
+import com.humanresourcemanagement.ResourceMangement.Entity.EmpBank;
+import com.humanresourcemanagement.ResourceMangement.Entity.Grade;
 import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
+import com.humanresourcemanagement.ResourceMangement.Entity.Organization;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EmpBankResponseDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.GradeResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.JobTypeResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.OrganizationResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.WorkTypeResponseDto;
+import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.EmpBankRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.GradeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.OrganizationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
 import com.humanresourcemanagement.ResourceMangement.Repository.WokingTypeRepo;
+
+import jakarta.validation.Valid;
 
 @Service
 public class AdminService {
@@ -49,6 +71,18 @@ public class AdminService {
 	
 	@Autowired
 	JobTypeRepo jobRepo;
+	
+	@Autowired
+	OrganizationRepo orgRepo;
+	
+	@Autowired
+	GradeRepo gradeRepo;
+	
+	@Autowired
+	BankRepo bankRepo;
+	
+	@Autowired
+	EmpBankRepo empBankRepo;
 	
 	public ResponseEntity<?> findDepartment() {
 		List<Department> departmentList = departRepo.findAll();
@@ -359,5 +393,244 @@ public class AdminService {
 		job.setJobType(jobTypeDto.getJobType());
 		jobRepo.save(job);
 		return ResponseEntity.ok().body(job);
+	}
+
+	public ResponseEntity<?> findOrg() {
+		List<Organization> orgList = orgRepo.findAll();
+		List<OrganizationResponseDto> orgResponseDtoList = new ArrayList<>();
+		
+		if(orgList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("There is not any organization in the database"));
+		for(Organization org: orgList) {
+			OrganizationResponseDto orgResponseDto = new OrganizationResponseDto();
+			orgResponseDto.setOrg_id(org.getId());
+			orgResponseDto.setOrg_name(org.getOrgName());
+			orgResponseDto.setOrg_address(org.getOrgAddress());
+			orgResponseDto.setOrg_email(org.getOrgEmail());
+			orgResponseDto.setOrg_phone(org.getOrgPhone());
+			orgResponseDto.setOrg_website(org.getOrgWebsite());
+			orgResponseDto.setOrg_logo_path(org.getPath());
+			orgResponseDtoList.add(orgResponseDto);
+		}
+		return ResponseEntity.ok().body(orgResponseDtoList);
+	}
+
+	public ResponseEntity<?> deleteOrgById(Long id) {
+		Optional<Organization> optionalOrg = orgRepo.findById(id);
+		if(optionalOrg.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Cannot find with organization with id: " + id));
+		orgRepo.deleteById(id);
+		return ResponseEntity.ok().body("Succesfully deleted the organization with Id "+ id);
+	}
+
+	public ResponseEntity<?> getOrganizationById(Long id) {
+		Optional<Organization> optionalOrg = orgRepo.findById(id);
+		if(optionalOrg.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Cannot find with organization with id: " + id));
+		Organization org = optionalOrg.get();
+		OrganizationResponseDto orgResponseDto = new OrganizationResponseDto();
+		orgResponseDto.setOrg_id(org.getId());
+		orgResponseDto.setOrg_name(org.getOrgName());
+		orgResponseDto.setOrg_address(org.getOrgAddress());
+		orgResponseDto.setOrg_email(org.getOrgEmail());
+		orgResponseDto.setOrg_phone(org.getOrgPhone());
+		orgResponseDto.setOrg_website(org.getOrgWebsite());
+		orgResponseDto.setOrg_logo_path(org.getPath());
+		return ResponseEntity.ok().body(orgResponseDto);
+	}
+
+	public ResponseEntity<?> UpdateOrgById(Long id, @Valid String org_name, String org_address, String org_email,
+			String org_phone, String org_website, MultipartFile org_logo_path) throws IOException {
+		Optional<Organization> optionalOrg = orgRepo.findById(id);
+		if(optionalOrg.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Cannot find with organization with id: " + id));
+		Organization org = optionalOrg.get();
+		if(org_name==null) {
+			org.setOrgName(org.getOrgName());
+		} else {
+			org.setOrgName(org_name);
+		}
+		if(org_address == null) {
+			org.setOrgAddress(org.getOrgAddress());
+		} else {
+			org.setOrgAddress(org_address);
+		}
+		if(org_email == null ) {
+			org.setOrgEmail(org.getOrgEmail());
+		} else {
+			org.setOrgEmail(org_email);
+		}
+		if(org_phone == null) {
+			org.setOrgPhone(org.getOrgPhone());
+		} else {
+			org.setOrgPhone(org_phone);
+		}
+		if(org_website == null) {
+			org.setOrgWebsite(org.getOrgWebsite());
+		} else {
+			org.setOrgWebsite(org_website);
+		}
+		if(org_logo_path == null) {
+			org.setPath(org.getPath());
+		} else {
+			Path uploadsDir = Paths.get("src/main/resources/static/Images");
+			if(!Files.exists(uploadsDir)) 
+				Files.createDirectories(uploadsDir);
+			String fileName = StringUtils.cleanPath(org_logo_path.getOriginalFilename());
+			Path filePath = uploadsDir.resolve(fileName);
+			if(orgRepo.existsByPath(filePath.toString())) 
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: Images already exists with " + org_logo_path));
+			String path = org.getPath();
+			if(path != null && !path.isEmpty()) 
+				Files.deleteIfExists(Paths.get(path));
+			Files.copy(org_logo_path.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+			org.setPath(filePath.toString());
+		}
+		orgRepo.save(org);
+		return ResponseEntity.ok().body(org);
+	}
+
+	public ResponseEntity<?> findGrade(Pageable pageable) {
+		Page<Grade> gradeList = gradeRepo.findAll(pageable);
+		List<GradeResponseDto> gradeResponseDtoList =  new ArrayList<>();
+		if(gradeList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("There is not any grade in the database"));
+ 		for(Grade grade: gradeList) {
+ 			GradeResponseDto gradeResponseDto = new GradeResponseDto();
+ 			gradeResponseDto.setGrade_id(grade.getId());
+ 			gradeResponseDto.setGrade_type(grade.getGrade());
+ 			gradeResponseDto.setDepartment_id(grade.getDepartment().getId());
+ 			gradeResponseDtoList.add(gradeResponseDto);
+ 		}
+		return ResponseEntity.ok().body(gradeResponseDtoList);
+	}
+
+	public ResponseEntity<?> deleteGradeById(Long id) {
+		Optional<Grade> grade = gradeRepo.findById(id);
+		if(grade.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Grade not found by id " + id));
+		gradeRepo.deleteById(id);
+		return ResponseEntity.ok().body("Succesfully deleted the grade with Id "+ id);
+	}
+
+	public ResponseEntity<?> getGradeById(Long id) {
+		Optional<Grade> gradeOptional = gradeRepo.findById(id);
+		if(gradeOptional.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Grade not found by id " + id));
+		Grade grade = gradeOptional.get();
+		GradeResponseDto gradeResponseDto = new GradeResponseDto();
+		gradeResponseDto.setGrade_id(grade.getId());
+		gradeResponseDto.setGrade_type(grade.getGrade());
+		gradeResponseDto.setDepartment_id(grade.getDepartment().getId());
+		return ResponseEntity.ok().body(gradeResponseDto);
+	}
+
+	public ResponseEntity<?> updateGradeById(Long id, GradeDto gradeDto) {
+		Optional<Grade> gradeOptional = gradeRepo.findById(id);
+		if(gradeOptional.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Grade not found by id " + id));
+		Grade grade = gradeOptional.get();
+		if(gradeDto.getGrade_type() == null) {
+			grade.setGrade(grade.getGrade());
+		} else {
+			grade.setGrade(gradeDto.getGrade_type());
+		}
+		if(gradeDto.getDepartment_id() == null) {
+			grade.setDepartment(grade.getDepartment());
+		} else {
+			Optional<Department> department = departRepo.findById(gradeDto.getDepartment_id());
+			if(department.isEmpty())
+				return ResponseEntity.badRequest().body(new MessageResponse("There is no such type of department"));
+			grade.setDepartment(department.get());
+		}
+		gradeRepo.save(grade);
+		return ResponseEntity.ok().body(grade);
+	}
+	
+	
+	
+	public ResponseEntity<?> findAllBank(Pageable pageable) {
+		Page<Bank> bankList = bankRepo.findAll(pageable);
+		List<BankDto> bankDtoList = new ArrayList<>();
+		if(!bankList.isEmpty()) {
+			for(Bank bank: bankList) {
+				BankDto bankDto = new BankDto();
+				bankDto.setName(bank.getName());
+				bankDto.setAddress(bank.getAddress());
+				bankDto.setAccount(bank.getAccountNumber());
+				bankDtoList.add(bankDto);
+			}
+			return ResponseEntity.ok().body(bankDtoList);
+		} else {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any bank details"));
+		}
+	}
+	
+	public ResponseEntity<?> delete(Long id) {
+		Optional<Bank> optionalBank = bankRepo.findById(id);
+		if(optionalBank.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Bank not found with id " +id));
+		bankRepo.deleteById(id);
+		return ResponseEntity.ok().body("Succesfully deleted the account id" + id);
+	}
+
+	public ResponseEntity<?> getAccount(Long id) {
+		Optional<Bank> optionalBank = bankRepo.findById(id);
+		if(optionalBank.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Bank not found with id " +id));
+		Bank bank = optionalBank.get();
+		BankDto bankDto = new BankDto();
+		bankDto.setAddress(bank.getAddress());
+		bankDto.setAccount(bank.getAccountNumber());
+		bankDto.setName(bank.getName());
+		return ResponseEntity.ok().body(bankDto);
+	}
+	
+	public ResponseEntity<?> updateAccount(Long id, BankDto bankDto) {
+		
+		Optional<Bank> optionalBank = bankRepo.findById(id);
+		if(optionalBank.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Bank not found with id " +id));
+		Bank bank = optionalBank.get();
+		
+		if(bankDto.getAddress() == null) {
+			bank.setAddress(bank.getAddress());
+		} else {
+			bank.setAddress(bankDto.getAddress());
+		} 
+		if(bankDto.getAccount() == null) {
+			bank.setAccountNumber(bank.getAccountNumber());
+		} else {
+			bank.setAccountNumber(bankDto.getAccount());
+		}
+		if(bankDto.getName() == null) {
+			bank.setName(bank.getName());
+		} else {
+			bank.setName(bankDto.getName());
+		}
+
+		bankRepo.save(bank);
+		return ResponseEntity.ok().body(bank);
+	
+		
+	}
+
+	public ResponseEntity<?> findEmpBank(Pageable pageable) {
+		Page<EmpBank> empbankList = empBankRepo.findAll(pageable);
+		List<EmpBankResponseDto> empBankResponseDtoList = new ArrayList<>();
+		if(empbankList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any account of any employees"));
+		for(EmpBank empBank: empbankList) {
+			EmpBankResponseDto responseDto = new EmpBankResponseDto();
+			responseDto.setBank_id(empBank.getId());
+			responseDto.setEmp_account_number(empBank.getAccountNumber());
+			responseDto.setEmp_bank_branch(empBank.getBranch());
+			responseDto.setEmp_bank_id(empBank.getBank().getId());
+			responseDto.setUser_id(empBank.getUser().getId());
+			responseDto.setQrPath(empBank.getQrPath());
+			responseDto.setHoldername(empBank.getUser().getFirstName() +" " + empBank.getUser().getMiddleName() + " " + empBank.getUser().getLastName());
+			empBankResponseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(empBankResponseDtoList);
 	}
 }

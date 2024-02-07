@@ -23,37 +23,30 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.humanresourcemanagement.ResourceMangement.EncryptDecrypt.EncryptDecrypt;
 import com.humanresourcemanagement.ResourceMangement.Entity.Bank;
-import com.humanresourcemanagement.ResourceMangement.Entity.Department;
-import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.Document;
+import com.humanresourcemanagement.ResourceMangement.Entity.EmpBank;
 import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
-import com.humanresourcemanagement.ResourceMangement.Enum.Type;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.AdditionalDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DocumentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.DocumentResponseDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EmpBankResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.FamilyDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
-import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
-import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DocumentRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.EmpBankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.FamilyRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
 import com.humanresourcemanagement.ResourceMangement.security.service.UserDetailsImpl;
+
+import jakarta.validation.Valid;
 
 @Service
 public class InfoService {
 	@Autowired
 	UserRepository userRepo;
 	
-//	@Autowired
-//	AdditionalRepo additionalRepo;
-//	
 	@Autowired
 	BankRepo bankRepo;
 	
@@ -63,65 +56,37 @@ public class InfoService {
 	@Autowired 
 	FamilyRepo familyRepo;
 	
-	public ResponseEntity<?> findAllaccountsOfStaff(Pageable pageable) {
-		Page<Bank> bankList = bankRepo.findAll(pageable);
-		List<BankDto> bankDtoList = new ArrayList<>();
-		
-		if(!bankList.isEmpty()) {
-			for(Bank bank: bankList) {
-				BankDto bankDto = new BankDto();
-				bankDto.setName(bank.getName());
-				bankDto.setBranch(bank.getBranch());
-				bankDto.setAddress(bank.getAddress());
-				bankDto.setAccount(bank.getAccountNumber());
+	@Autowired
+	EmpBankRepo empBankRepo;
+	
+	public ResponseEntity<?> findAllAccountOfUser(Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			if(empBankRepo.existsByUser(user)) {
+				List<EmpBank> bankList = empBankRepo.findByUser(user);
+				List<EmpBankResponseDto> bankDtoList = new ArrayList<>();
 				
-				Optional<User> user = userRepo.findById(bank.getUser().getId());
-				if(user.isPresent()) {
-					bankDto.setUser_id(user.get().getId());
+				for(EmpBank empbank: bankList) {
+					EmpBankResponseDto bankDto = new EmpBankResponseDto();
+					bankDto.setBank_id(empbank.getId());
+					bankDto.setEmp_account_number(empbank.getAccountNumber());
+					bankDto.setEmp_bank_branch(empbank.getBranch());
+					bankDto.setEmp_bank_id(empbank.getBank().getId());
+					bankDto.setUser_id(user.getId());
+					bankDto.setQrPath(empbank.getQrPath());
+					bankDto.setHoldername(user.getFirstName() + user.getMiddleName() + user.getLastName());
+					bankDtoList.add(bankDto);
 				}
-				bankDtoList.add(bankDto);
+				return ResponseEntity.ok().body(bankDtoList);
+			} else {
+				return ResponseEntity.badRequest().body(new MessageResponse("Error:Bank account not found by user id" + user.getId()));
 			}
-			return ResponseEntity.ok().body(bankDtoList);
 		} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any account of any employees"));
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
 		}
 	}
-
-//	public ResponseEntity<?> findAlladditionalListofUser(Pageable pageable) {
-//		Page<AdditionalInfo> additionalList = additionalRepo.findAll(pageable);
-//		List<AdditionalDto> additionalDtoList = new ArrayList<>();
-//		
-//		if(!additionalList.isEmpty()) {
-//			for(AdditionalInfo additional : additionalList) {
-//				AdditionalDto additionalDto = new AdditionalDto();
-//				additionalDto.setName(additional.getName());
-//				
-//				String type = additional.getType().toString();
-//				String delimter = " ";
-//				String[] elements = type.split(delimter);
-//				Set<String> typeSet = new HashSet<>();
-//				for(String element: elements) {
-//					typeSet.add(element);
-//				}
-//				additionalDto.setType(typeSet);
-//				
-//				additionalDto.setJoinDate(additional.getJoinDate());
-//				additionalDto.setEndDate(additional.getEndDate());
-//				additionalDto.setLevel(additional.getLevel());
-//				additionalDto.setBoard(additional.getBoard());
-//				additionalDto.setGpa(additional.getGpa());
-//				Optional<User> user= userRepo.findById(additional.getUser().getId());
-//				if(user.isPresent()) {
-//					additionalDto.setUserId(user.get().getId());
-//				}
-//								
-// 				additionalDtoList.add(additionalDto);
-//			}
-//			return ResponseEntity.ok().body(additionalDtoList);
-//		} else {
-//			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any addtional information of employees"));
-//		}
-//	}
 
 	public ResponseEntity<?> findAllfamilyInfoListofUser(Pageable pageable) {
 		Page<FamilyInfo> familyList = familyRepo.findAll(pageable);
@@ -198,27 +163,27 @@ public class InfoService {
 	
 	//delete part
 
-	
-	public ResponseEntity<?> delete(Long id, Authentication auth) {
+	public ResponseEntity<?> deleteEmpbankById(Long id, Authentication auth) throws IOException {
 		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
 		Optional<User> optionalUser = userRepo.findById(userdetails.getId());
 		if(optionalUser.isPresent()) {
 			User user = optionalUser.get();
-			bankRepo.deleteByIdAndUser(id, user);
+			Optional<EmpBank> optionalBank = empBankRepo.findById(id);
+			if(optionalBank.isEmpty())
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: Account not found by id" + id));
+			Optional<EmpBank> optionalempBank= empBankRepo.findByIdAndUser(id, user);
+			if(optionalempBank.isPresent()) {
+				String filePath = optionalempBank.get().getQrPath();
+				if(filePath != null && !filePath.isEmpty()) {
+					Files.deleteIfExists(Paths.get(filePath));
+				}
+			empBankRepo.deleteByIdAndUser(id, user);
+			} else {
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: You cannot delete this account."));
+			}
 		}
-		return ResponseEntity.ok().body("Succesfully deleted the account id" + id);
+		return ResponseEntity.ok().body("Succesfully deleted the Document with id" + id);
 	}
-
-//	public ResponseEntity<?> deleteAdditional(Long id, Authentication auth) {
-//		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
-//		Optional<User> optionalUser = userRepo.findById(userdetails.getId());
-//		if(optionalUser.isPresent()) {
-//			User user = optionalUser.get();
-//			additionalRepo.deleteByIdAndUser(id, user);
-//		}
-//		return ResponseEntity.ok().body("Succesfully deleted the additional info with id" + id);
-//	}
-
 	public ResponseEntity<?> deleteDocument(Long id, Authentication auth) throws IOException {
 		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
 		Optional<User> optionalUser = userRepo.findById(userdetails.getId());
@@ -260,38 +225,32 @@ public class InfoService {
 
 	
 	
-//	public ResponseEntity<?> getAdditionalInfo(Authentication auth) {
-//		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-//		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
-//		if(optionalUser.isPresent()) {
-//			User user = optionalUser.get();
-//			if(additionalRepo.existsByUser(user)) {
-//				List<AdditionalInfo> infoList = additionalRepo.findByUser(user);
-//				List<AdditionalDto> additionalDtoList = new ArrayList<>();
-//				for (AdditionalInfo additional: infoList) {
-//					AdditionalDto additionalDto = new AdditionalDto();
-//					String type = additional.getType().toString();
-//					Set<String> str = new HashSet<>();
-//					str.add(type);
-//					additionalDto.setType(str);
-//					additionalDto.setName(additional.getName());
-//					additionalDto.setLevel(additional.getLevel());
-//					additionalDto.setJoinDate(additional.getJoinDate());
-//					additionalDto.setEndDate(additional.getEndDate());
-//					additionalDto.setUserId(additional.getUser().getId());
-//					additionalDto.setBoard(additional.getBoard());
-//					additionalDto.setGpa(additional.getGpa());
-//					additionalDtoList.add(additionalDto);
-//				}
-//				return ResponseEntity.ok().body(additionalDtoList);
-//			} else {
-//				return ResponseEntity.badRequest().body(new MessageResponse("Error: Additional Infos not found by user id" + user.getId()));
-//			}
-//			
-//		} else {
-//			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
-//		}
-//	}
+	//Get
+	public ResponseEntity<?> getEmpBank(Long id, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			if(!empBankRepo.existsByUser(user))
+				return ResponseEntity.badRequest().body(new MessageResponse("You don't have any account "));
+			Optional<EmpBank> empBankOptional = empBankRepo.findByIdAndUser(id, user);
+			if(empBankOptional.isEmpty())
+				return ResponseEntity.badRequest().body(new MessageResponse("User does not get an access to get id " + id));
+			EmpBank empBank = empBankOptional.get();
+			EmpBankResponseDto responseDto = new EmpBankResponseDto();
+			responseDto.setBank_id(empBank.getId());
+			responseDto.setEmp_account_number(empBank.getAccountNumber());
+			responseDto.setEmp_bank_branch(empBank.getBranch());
+			responseDto.setEmp_bank_id(empBank.getBank().getId());
+			responseDto.setHoldername(empBank.getUser().getFirstName() +" "+ empBank.getUser().getMiddleName()+" " + empBank.getUser().getLastName());
+			responseDto.setQrPath(empBank.getQrPath());
+			responseDto.setUser_id(empBank.getUser().getId());
+			return ResponseEntity.ok().body(responseDto);
+		} else {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
+		}
+		
+	}
 	
 	public ResponseEntity<?> getDocuments(Authentication auth) {
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
@@ -335,32 +294,6 @@ public class InfoService {
 		}
 	}
 	
-	public ResponseEntity<?> getAccount(Authentication auth) {
-		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
-		if(optionalUser.isPresent()) {
-			User user = optionalUser.get();
-			if(bankRepo.existsByUser(user)) {
-				List<Bank> bankList = bankRepo.findByUser(user);
-				List<BankDto> bankDtoList = new ArrayList<>();
-				
-				for(Bank bank: bankList) {
-					BankDto bankDto = new BankDto();
-					bankDto.setAddress(bank.getAddress());
-					bankDto.setAccount(bank.getAccountNumber());
-					bankDto.setName(bank.getName());
-					bankDto.setBranch(bank.getBranch());
-					bankDto.setUser_id(bank.getUser().getId());
-					bankDtoList.add(bankDto);
-				}
-				return ResponseEntity.ok().body(bankDtoList);
-			} else {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error:Bank account not found by user id" + user.getId()));
-			}
-		} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
-		}
-	}
 	
 	public ResponseEntity<?> getFamily(Authentication auth) {
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
@@ -394,96 +327,6 @@ public class InfoService {
 	}
 	
 	//update part
-//	public ResponseEntity<?> updateAdditionalInfo(Long id, AdditionalDto additionalDto, Authentication auth) {
-//		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-//		Optional<User> user = userRepo.findById(userDetails.getId());
-//		if(user.isPresent()) {
-//			Optional<AdditionalInfo> optionalInfo = additionalRepo.findByUserAndId(user.get(), id);
-//			if(optionalInfo.isPresent()) {
-//				AdditionalInfo additional = optionalInfo.get();
-//				if(additionalDto.getType() == null) {
-//					additional.setType(additional.getType());
-//				} else {
-//					Set<String> str = additionalDto.getType();
-//					str.forEach(type -> {
-//						switch(type) {
-//						case "education":
-//							additional.setType(Type.EDUCATION);
-//						break;
-//						case "experience":
-//							additional.setType(Type.EXPERIENCE);
-//						break;
-//						case "training":
-//							additional.setType(Type.TRAINING);
-//						break;
-//						default:
-//							additional.setType(additional.getType());
-//						}
-//					});
-//					if(str.contains("education")) {
-//						if(additionalDto.getBoard() == null) {
-//							additional.setBoard(additional.getBoard());
-//						} else {
-//							additional.setBoard(additionalDto.getBoard());
-//						}
-//						
-//						if(additionalDto.getGpa()== 0.00){
-//							additional.setGpa(additional.getGpa());
-//						} else {
-//							additional.setGpa(additionalDto.getGpa());
-//						}
-//					}
-//				}
-//				
-//				LocalDate currentDate = LocalDate.now();
-//				if(additionalDto.getName()==null) {
-//					additional.setName(additional.getName());
-//				} else {
-//					additional.setName(additionalDto.getName());
-//				}
-//				
-//				if(additionalDto.getLevel() == null) {
-//					additional.setLevel(additional.getLevel());
-//				} else {
-//					additional.setLevel(additionalDto.getLevel());
-//				}
-//				
-//				if(additionalDto.getBoard() == null) {
-//					additional.setBoard(additional.getBoard());
-//				} else {
-//					additional.setBoard(additionalDto.getBoard());
-//				}
-//				
-//				if(additionalDto.getJoinDate() == null) {
-//					additional.setJoinDate(additional.getJoinDate());
-//				} else {
-//					if(currentDate.isAfter(additional.getJoinDate())) {
-//						additional.setJoinDate(additionalDto.getJoinDate());
-//					} else {
-//						return ResponseEntity.badRequest().body(new MessageResponse("Error: Join date must not exceed " + currentDate));
-//					}
-//				}
-//				
-//				if(additionalDto.getEndDate() == null) {
-//					additional.setEndDate(additional.getEndDate());
-//				} else {
-//					if(currentDate.isAfter(additional.getEndDate())) {
-//						additional.setEndDate(additionalDto.getEndDate());
-//					} else {
-//						return ResponseEntity.badRequest().body(new MessageResponse("Error: End date must not exceed " + currentDate));
-//					}
-//				}
-//				additional.setUser(additional.getUser());
-//				additionalRepo.save(additional);
-//				return ResponseEntity.ok().body(additional);
-//				} else {
-//					return ResponseEntity.badRequest().body(new MessageResponse("Error: User " + user.get().getId() + " has no authority to modify or update " + id));
-//				}
-//			} else {
-//			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
-//		}
-//	}
-
 	public ResponseEntity<?> updateDocuments(Long id, String citizenship, String pan, String nationalityId,
 			LocalDate issuedDate, String issuedPlace, MultipartFile file, Authentication auth) {
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
@@ -572,44 +415,7 @@ public class InfoService {
 		}
 	}
 
-	public ResponseEntity<?> updateAccount(Long id, BankDto bankDto, Authentication auth) {
-		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
-		if(optionalUser.isPresent()) {
-			User user = optionalUser.get();
-			Optional<Bank> optionalBank = bankRepo.findByIdAndUser(id, user);
-			if(optionalBank.isPresent()) {
-				Bank bank = optionalBank.get();
-				if(bankDto.getAddress() == null) {
-					bank.setAddress(bank.getAddress());
-				} else {
-					bank.setAddress(bankDto.getAddress());
-				} 
-				if(bankDto.getAccount() == null) {
-					bank.setAccountNumber(bank.getAccountNumber());
-				} else {
-					bank.setAccountNumber(bankDto.getAccount());
-				}
-				if(bankDto.getName() == null) {
-					bank.setName(bank.getName());
-				} else {
-					bank.setName(bankDto.getName());
-				}
-				if(bankDto.getBranch() == null) {
-					bank.setBranch(bank.getBranch());
-				} else {
-					bank.setBranch(bankDto.getBranch());
-				}
-				bank.setUser(user);
-				bankRepo.save(bank);
-				return ResponseEntity.ok().body(bank);
-			} else {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: User id " + user.getId() + " doesnot have an authority to modify this bank details " +id));
-			}
-		} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
-		}
-	}
+	
 
 	public ResponseEntity<?> updateFamily(Long id, String firstName, String middleName, String lastName,
 			Set<String> relation, String phone, MultipartFile file, Authentication auth) throws IOException {
@@ -708,5 +514,52 @@ public class InfoService {
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
 		}
 	}
+
+	public ResponseEntity<?> updateEmpBank(@Valid String emp_account_number, String emp_bank_branch,
+			MultipartFile qrPath, Long bank_id, Long id, Authentication auth) throws IOException {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isPresent()) {
+			User user = optionalUser.get();
+			if(!empBankRepo.existsByUser(user))
+				return ResponseEntity.badRequest().body(new MessageResponse("You don't have any account "));
+			Optional<EmpBank> empBankOptional = empBankRepo.findByIdAndUser(id, user);
+			if(empBankOptional.isEmpty())
+				return ResponseEntity.badRequest().body(new MessageResponse("User does not get an access to get id " + id));
+			EmpBank empBank = empBankOptional.get();
+			if(emp_account_number == null) {empBank.setAccountNumber(empBank.getAccountNumber());} else {empBank.setAccountNumber(emp_account_number);}
+			if(emp_bank_branch==null) {empBank.setBranch(empBank.getBranch());} else {empBank.setBranch(emp_bank_branch);}
+			if(qrPath==null) {empBank.setQrPath(empBank.getQrPath());} else {
+				Path uploadsDir = Paths.get("src/main/resources/static/QR");
+				if(!Files.exists(uploadsDir))
+					Files.createDirectories(uploadsDir);
+				String fileName = StringUtils.cleanPath(qrPath.getOriginalFilename());
+				Path filePath = uploadsDir.resolve(fileName);
+				if(familyRepo.existsByFile(filePath.toString())) 
+					return ResponseEntity.badRequest().body(new MessageResponse("Error: QR already exists with " + qrPath));
+				String path = empBank.getQrPath();
+				if(path != null && !path.isEmpty()) 
+					Files.deleteIfExists(Paths.get(path));
+				Files.copy(qrPath.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+				empBank.setQrPath(filePath.toString());
+				}
+			empBank.setUser(user);
+			if(bank_id == null) {empBank.setBank(empBank.getBank());} else {
+				Optional<Bank> bank = bankRepo.findById(bank_id);
+				if(bank.isEmpty())
+					return ResponseEntity.badRequest().body(new MessageResponse("Bank not found with id " +bank_id));
+				empBank.setBank(bank.get());
+			}
+			empBankRepo.save(empBank);
+			return ResponseEntity.ok().body(empBank);
+		} else {
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
+		}
+	}
+
+	
+
+	
+
 }
 	

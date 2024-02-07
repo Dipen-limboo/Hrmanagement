@@ -1,11 +1,14 @@
 package com.humanresourcemanagement.ResourceMangement.Controller;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,13 +18,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Service.AdminService;
+
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -68,6 +77,50 @@ public class AdminController {
 		return service.findJobType();
 	}
 	
+	@GetMapping("/getOrganizationList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> listOfOrganization(){
+		return service.findOrg();
+	}
+	
+	@GetMapping("/getGradeList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> listOfGrade(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
+		) {
+			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+			Pageable pageable = PageRequest.of(page -1, size, sort);
+		return service.findGrade(pageable);
+	}
+	
+	@GetMapping("/accountLists")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> listOfaccounts(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
+		) {
+			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+			Pageable pageable = PageRequest.of(page -1, size, sort);
+		return service.findAllBank(pageable);
+	}
+	
+	@GetMapping("/getEmpBankList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> listOfEmpBank(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
+		) {
+			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+			Pageable pageable = PageRequest.of(page -1, size, sort);
+		return service.findEmpBank(pageable);
+	}
+	
+	
+	
 	//delete
 	@DeleteMapping("deleteDepartment/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
@@ -98,6 +151,28 @@ public class AdminController {
 	public ResponseEntity<?> deleteJobType(@PathVariable Long id){
 		return service.deleteJobTypeById(id);
 	}
+	
+	@DeleteMapping("/deleteOrganization/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> deleteOrganization(@PathVariable Long id){
+		return service.deleteOrgById(id);
+	}
+	
+	@DeleteMapping("/deleteGrade/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> deleteGrade(@PathVariable Long id){
+		return service.deleteGradeById(id);
+	}
+	
+	@DeleteMapping("/deleteAccount/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@Transactional
+	public ResponseEntity<?> deleteAccount(@PathVariable Long id){
+		return service.delete(id);
+	}
+	
+	
+	
 	
 	//getById
 	@GetMapping("/getDepartment/{id}")
@@ -130,6 +205,29 @@ public class AdminController {
 		return service.getJobTypeId(id);
 	}
 	
+	@GetMapping("/getOrganization/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getOrganization(@PathVariable Long id){
+		return service.getOrganizationById(id);
+	}
+	
+	@GetMapping("/getGrade/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getGrade(@PathVariable Long id){
+		return service.getGradeById(id);
+	}
+
+	@GetMapping("/getAccount/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@Transactional
+	public ResponseEntity<?> getAccountByAuth(@PathVariable Long id){
+		return service.getAccount(id);
+	}
+	
+
+	
+	
+	
 	//update
 	@PutMapping("/getDepartment/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
@@ -160,4 +258,29 @@ public class AdminController {
 	public ResponseEntity<?> updateJObType(@PathVariable Long id, @RequestBody JobTypeDto jobTypeDto){
 		return service.updateJobTypeById(id, jobTypeDto);
 	}
+	
+	@PutMapping("/getOrganization/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> saveOrganization(@PathVariable Long id, @Valid @RequestParam(required=false) String org_name,
+			@RequestParam(required=false) String org_address,
+			@RequestParam(required=false) String org_email,
+			@RequestParam(required=false) String org_phone,
+			@RequestParam(required=false) String org_website,
+			@RequestParam(required=false) MultipartFile org_logo_path) throws IOException{
+		return service.UpdateOrgById(id, org_name, org_address, org_email, org_phone, org_website, org_logo_path);
+	}
+	
+	@PutMapping("/getGrade/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> updateGrade(@PathVariable Long id, @RequestBody GradeDto gradeDto){
+		return service.updateGradeById(id, gradeDto);
+	}
+	
+	@PutMapping("/getAccount/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> updateAccountById(@PathVariable Long id, @RequestBody BankDto bankDto){
+		return service.updateAccount(id, bankDto);
+	}
+	
+	
 }

@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
@@ -54,8 +55,8 @@ public class CreatingController {
 	
 	@PostMapping("/add_bank")
 	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
-	public ResponseEntity<?> saveBank(@Valid @RequestBody BankDto bankDto, Authentication auth){
-		return createService.addBank(bankDto, auth);
+	public ResponseEntity<?> saveBank(@Valid @RequestBody BankDto bankDto){
+		return createService.addBank(bankDto);
 	}
 	
 	@PostMapping("/add_documents")
@@ -80,12 +81,6 @@ public class CreatingController {
 			@RequestParam(required=false) MultipartFile file, Authentication auth) throws IOException{
 		return createService.addFamily(firstName, middleName, lastName, relation, phone, file, auth);
 	}
-//	
-//	@PostMapping("/add_additionalInfo")
-//	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
-//	public ResponseEntity<?> saveAdditionalInfo(@Valid @RequestBody AdditionalDto additionalDto, Authentication auth){
-//		return createService.addAdditional(additionalDto, auth);
-//	}
 	
 	@PostMapping("/add_working_type")
 	@PreAuthorize("hasRole('ADMIN')")
@@ -97,5 +92,32 @@ public class CreatingController {
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> saveJobType (@Valid @RequestBody JobTypeDto jobDto){
 		return createService.saveJob(jobDto);
+	}
+	
+	@PostMapping("/addOrganization")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> saveOrganization(@Valid @RequestParam(required=true) String org_name,
+			@RequestParam(required=true) String org_address,
+			@RequestParam(required=true) String org_email,
+			@RequestParam(required=false) String org_phone,
+			@RequestParam(required=false) String org_website,
+			@RequestParam(required=false) MultipartFile org_logo_path) throws IOException{
+		return createService.saveOrg(org_name, org_address, org_email, org_phone, org_website, org_logo_path);
+	}
+	
+	@PostMapping("/addGrade")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> saveGrade(@Valid @RequestBody GradeDto gradeDto){
+		return createService.saveGrad(gradeDto);
+	}
+	
+	@PostMapping("/add_emp_bank")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> saveEmpBank(@Valid @RequestParam(required=false) String emp_account_number,
+			@RequestParam(required=false) String emp_bank_branch, 
+			@RequestParam(required=false) MultipartFile qrPath,
+			@RequestParam(required=false) Long bank_id,
+			Authentication auth) throws IOException{
+		return createService.addEmpBank(emp_account_number, emp_bank_branch, qrPath, bank_id, auth);
 	}
 }

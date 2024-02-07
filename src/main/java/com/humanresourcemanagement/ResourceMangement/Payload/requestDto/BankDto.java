@@ -15,7 +15,6 @@ public class BankDto {
 	@NotEmpty
 	private String address;
 
-	private long user_id;
 	
 	public BankDto() {
 		super();
@@ -63,13 +62,4 @@ public class BankDto {
 		this.address = address;
 	}
 
-	public long getUser_id() {
-		return user_id;
-	}
-
-	public void setUser_id(long user_id) {
-		this.user_id = user_id;
-	}
-	
-	
 }
