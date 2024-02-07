@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BranchDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
@@ -119,6 +119,13 @@ public class AdminController {
 		return service.findEmpBank(pageable);
 	}
 	
+	@GetMapping("/getbranchList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> listOfBranch(){
+		return service.findBranch();
+	}
+	
+	
 	
 	
 	//delete
@@ -171,7 +178,12 @@ public class AdminController {
 		return service.delete(id);
 	}
 	
-	
+	@DeleteMapping("/deleteBranch/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	@Transactional
+	public ResponseEntity<?> deleteBranch(@PathVariable Long id){
+		return service.deleteBranchById(id);
+	}
 	
 	
 	//getById
@@ -220,11 +232,17 @@ public class AdminController {
 	@GetMapping("/getAccount/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
 	@Transactional
-	public ResponseEntity<?> getAccountByAuth(@PathVariable Long id){
+	public ResponseEntity<?> getAccountById(@PathVariable Long id){
 		return service.getAccount(id);
 	}
 	
-
+	@GetMapping("/getBranch/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	@Transactional
+	public ResponseEntity<?> getBranch(@PathVariable Long id){
+		return service.getBranchById(id);
+	}
+	
 	
 	
 	
@@ -280,6 +298,12 @@ public class AdminController {
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
 	public ResponseEntity<?> updateAccountById(@PathVariable Long id, @RequestBody BankDto bankDto){
 		return service.updateAccount(id, bankDto);
+	}
+	
+	@PutMapping("/getBranch/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> updateBranchById(@PathVariable Long id, @RequestBody BranchDto branchDto){
+		return service.updateBranch(id, branchDto);
 	}
 	
 	

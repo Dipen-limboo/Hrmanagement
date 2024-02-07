@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BranchDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
@@ -119,5 +120,11 @@ public class CreatingController {
 			@RequestParam(required=false) Long bank_id,
 			Authentication auth) throws IOException{
 		return createService.addEmpBank(emp_account_number, emp_bank_branch, qrPath, bank_id, auth);
+	}
+	
+	@PostMapping("/addBranch")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> saveBranch(@Valid @RequestBody BranchDto branchDto){
+		return createService.addBranch(branchDto);
 	}
 }

@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.humanresourcemanagement.ResourceMangement.EncryptDecrypt.EncryptDecrypt;
 import com.humanresourcemanagement.ResourceMangement.Entity.Bank;
+import com.humanresourcemanagement.ResourceMangement.Entity.Branch;
 import com.humanresourcemanagement.ResourceMangement.Entity.Department;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.Document;
@@ -31,6 +32,7 @@ import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
 import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BranchDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
@@ -39,6 +41,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepar
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.BranchRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DocumentRepo;
@@ -88,6 +91,9 @@ public class CreatingService {
 	
 	@Autowired
 	JobTypeRepo jobRepo;
+	
+	@Autowired
+	BranchRepo branchRepo;
 	
 	@Autowired
 	OrganizationRepo orgRepo;
@@ -371,6 +377,20 @@ public class CreatingService {
 		} else {
 			return ResponseEntity.badRequest().body(new MessageResponse("User not found by id " + userDetails.getId()));
 		}
+	}
+
+	public ResponseEntity<?> addBranch(@Valid BranchDto branchDto) {
+		Branch branch = new Branch();
+		branch.setBranchName(branchDto.getBranch_name());
+		branch.setBranchAddress(branchDto.getBranch_address());
+		branch.setBranchPhone(branchDto.getBranch_phone());
+		branch.setOutOfValley(branchDto.isIs_out_of_valley());
+		Optional<Organization> org = orgRepo.findById(branchDto.getOrganization_id());
+		if(org.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Organization not found by id " + branchDto.getOrganization_id()));
+		branch.setOrganization(org.get());
+		branchRepo.save(branch);
+		return ResponseEntity.ok().body(branch);
 	}
 
 }

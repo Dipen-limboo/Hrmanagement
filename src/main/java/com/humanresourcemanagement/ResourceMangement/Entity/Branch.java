@@ -2,9 +2,12 @@ package com.humanresourcemanagement.ResourceMangement.Entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -24,6 +27,10 @@ public class Branch {
 	
 	@Column(name="branch_telephone")
 	private String branchPhone;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="organization_id")
+	private Organization organization;
 	
 	@Column(name="isOutBranch")
 	private boolean isOutOfValley = false;
@@ -80,6 +87,15 @@ public class Branch {
 
 	public void setOutOfValley(boolean isOutOfValley) {
 		this.isOutOfValley = isOutOfValley;
+	}
+
+	public Organization getOrganization() {
+		return organization;
+	}
+
+	public void setOrganization(Organization organization) {
+		this.organization = organization;
 	} 
+	
 	
 }

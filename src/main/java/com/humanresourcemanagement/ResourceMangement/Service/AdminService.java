@@ -18,6 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.humanresourcemanagement.ResourceMangement.Entity.Bank;
+import com.humanresourcemanagement.ResourceMangement.Entity.Branch;
 import com.humanresourcemanagement.ResourceMangement.Entity.Department;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.EmpBank;
@@ -27,12 +28,14 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Organization;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BranchDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.BranchResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EmpBankResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.GradeResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.JobTypeResponseDto;
@@ -40,6 +43,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.Message
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.OrganizationResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.WorkTypeResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.BranchRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.EmpBankRepo;
@@ -77,6 +81,9 @@ public class AdminService {
 	
 	@Autowired
 	GradeRepo gradeRepo;
+	
+	@Autowired
+	BranchRepo branchRepo;
 	
 	@Autowired
 	BankRepo bankRepo;
@@ -632,5 +639,65 @@ public class AdminService {
 			empBankResponseDtoList.add(responseDto);
 		}
 		return ResponseEntity.ok().body(empBankResponseDtoList);
+	}
+
+	public ResponseEntity<?> findBranch() {
+		List<Branch> branchList = branchRepo.findAll();
+		List<BranchResponseDto> responseDtoList = new ArrayList<>();
+		if(branchList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any branch found"));
+		for(Branch branch: branchList) {
+			BranchResponseDto responseDto = new BranchResponseDto();
+			responseDto.setBranch_id(branch.getId());
+			responseDto.setBranch_name(branch.getBranchName());
+			responseDto.setBranch_address(branch.getBranchAddress());
+			responseDto.setBranch_phone(branch.getBranchPhone());
+			responseDto.setIs_out_of_valley(branch.isOutOfValley());
+			responseDto.setOrganization_id(branch.getOrganization().getId());
+			responseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(responseDtoList);
+	}
+
+	public ResponseEntity<?> deleteBranchById(Long id) {
+		Optional<Branch> optionalBranch = branchRepo.findById(id);
+		if(optionalBranch.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Cannot found branch by id " +id));
+		branchRepo.deleteById(id);
+		return ResponseEntity.ok().body("Succesfully deleted branch id " +id);
+	}
+
+	public ResponseEntity<?> getBranchById(Long id) {
+		Optional<Branch> optionalBranch = branchRepo.findById(id);
+		if(optionalBranch.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Cannot found branch by id " +id));
+		Branch branch = optionalBranch.get(); 
+		BranchResponseDto responseDto = new BranchResponseDto();
+		responseDto.setBranch_id(branch.getId());
+		responseDto.setBranch_name(branch.getBranchName());
+		responseDto.setBranch_address(branch.getBranchAddress());
+		responseDto.setBranch_phone(branch.getBranchPhone());
+		responseDto.setIs_out_of_valley(branch.isOutOfValley());
+		responseDto.setOrganization_id(branch.getOrganization().getId());
+		return ResponseEntity.ok().body(responseDto);
+	}
+
+	public ResponseEntity<?> updateBranch(Long id, BranchDto branchDto) {
+		Optional<Branch> optionalBranch = branchRepo.findById(id);
+		if(optionalBranch.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Cannot found branch by id " +id));
+		Branch branch = optionalBranch.get(); 
+		if(branchDto.getBranch_name()==null) {branch.setBranchName(branch.getBranchName());} else {branch.setBranchName(branchDto.getBranch_name());}
+		if(branchDto.getBranch_address()==null) {branch.setBranchAddress(branch.getBranchAddress());} else {branch.setBranchAddress(branchDto.getBranch_address());}
+		if(branchDto.getBranch_phone()==null) {branch.setBranchPhone(branch.getBranchPhone());} else {branch.setBranchPhone(branchDto.getBranch_phone());}
+		if(branchDto.isIs_out_of_valley()==true) {branch.setOutOfValley(true);} else {branch.setOutOfValley(false);}
+		if(branchDto.getOrganization_id()==null) {branch.setOrganization(branch.getOrganization());} else {
+			Optional<Organization> org = orgRepo.findById(branchDto.getOrganization_id());
+			if(org.isEmpty())
+				return ResponseEntity.badRequest().body(new MessageResponse("Organization not found by id " + branchDto.getOrganization_id()));
+			branch.setOrganization(org.get());
+		}
+		branchRepo.save(branch);
+		return ResponseEntity.ok().body(branch);
 	}
 }
