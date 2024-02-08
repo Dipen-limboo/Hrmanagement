@@ -29,6 +29,14 @@ public class EmployeeOfficialInfo {
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="user_id")
 	private User user;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="grade_id")
+	private Grade grade;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="branch_id")
+	private Branch branch;
 
 	public EmployeeOfficialInfo() {
 		super();
@@ -93,7 +101,21 @@ public class EmployeeOfficialInfo {
 	public void setUser(User emp) {
 		this.user = emp;
 	}
-	
-	
-	
+
+	public Grade getGrade() {
+		return grade;
+	}
+
+	public void setGrade(Grade grade) {
+		this.grade = grade;
+	}
+
+	public Branch getBranch() {
+		return branch;
+	}
+
+	public void setBranch(Branch branch) {
+		this.branch = branch;
+	}
+
 }

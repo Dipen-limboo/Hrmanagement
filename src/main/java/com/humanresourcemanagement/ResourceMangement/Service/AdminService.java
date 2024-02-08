@@ -506,7 +506,6 @@ public class AdminService {
  			GradeResponseDto gradeResponseDto = new GradeResponseDto();
  			gradeResponseDto.setGrade_id(grade.getId());
  			gradeResponseDto.setGrade_type(grade.getGrade());
- 			gradeResponseDto.setDepartment_id(grade.getDepartment().getId());
  			gradeResponseDtoList.add(gradeResponseDto);
  		}
 		return ResponseEntity.ok().body(gradeResponseDtoList);
@@ -528,7 +527,6 @@ public class AdminService {
 		GradeResponseDto gradeResponseDto = new GradeResponseDto();
 		gradeResponseDto.setGrade_id(grade.getId());
 		gradeResponseDto.setGrade_type(grade.getGrade());
-		gradeResponseDto.setDepartment_id(grade.getDepartment().getId());
 		return ResponseEntity.ok().body(gradeResponseDto);
 	}
 
@@ -541,14 +539,6 @@ public class AdminService {
 			grade.setGrade(grade.getGrade());
 		} else {
 			grade.setGrade(gradeDto.getGrade_type());
-		}
-		if(gradeDto.getDepartment_id() == null) {
-			grade.setDepartment(grade.getDepartment());
-		} else {
-			Optional<Department> department = departRepo.findById(gradeDto.getDepartment_id());
-			if(department.isEmpty())
-				return ResponseEntity.badRequest().body(new MessageResponse("There is no such type of department"));
-			grade.setDepartment(department.get());
 		}
 		gradeRepo.save(grade);
 		return ResponseEntity.ok().body(grade);

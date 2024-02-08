@@ -13,7 +13,7 @@ import com.humanresourcemanagement.ResourceMangement.Entity.User;
 public interface PromotionRepo extends JpaRepository<Promotion, Long>, JpaSpecificationExecutor<Promotion> {
 	
 	Promotion findFirstByUserOrderByIdDesc(User user);
-
+ 
 	List<Promotion> findByUser(User user);
 
 	boolean existsByUserAndDesignation(User user, Designation designation);

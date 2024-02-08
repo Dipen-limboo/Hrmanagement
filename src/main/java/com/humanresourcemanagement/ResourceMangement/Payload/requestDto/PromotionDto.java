@@ -12,6 +12,8 @@ public class PromotionDto {
 	
 	@NotNull
 	private Long designation;
+	
+	private Long branch;
 
 	public PromotionDto() {
 		super();
@@ -49,4 +51,13 @@ public class PromotionDto {
 		this.designation = designation;
 	}
 
+	public Long getBranch() {
+		return branch;
+	}
+
+	public void setBranch(Long branch) {
+		this.branch = branch;
+	}
+
+	
 }

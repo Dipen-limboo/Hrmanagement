@@ -21,9 +21,6 @@ public class Grade {
 	@Column(name="grade_type")
 	private String grade;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name="department_id")
-	private Department department;
 	
 	public Grade() {
 		super();
@@ -52,13 +49,6 @@ public class Grade {
 		this.grade = grade;
 	}
 
-	public Department getDepartment() {
-		return department;
-	}
-
-	public void setDepartment(Department department) {
-		this.department = department;
-	}
 	
 	
 }

@@ -12,8 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import com.humanresourcemanagement.ResourceMangement.Entity.Branch;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.EmployeeOfficialInfo;
+import com.humanresourcemanagement.ResourceMangement.Entity.Grade;
 import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
 import com.humanresourcemanagement.ResourceMangement.Entity.Promotion;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
@@ -23,9 +25,11 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Employee
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.PromotionDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.PromotionResponseDto;
+import com.humanresourcemanagement.ResourceMangement.Repository.BranchRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.EmployeeOfficialInfoRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.GradeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.PromotionRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
@@ -63,6 +67,12 @@ public class EmployeeService {
 	@Autowired
 	JobTypeRepo jobRepo;
 	
+	@Autowired
+	GradeRepo gradeRepo;
+	
+	@Autowired
+	BranchRepo branchRepo;
+	
 	//update user
 	public ResponseEntity<?> saveEmployee(Long id, @Valid EmployeeUpdateDto employeeDto, Authentication auth) {
 		Optional<User> optionalUser = userRepo.findById(id);
@@ -73,7 +83,6 @@ public class EmployeeService {
 			EmployeeOfficialInfo emp = new EmployeeOfficialInfo();
 			promotedUser.setUser(user);
 			emp.setUser(user);
-			
 			emp.setId("emp0"+employeeDto.getEmployeeId());
 			
 			LocalDate now = LocalDate.now();
@@ -128,10 +137,18 @@ public class EmployeeService {
 			Optional<JobType> jobType = jobRepo.findById(employeeDto.getJobType());
 			if(jobType.isEmpty())
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of job"));
-			
+			Optional<Grade> grade = gradeRepo.findById(employeeDto.getGrade());
+			if(!grade.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of grade"));
+			Optional<Branch> branch = branchRepo.findById(employeeDto.getBranch());
+			if(!branch.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of branch"));
 			emp.setWorkingType(workingType.get());
 			emp.setJobType(jobType.get());
+			emp.setBranch(branch.get());
+			emp.setGrade(grade.get());
 			
+			promotedUser.setBranch(branch.get());
 			promotedUser.setRemarks(employeeDto.getRemarks());
 			
 			if(promotedUser.getSubDepartment().getDepartment().getId()== promotedUser.getDesignation().getDepartment().getId()) {
@@ -153,13 +170,11 @@ public class EmployeeService {
 		Optional<User> optionalUser = userRepo.findById(id);
 		if(optionalUser.isPresent()) {
 			User user = optionalUser.get();
-			
 			Optional<EmployeeOfficialInfo> employee = empRepo.findByUser(user); 
 			if(!employee.isPresent())
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: Doesnot have employee detials of user " + user.getId()));
 			EmployeeOfficialInfo emp = employee.get();
-			
-			Promotion promotion = promotionRepo.findFirstByUserOrderByIdDesc(user);
+ 			Promotion promotion = promotionRepo.findFirstByUserOrderByIdDesc(user);
 			Promotion newPromotion = new Promotion();
 				if(LocalDate.now().isAfter(promotionDto.getJoinDate())) {
 					promotion.setEndDate(promotionDto.getJoinDate());
@@ -192,6 +207,14 @@ public class EmployeeService {
 				Optional<User> optionalUserr = userRepo.findById(userDetails.getId());
 				if(optionalUserr.isPresent()) {
 					newPromotion.setApprover(optionalUserr.get());
+				}
+				
+				if(promotionDto.getBranch() == null) {newPromotion.setBranch(null);} else {
+					Optional<Branch> branch = branchRepo.findById(promotionDto.getBranch());
+					if(!branch.isPresent())
+						return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of branch"));
+					newPromotion.setBranch(branch.get());
+					emp.setBranch(branch.get());
 				}
 				
 				if(newPromotion.getSubDepartment().getDepartment().getId() == newPromotion.getDesignation().getDepartment().getId()) {

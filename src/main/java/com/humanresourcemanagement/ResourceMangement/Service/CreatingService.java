@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -118,7 +119,7 @@ public class CreatingService {
 		department.setAddress(departmentDto.getAddress());
 		department.setPhone(departmentDto.getTel());
 		departRepo.save(department);
-		return ResponseEntity.ok().body(departmentDto);
+		return ResponseEntity.ok().body(department);
 	}
 
 	public ResponseEntity<?> addDesgination(@Valid DesignationDto designationDto) {
@@ -339,10 +340,6 @@ public class CreatingService {
 	public ResponseEntity<?> saveGrad(@Valid GradeDto gradeDto) {
 		Grade grade = new Grade();
 		grade.setGrade(gradeDto.getGrade_type());
-		Optional<Department> department = departRepo.findById(gradeDto.getDepartment_id());
-		if(department.isEmpty())
-			return ResponseEntity.badRequest().body(new MessageResponse("There is no such type of department"));
-		grade.setDepartment(department.get());
 		gradeRepo.save(grade);
 		return ResponseEntity.ok().body(grade);
 	}

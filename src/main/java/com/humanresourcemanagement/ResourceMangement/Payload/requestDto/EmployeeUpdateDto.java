@@ -27,6 +27,12 @@ public class EmployeeUpdateDto {
 	
 	@NotNull
 	private Long jobType;
+	
+	@NotNull
+	private Long branch;
+	
+	@NotNull
+	private Long grade;
 
 	public EmployeeUpdateDto() {
 		super();
@@ -106,6 +112,22 @@ public class EmployeeUpdateDto {
 
 	public void setJobType(Long jobType) {
 		this.jobType = jobType;
+	}
+
+	public Long getBranch() {
+		return branch;
+	}
+
+	public void setBranch(Long branch) {
+		this.branch = branch;
+	}
+
+	public Long getGrade() {
+		return grade;
+	}
+
+	public void setGrade(Long grade) {
+		this.grade = grade;
 	}
 	
 	

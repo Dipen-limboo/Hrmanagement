@@ -1,6 +1,9 @@
 package com.humanresourcemanagement.ResourceMangement.Payload.requestDto;
 
+import java.util.Set;
+
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 public class DepartmentDto {
@@ -14,7 +17,7 @@ public class DepartmentDto {
 	@Pattern(regexp = "^\\d{9}$",
     message = "{The telephone number must contain 9 numbers}")
 	private String tel;
-
+	
 	public DepartmentDto() {
 		super();
 		// TODO Auto-generated constructor stub

@@ -50,6 +50,10 @@ public class Promotion {
 	@Column(name="remarks")
 	private String remarks;
 	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="branch_id")
+	private Branch branch;
+	
 	public Promotion() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -137,6 +141,14 @@ public class Promotion {
 
 	public void setRemarks(String remarks) {
 		this.remarks = remarks;
+	}
+
+	public Branch getBranch() {
+		return branch;
+	}
+
+	public void setBranch(Branch branch) {
+		this.branch = branch;
 	}
 		
 	
