@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.PromotionDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferDto;
 import com.humanresourcemanagement.ResourceMangement.Service.EmployeeService;
 
 import jakarta.transaction.Transactional;
@@ -46,6 +47,12 @@ public class EmployeeController {
 		return empService.promoteEmployee(id, promotionDto, auth);
 	}
 	
+	@PostMapping("/transferEmployee/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	@Transactional
+	public ResponseEntity<?> transferUser(@PathVariable Long id, @Valid @RequestBody TransferDto transferDto, Authentication auth){
+		return empService.transferEmp(id, transferDto, auth);
+	}
 	@GetMapping("/getPromotionList")
 	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN') ")
 	public ResponseEntity<?> listOfPromotionIndividual(Authentication auth){

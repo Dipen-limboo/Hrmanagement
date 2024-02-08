@@ -1,5 +1,7 @@
 package com.humanresourcemanagement.ResourceMangement.Payload.requestDto;
 
+import java.time.LocalDate;
+
 import jakarta.validation.constraints.NotNull;
 
 public class TransferDto {
@@ -11,6 +13,11 @@ public class TransferDto {
 	
 	@NotNull
 	private Long branch_id;
+	
+	private String remarks;
+	
+	@NotNull
+	private LocalDate transferDate;
 
 	public TransferDto() {
 		super();
@@ -46,6 +53,22 @@ public class TransferDto {
 
 	public void setBranch_id(Long branch_id) {
 		this.branch_id = branch_id;
+	}
+
+	public String getRemarks() {
+		return remarks;
+	}
+
+	public void setRemarks(String remarks) {
+		this.remarks = remarks;
+	}
+
+	public LocalDate getTransferDate() {
+		return transferDate;
+	}
+
+	public void setTransferDate(LocalDate transferDate) {
+		this.transferDate = transferDate;
 	}
 	
 	

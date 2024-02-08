@@ -19,10 +19,12 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Grade;
 import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
 import com.humanresourcemanagement.ResourceMangement.Entity.Promotion;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
+import com.humanresourcemanagement.ResourceMangement.Entity.Transfer;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.PromotionDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.PromotionResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Repository.BranchRepo;
@@ -33,6 +35,7 @@ import com.humanresourcemanagement.ResourceMangement.Repository.GradeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.PromotionRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.TransferRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
 import com.humanresourcemanagement.ResourceMangement.Repository.WokingTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.security.service.UserDetailsImpl;
@@ -73,6 +76,9 @@ public class EmployeeService {
 	@Autowired
 	BranchRepo branchRepo;
 	
+	@Autowired
+	TransferRepo transferRepo;
+	
 	//update user
 	public ResponseEntity<?> saveEmployee(Long id, @Valid EmployeeUpdateDto employeeDto, Authentication auth) {
 		Optional<User> optionalUser = userRepo.findById(id);
@@ -83,7 +89,7 @@ public class EmployeeService {
 			EmployeeOfficialInfo emp = new EmployeeOfficialInfo();
 			promotedUser.setUser(user);
 			emp.setUser(user);
-			emp.setId("emp0"+employeeDto.getEmployeeId());
+			emp.setId("emp0"+user.getId());
 			
 			LocalDate now = LocalDate.now();
 			if(employeeDto.getJoinDate() == null) {
@@ -366,6 +372,74 @@ public class EmployeeService {
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any promotion with id " +id));
 		}
 		
+	}
+
+
+	public ResponseEntity<?> transferEmp(Long id, @Valid TransferDto transferDto, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> userOption = userRepo.findById(userDetails.getId());
+		if(!userOption.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +id));
+		Optional<User> optionalUser = userRepo.findById(id);
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +id));
+		User user = optionalUser.get();
+		Optional<EmployeeOfficialInfo> empOptional = empRepo.findByUser(user);
+		if(!empOptional.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("Employee details is not enlisted in the organization with user id "+id));
+		EmployeeOfficialInfo emp = empOptional.get();
+		Transfer transfer = new Transfer();
+		Optional<Branch> branch = branchRepo.findById(transferDto.getBranch_id());
+		if(!branch.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("Branch not found in the list"));
+		Optional<Designation> designation = designationRepo.findById(transferDto.getDesignation_id());
+		if(!designation.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("Designation not found in the list"));
+		Optional<SubDepartment> section = subDepartmentRepo.findById(transferDto.getSection_id());
+		if(!section.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("Section not found in the list"));
+		if(!section.get().getDepartment().getId().equals(designation.get().getDepartment().getId()))
+			return ResponseEntity.badRequest().body(new MessageResponse("Department are different in the section and designation.. "));
+		Optional<Promotion> promotion = promotionRepo.findByUserAndSubDepartmentAndDesignation(user, section.get(), designation.get());
+		if(promotion.isPresent()) {
+			Promotion promo = promotion.get();
+			promo.setBranch(branch.get());
+			emp.setBranch(branch.get());
+			promotionRepo.save(promo);
+		} else {
+			Promotion newPromotion = new Promotion();
+			Promotion promo = promotionRepo.findFirstByUserOrderByIdDesc(user);
+			if(!LocalDate.now().isAfter(transferDto.getTransferDate()))
+				return ResponseEntity.badRequest().body(new MessageResponse("Date must not exceed toady's date"));
+			promo.setEndDate(transferDto.getTransferDate());
+			promo.setStatus(false);
+			newPromotion.setBranch(branch.get());
+			newPromotion.setDesignation(designation.get());
+			newPromotion.setEndDate(null);
+			newPromotion.setJoinDate(transferDto.getTransferDate());
+			newPromotion.setRemarks(transferDto.getRemarks());
+			newPromotion.setSubDepartment(section.get());
+			newPromotion.setUser(user);
+			newPromotion.setStatus(true);
+			newPromotion.setApprover(userOption.get());
+			emp.setBranch(branch.get());
+			emp.setDesignation(designation.get());
+			emp.setSection(section.get());
+			emp.setUser(user);
+			emp.setWorkingType(emp.getWorkingType());
+			emp.setJobType(emp.getJobType());
+			emp.setGrade(emp.getGrade());
+			promotionRepo.save(newPromotion);
+		}
+		transfer.setUser(user);
+		transfer.setBranch(branch.get());
+		transfer.setDesignation(designation.get());
+		transfer.setSection(section.get());
+		transfer.setTransferDate(transferDto.getTransferDate());
+		transfer.setRemark(transferDto.getRemarks());
+		transferRepo.save(transfer);
+		empRepo.save(emp);
+		return ResponseEntity.ok().body(transfer);
 	}
 
 	

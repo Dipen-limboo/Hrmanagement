@@ -1,12 +1,15 @@
 package com.humanresourcemanagement.ResourceMangement.Payload.responseDto;
 
+import java.time.LocalDate;
+
 public class TransferResponseDto {
 	private Long transfer_id;
 	private Long section_id;
 	private Long designation_id;
 	private Long user_id;
 	private Long branch_id;
-	
+	private LocalDate transfer_date;
+	private String remarks;
 	public TransferResponseDto() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -60,7 +63,22 @@ public class TransferResponseDto {
 	public void setBranch_id(Long branch_id) {
 		this.branch_id = branch_id;
 	}
-	
+
+	public LocalDate getTransfer_date() {
+		return transfer_date;
+	}
+
+	public void setTransfer_date(LocalDate transfer_date) {
+		this.transfer_date = transfer_date;
+	}
+
+	public String getRemarks() {
+		return remarks;
+	}
+
+	public void setRemarks(String remarks) {
+		this.remarks = remarks;
+	}
 	
 		
 }

@@ -7,8 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 public class EmployeeUpdateDto {
 	
-	@NotEmpty
-	private String employeeId;
+
 	
 	private LocalDate joinDate;
 	
@@ -39,10 +38,9 @@ public class EmployeeUpdateDto {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public EmployeeUpdateDto(@NotEmpty String employeeId, LocalDate joinDate, LocalDate endDate,
+	public EmployeeUpdateDto( LocalDate joinDate, LocalDate endDate,
 			@NotNull Long subDepartment, @NotNull Long designation, String remarks) {
 		super();
-		this.employeeId = employeeId;
 		this.joinDate = joinDate;
 		this.endDate = endDate;
 		this.subDepartment = subDepartment;
@@ -90,13 +88,6 @@ public class EmployeeUpdateDto {
 		this.remarks = remarks;
 	}
 
-	public String getEmployeeId() {
-		return employeeId;
-	}
-
-	public void setEmployeeId(String employeeId) {
-		this.employeeId = employeeId;
-	}
 
 	public Long getWorkingType() {
 		return workingType;
