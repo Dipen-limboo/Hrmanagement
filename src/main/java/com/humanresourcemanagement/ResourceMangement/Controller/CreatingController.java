@@ -21,9 +21,11 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BranchDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EducationDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TrainingDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Service.CreatingService;
 
@@ -87,6 +89,18 @@ public class CreatingController {
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> saveWorkingType (@Valid @RequestBody WorkTypeDto workDto){
 		return createService.saveWork(workDto);
+	}
+	
+	@PostMapping("/add_Training")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> saveTraining(@Valid @RequestBody TrainingDto trainingDto, Authentication auth){
+		return createService.addTraining(trainingDto, auth);
+	}
+	
+	@PostMapping("/add_Education")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> saveEducation(@Valid @RequestBody EducationDto educationDto, Authentication auth){
+		return createService.addEducation(educationDto, auth);
 	}
 	
 	@PostMapping("/add_job_type")

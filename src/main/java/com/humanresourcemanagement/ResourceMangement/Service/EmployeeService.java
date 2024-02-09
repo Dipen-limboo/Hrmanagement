@@ -192,9 +192,8 @@ public class EmployeeService {
 				newPromotion.setUser(user);
 				Optional<Designation> designation = designationRepo.findById(promotionDto.getDesignation());
 				if(designation.isPresent()) {
-					if(promotionRepo.existsByUserAndDesignation(user, designation.get())) {
-						return ResponseEntity.badRequest().body(new MessageResponse("Error: User " + user.getUsername() + " have already " + designation.get().getName() + " designation"));
-					}
+					if(promotion.getDesignation().getId() == designation.get().getId())
+						return ResponseEntity.badRequest().body(new MessageResponse("Cannot promote in the current desgination"));
 					newPromotion.setDesignation(designation.get());
 					emp.setDesignation(designation.get());
 				} else {

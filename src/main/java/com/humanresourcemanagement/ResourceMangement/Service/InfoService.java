@@ -24,19 +24,27 @@ import org.springframework.web.multipart.MultipartFile;
 import com.humanresourcemanagement.ResourceMangement.EncryptDecrypt.EncryptDecrypt;
 import com.humanresourcemanagement.ResourceMangement.Entity.Bank;
 import com.humanresourcemanagement.ResourceMangement.Entity.Document;
+import com.humanresourcemanagement.ResourceMangement.Entity.Education;
 import com.humanresourcemanagement.ResourceMangement.Entity.EmpBank;
 import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
+import com.humanresourcemanagement.ResourceMangement.Entity.Training;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
+import com.humanresourcemanagement.ResourceMangement.Enum.Type;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EducationUpdateDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TrainingUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.DocumentResponseDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EducationResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EmpBankResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.FamilyDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.TrainingResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DocumentRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.EducationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.EmpBankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.FamilyRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.TrainingRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
 import com.humanresourcemanagement.ResourceMangement.security.service.UserDetailsImpl;
 
@@ -55,6 +63,12 @@ public class InfoService {
 	
 	@Autowired 
 	FamilyRepo familyRepo;
+	
+	@Autowired
+	TrainingRepo trainRepo;
+	
+	@Autowired
+	EducationRepo educationRepo;
 	
 	@Autowired
 	EmpBankRepo empBankRepo;
@@ -555,6 +569,238 @@ public class InfoService {
 		} else {
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
 		}
+	}
+
+	public ResponseEntity<?> findAllTraining(Pageable pageable) {
+		Page<Training> trainingList = trainRepo.findAll(pageable);
+		List<TrainingResponseDto> responseDtoList = new ArrayList<>();
+		if(trainingList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any details found"));
+		for(Training train: trainingList) {
+			TrainingResponseDto responseDto = new TrainingResponseDto();
+			responseDto.setTrain_exp_id(train.getId());
+			responseDto.setType(train.getType().toString());
+			responseDto.setOrganization(train.getName());
+			responseDto.setPosition(train.getPosition());
+			responseDto.setJoin_date(train.getJoinDate());
+			responseDto.setEnd_date(train.getEndDate());
+			responseDto.setUser_id(train.getUser().getId());
+			responseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(responseDtoList);
+	}
+
+	public ResponseEntity<?> gettrainingList(Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		List<Training> trainingList = trainRepo.findByUser(user);
+		List<TrainingResponseDto> responseDtoList = new ArrayList<>();
+		if(trainingList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any details found of user with " + userDetails.getEmail()));
+		for(Training train: trainingList) {
+			TrainingResponseDto responseDto = new TrainingResponseDto();
+			responseDto.setTrain_exp_id(train.getId());
+			responseDto.setType(train.getType().toString());
+			responseDto.setOrganization(train.getName());
+			responseDto.setPosition(train.getPosition());
+			responseDto.setJoin_date(train.getJoinDate());
+			responseDto.setEnd_date(train.getEndDate());
+			responseDto.setUser_id(train.getUser().getId());
+			responseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(responseDtoList);
+		
+	}
+
+	public ResponseEntity<?> getTrainingById(Long id, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		if(!trainRepo.existsById(id))
+			return ResponseEntity.badRequest().body(new MessageResponse("Invalid Id " +id));
+		Optional<Training> optionalTrain = trainRepo.findByIdAndUser(id, user);
+		if(optionalTrain.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User cannot get info with id " +id));
+		Training train = optionalTrain.get();
+		TrainingResponseDto responseDto = new TrainingResponseDto();
+		responseDto.setTrain_exp_id(train.getId());
+		responseDto.setType(train.getType().toString());
+		responseDto.setOrganization(train.getName());
+		responseDto.setPosition(train.getPosition());
+		responseDto.setJoin_date(train.getJoinDate());
+		responseDto.setEnd_date(train.getEndDate());
+		responseDto.setUser_id(train.getUser().getId());
+		return ResponseEntity.ok().body(responseDto);
+	}
+
+	public ResponseEntity<?> deleteTrainingById(Long id, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		if(!trainRepo.existsById(id))
+			return ResponseEntity.badRequest().body(new MessageResponse("Invalid Id " +id));
+		Optional<Training> optionalTrain = trainRepo.findByIdAndUser(id, user);
+		if(optionalTrain.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User cannot get delete id " +id));
+		trainRepo.deleteById(id);
+		return ResponseEntity.ok().body("Deleted Succesfully id " + id +" !!" );
+	}
+
+	public ResponseEntity<?> updateTrainingById(TrainingUpdateDto updateDto, Long id, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		if(!trainRepo.existsById(id))
+			return ResponseEntity.badRequest().body(new MessageResponse("Invalid Id " +id));
+		Optional<Training> optionalTrain = trainRepo.findByIdAndUser(id, user);
+		if(optionalTrain.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User cannot get delete id " +id));
+		Training train = optionalTrain.get();
+		if(updateDto.getType()==null) {train.setType(train.getType());} else {
+			Set<String> str = updateDto.getType();
+			str.forEach(type -> {
+				switch(type) {
+				case "training":
+					train.setType(Type.TRAINING);
+					break;
+				case "experience":
+					train.setType(Type.EXPERIENCE);
+					break;
+				default:
+					train.setType(null);
+				}
+			});
+		}
+		if(updateDto.getOrganization()==null) {train.setName(train.getName());} else {train.setName(updateDto.getOrganization());}
+		if(updateDto.getPosition()==null) {train.setPosition(train.getPosition());} else {train.setPosition(updateDto.getPosition());}
+		if(updateDto.getJoinDate()==null) {train.setJoinDate(train.getJoinDate());} else {
+			if(!LocalDate.now().isAfter(updateDto.getJoinDate()))
+				return ResponseEntity.badRequest().body(new MessageResponse("Date must not exceed today's date in AD"));
+			train.setJoinDate(updateDto.getJoinDate());
+		}
+		if(updateDto.getEndDate()==null) {train.setEndDate(train.getEndDate());} else {
+			if(!LocalDate.now().isAfter(updateDto.getEndDate()))
+				return ResponseEntity.badRequest().body(new MessageResponse("Date must not exceed today's date in AD"));
+			train.setEndDate(updateDto.getEndDate());
+		}
+		trainRepo.save(train);
+		return ResponseEntity.ok().body(train);
+	}
+
+	public ResponseEntity<?> findAllEducation(Pageable pageable) {
+		Page<Education> educationList = educationRepo.findAll(pageable);
+		List<EducationResponseDto> responseDtoList = new ArrayList<>();
+		if(educationList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any details found"));
+		for(Education education: educationList) {
+			EducationResponseDto responseDto = new EducationResponseDto();
+			responseDto.setEducational_institue_name(education.getName());
+			responseDto.setEducation_id(education.getId());
+			responseDto.setBoard(education.getBoard());
+			responseDto.setLevel(education.getLevel());
+			responseDto.setGpa(education.getGpa());
+			responseDto.setStart_date(education.getStartDate());
+			responseDto.setEnd_date(education.getEndDate());
+			responseDto.setUser_id(education.getUser().getId());
+			responseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(responseDtoList);
+	}
+
+	public ResponseEntity<?> deleteEducationById(Long id, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		if(!educationRepo.existsById(id))
+			return ResponseEntity.badRequest().body(new MessageResponse("Invalid Id " +id));
+		Optional<Education> optionalEducation= educationRepo.findByIdAndUser(id, user);
+		if(optionalEducation.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User cannot get delete id " +id));
+		educationRepo.deleteById(id);
+		return ResponseEntity.ok().body("Deleted Succesfully id " + id +" !!" );
+	}
+
+	public ResponseEntity<?> getEducaitonList(Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		List<Education> educationList = educationRepo.findByUser(user);
+		List<EducationResponseDto> responseDtoList = new ArrayList<>();
+		if(educationList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any details found"));
+		for(Education education: educationList) {
+			EducationResponseDto responseDto = new EducationResponseDto();
+			responseDto.setEducational_institue_name(education.getName());
+			responseDto.setEducation_id(education.getId());
+			responseDto.setBoard(education.getBoard());
+			responseDto.setLevel(education.getLevel());
+			responseDto.setGpa(education.getGpa());
+			responseDto.setStart_date(education.getStartDate());
+			responseDto.setEnd_date(education.getEndDate());
+			responseDto.setUser_id(education.getUser().getId());
+			responseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(responseDtoList);
+	}
+
+	public ResponseEntity<?> getEducationById(Long id, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		if(!educationRepo.existsById(id))
+			return ResponseEntity.badRequest().body(new MessageResponse("Invalid Id " +id));
+		Optional<Education> optionalEducation= educationRepo.findByIdAndUser(id, user);
+		if(optionalEducation.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User cannot get info of id " +id));
+		Education education = optionalEducation.get();
+		EducationResponseDto responseDto = new EducationResponseDto();
+		responseDto.setEducational_institue_name(education.getName());
+		responseDto.setEducation_id(education.getId());
+		responseDto.setBoard(education.getBoard());
+		responseDto.setLevel(education.getLevel());
+		responseDto.setGpa(education.getGpa());
+		responseDto.setStart_date(education.getStartDate());
+		responseDto.setEnd_date(education.getEndDate());
+		responseDto.setUser_id(education.getUser().getId());
+		return ResponseEntity.ok().body(responseDto);
+	}
+
+	public ResponseEntity<?> updateEducationById(EducationUpdateDto updateDto, Long id, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		if(!educationRepo.existsById(id))
+			return ResponseEntity.badRequest().body(new MessageResponse("Invalid Id " +id));
+		Optional<Education> optionalEducation= educationRepo.findByIdAndUser(id, user);
+		if(optionalEducation.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User cannot get info of id " +id));
+		Education education = optionalEducation.get();
+		if(updateDto.getEducational_institue_name()==null) {education.setName(education.getName());} else {education.setName(updateDto.getEducational_institue_name());}
+		if(updateDto.getBoard()==null) {education.setBoard(education.getBoard());} else {education.setBoard(updateDto.getBoard());}
+		if(updateDto.getLevel()==null) {education.setLevel(education.getLevel());} else {education.setLevel(updateDto.getLevel());}
+		if(updateDto.getGpa()== 0.00) {education.setGpa(education.getGpa());} else {education.setGpa(updateDto.getGpa());}
+		if(updateDto.getStart_date()==null) {education.setStartDate(education.getStartDate());} else {education.setStartDate(updateDto.getStart_date());}
+		if(updateDto.getEnd_date()==null) {education.setEndDate(education.getEndDate());} else {education.setEndDate(updateDto.getEnd_date());}
+		education.setUser(user);
+		educationRepo.save(education);
+		return ResponseEntity.ok().body(education);
 	}
 
 	

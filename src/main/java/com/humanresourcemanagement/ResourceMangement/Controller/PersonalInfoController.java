@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,8 +23,8 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.AdditionalDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EducationUpdateDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TrainingUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Service.InfoService;
 
 import jakarta.transaction.Transactional;
@@ -64,11 +63,40 @@ public class PersonalInfoController {
 		return infoService.findAllDocumentListOfUser(pageable);
 	}
 	
+	@GetMapping("/trainingList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getTrainingList(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
+		) {
+			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+			Pageable pageable = PageRequest.of(page -1, size, sort);
+		return infoService.findAllTraining(pageable);
+	}
+	
+	
+	@GetMapping("/getEducationList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getEducationList(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
+		) {
+			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+			Pageable pageable = PageRequest.of(page -1, size, sort);
+		return infoService.findAllEducation(pageable);
+	}
+	
 	@GetMapping("/accountLists")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
 	public ResponseEntity<?> getAccountListOfUser(Authentication auth) {
 		return infoService.findAllAccountOfUser(auth);
 	}
+	
+	
+	
+	
 	
 	//delete
 	@DeleteMapping("/deleteDocument/{id}")
@@ -92,6 +120,21 @@ public class PersonalInfoController {
 		return infoService.deleteFamilyInfo(id, auth);
 	}
 	
+	@DeleteMapping("/deleteTraining/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> deleteTraining(@PathVariable Long id, Authentication auth) throws IOException{
+		return infoService.deleteTrainingById(id, auth);
+	}
+	
+	@DeleteMapping("/deleteEducation/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> deleteEducation(@PathVariable Long id, Authentication auth) throws IOException{
+		return infoService.deleteEducationById(id, auth);
+	}
+	
+	
+	
+	
 	//get
 	@GetMapping("/getDocuments")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
@@ -114,8 +157,31 @@ public class PersonalInfoController {
 		return infoService.getEmpBank(id, auth);
 	}
 	
+	@GetMapping("/getTraining")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> getTrainingByAuth(Authentication auth){
+		return infoService.gettrainingList(auth);
+	}
 	
 	
+	@GetMapping("/getEducation")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> getEducationByAuth(Authentication auth){
+		return infoService.getEducaitonList(auth);
+	}
+	
+	@GetMapping("/getTraining/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> getTrainingByAuthAndId(@PathVariable Long id, Authentication auth){
+		return infoService.getTrainingById(id, auth);
+	}
+	
+	
+	@GetMapping("/getEducation/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> getEducationByAuthAndId(@PathVariable Long id, Authentication auth){
+		return infoService.getEducationById(id, auth);
+	}
 	//update
 
 	@PutMapping("/getDocuments/{id}")
@@ -152,5 +218,20 @@ public class PersonalInfoController {
 			@PathVariable Long id,
 			Authentication auth) throws IOException{
 		return infoService.updateEmpBank(emp_account_number, emp_bank_branch, qrPath,  bank_id, id, auth);
+	}
+	
+	@PutMapping("/getTraining/{id}")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getTraining(@RequestBody TrainingUpdateDto updateDto,
+			@PathVariable Long id,
+			Authentication auth) throws IOException{
+		return infoService.updateTrainingById(updateDto, id, auth);
+	}
+	
+	@PutMapping("/getEducation/{id}")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getEducaiton(@RequestBody EducationUpdateDto updateDto, @PathVariable Long id,
+			Authentication auth) throws IOException{
+		return infoService.updateEducationById(updateDto, id, auth);
 	}
 }

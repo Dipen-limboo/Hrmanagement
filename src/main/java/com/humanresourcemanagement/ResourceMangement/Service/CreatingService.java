@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -23,22 +22,27 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Branch;
 import com.humanresourcemanagement.ResourceMangement.Entity.Department;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.Document;
+import com.humanresourcemanagement.ResourceMangement.Entity.Education;
 import com.humanresourcemanagement.ResourceMangement.Entity.EmpBank;
 import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Grade;
 import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
 import com.humanresourcemanagement.ResourceMangement.Entity.Organization;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
+import com.humanresourcemanagement.ResourceMangement.Entity.Training;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
 import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
+import com.humanresourcemanagement.ResourceMangement.Enum.Type;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BranchDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EducationDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TrainingDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
@@ -46,12 +50,14 @@ import com.humanresourcemanagement.ResourceMangement.Repository.BranchRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DocumentRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.EducationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.EmpBankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.FamilyRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.GradeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.OrganizationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.TrainingRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
 import com.humanresourcemanagement.ResourceMangement.Repository.WokingTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.security.service.UserDetailsImpl;
@@ -78,9 +84,10 @@ public class CreatingService {
 	
 	@Autowired
 	FamilyRepo familyRepo;
-//	
-//	@Autowired
-//	AdditionalRepo additionalRepo; 
+	
+	@Autowired
+	TrainingRepo trainRepo; 
+	
 	@Autowired
 	EmpBankRepo empBankRepo;
 	
@@ -101,6 +108,9 @@ public class CreatingService {
 	
 	@Autowired
 	GradeRepo gradeRepo;
+	
+	@Autowired
+	EducationRepo educationRepo;
 	
 	@Autowired
 	EncryptDecrypt encryptSer;
@@ -388,6 +398,53 @@ public class CreatingService {
 		branch.setOrganization(org.get());
 		branchRepo.save(branch);
 		return ResponseEntity.ok().body(branch);
+	}
+
+	public ResponseEntity<?> addTraining(@Valid TrainingDto trainingDto, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		Training train = new Training();
+		Set<String> str = trainingDto.getType();
+		str.forEach(type -> {
+			switch(type) {
+			case "training":
+				train.setType(Type.TRAINING);
+				break;
+			case "experience":
+				train.setType(Type.EXPERIENCE);
+				break;
+			default:
+				train.setType(null);
+			}
+		});
+		train.setName(trainingDto.getName());
+		train.setPosition(trainingDto.getPosition());
+		train.setJoinDate(trainingDto.getJoinDate());
+		train.setEndDate(trainingDto.getEndDate());
+		train.setUser(user);
+		trainRepo.save(train);
+		return ResponseEntity.ok().body(train);
+	}
+
+	public ResponseEntity<?> addEducation(@Valid EducationDto educationDto, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		Education education = new Education();
+		education.setName(educationDto.getEducational_institue_name());
+		education.setBoard(educationDto.getBoard());
+		education.setLevel(educationDto.getLevel());
+		education.setGpa(educationDto.getGpa());
+		education.setStartDate(educationDto.getStart_date());
+		education.setEndDate(educationDto.getEnd_date());
+		education.setUser(user);
+		educationRepo.save(education);
+		return ResponseEntity.ok().body(education);
 	}
 
 }

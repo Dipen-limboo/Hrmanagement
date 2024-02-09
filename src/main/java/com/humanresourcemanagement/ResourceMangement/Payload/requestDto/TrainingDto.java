@@ -5,7 +5,7 @@ import java.util.Set;
 
 import jakarta.validation.constraints.NotEmpty;
 
-public class AdditionalDto {
+public class TrainingDto {
 	@NotEmpty
 	private Set<String> type;
 	
@@ -13,31 +13,23 @@ public class AdditionalDto {
 	private String name;
 	
 	@NotEmpty
-	private String level;
-	
+	private String position;
 	
 	private LocalDate joinDate;
 	
-	
 	private LocalDate endDate;
-
-	private Long userId;
 	
-	private String board;
-	
-	private double gpa = 0.00;
-	
-	public AdditionalDto() {
+	public TrainingDto() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public AdditionalDto(@NotEmpty Set<String> type, @NotEmpty String name, @NotEmpty String level,
-			@NotEmpty LocalDate joinDate, @NotEmpty LocalDate endDate) {
+	public TrainingDto(@NotEmpty Set<String> type, @NotEmpty String name, @NotEmpty String position, LocalDate joinDate,
+			LocalDate endDate) {
 		super();
 		this.type = type;
 		this.name = name;
-		this.level = level;
+		this.position = position;
 		this.joinDate = joinDate;
 		this.endDate = endDate;
 	}
@@ -57,13 +49,14 @@ public class AdditionalDto {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
 
-	public String getLevel() {
-		return level;
+	public String getPosition() {
+		return position;
 	}
 
-	public void setLevel(String level) {
-		this.level = level;
+	public void setPosition(String position) {
+		this.position = position;
 	}
 
 	public LocalDate getJoinDate() {
@@ -82,29 +75,4 @@ public class AdditionalDto {
 		this.endDate = endDate;
 	}
 
-	public Long getUserId() {
-		return userId;
-	}
-
-	public void setUserId(Long userId) {
-		this.userId = userId;
-	}
-
-	public String getBoard() {
-		return board;
-	}
-
-	public void setBoard(String board) {
-		this.board = board;
-	}
-
-	public double getGpa() {
-		return gpa;
-	}
-
-	public void setGpa(double gpa) {
-		this.gpa = gpa;
-	}
-	
-	
 }
