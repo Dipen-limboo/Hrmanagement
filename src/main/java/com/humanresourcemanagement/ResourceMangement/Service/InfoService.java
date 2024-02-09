@@ -29,6 +29,7 @@ import com.humanresourcemanagement.ResourceMangement.Entity.EmpBank;
 import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Training;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
+import com.humanresourcemanagement.ResourceMangement.Enum.DocumentType;
 import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
 import com.humanresourcemanagement.ResourceMangement.Enum.Type;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EducationUpdateDto;
@@ -143,28 +144,13 @@ public class InfoService {
 		if(!documentList.isEmpty()) {
 			for(Document document: documentList) {
 				DocumentResponseDto documentResponseDto= new DocumentResponseDto();
-				if(document.getCitizenship() == null) {
-					documentResponseDto.setCitizenship(null);
-				} else {
-					documentResponseDto.setCitizenship(EncryptDecrypt.decrypt(document.getCitizenship()));
-				}
-				if(document.getPan() == null) {
-					documentResponseDto.setPan(null);
-				} else {
-					documentResponseDto.setPan(EncryptDecrypt.decrypt(document.getPan()));
-				}
-				if(document.getNationality() == null) {
-					documentResponseDto.setNationalityId(null);
-				} else {
-					documentResponseDto.setNationalityId(EncryptDecrypt.decrypt(document.getNationality()));
-				}
-				documentResponseDto.setIssuedDate(document.getIssuedDate());
-				documentResponseDto.setIssuedPlace(document.getIssuedPlace());
+				documentResponseDto.setDocument_id(document.getId());
+				documentResponseDto.setType(document.getType().toString());
 				documentResponseDto.setPath(document.getFilePath());
-				Optional<User> user = userRepo.findById(document.getUser().getId());
-				if(user.isPresent()) {
-					documentResponseDto.setUserId(user.get().getId());
-				}
+				documentResponseDto.setId_number(document.getNumber());
+				documentResponseDto.setIssued_date(document.getIssuedDate());
+				documentResponseDto.setExprity_date(document.getExpiryDate());
+				documentResponseDto.setUserId(document.getUser().getId());
 				documentResponseDtoList.add(documentResponseDto);
 			}
 			return ResponseEntity.ok().body(documentResponseDtoList);
@@ -198,21 +184,19 @@ public class InfoService {
 		}
 		return ResponseEntity.ok().body("Succesfully deleted the Document with id" + id);
 	}
+	
 	public ResponseEntity<?> deleteDocument(Long id, Authentication auth) throws IOException {
 		UserDetailsImpl userdetails = (UserDetailsImpl) auth.getPrincipal();
 		Optional<User> optionalUser = userRepo.findById(userdetails.getId());
 		if(optionalUser.isPresent()) {
 			User user = optionalUser.get();
 			Optional<Document> optionaldocument = documentRepo.findByIdAndUser(id, user);
-			if(optionaldocument.isPresent()) {
-				String filePath = optionaldocument.get().getFilePath();
-				if(filePath != null && !filePath.isEmpty()) {
-					Files.deleteIfExists(Paths.get(filePath));
-				}
-			documentRepo.deleteByIdAndUser(id, user);
-			} else {
+			if(!optionaldocument.isPresent())
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: You cannot delete this document."));
-			}
+			String filePath = optionaldocument.get().getFilePath();
+			if(filePath != null && !filePath.isEmpty()) 
+				Files.deleteIfExists(Paths.get(filePath));
+			documentRepo.deleteByIdAndUser(id, user);
 		}
 		return ResponseEntity.ok().body("Succesfully deleted the Document with id" + id);
 	}
@@ -277,25 +261,13 @@ public class InfoService {
 				
 				for(Document document: documentList) {
 					DocumentResponseDto documentResponseDto= new DocumentResponseDto();
-					if(document.getCitizenship() == null) {
-						documentResponseDto.setCitizenship(null);
-					} else {
-						documentResponseDto.setCitizenship(EncryptDecrypt.decrypt(document.getCitizenship()));
-					}
-					if(document.getPan() == null) {
-						documentResponseDto.setPan(null);
-					} else {
-						documentResponseDto.setPan(EncryptDecrypt.decrypt(document.getPan()));
-					}
-					if(document.getNationality() == null) {
-						documentResponseDto.setNationalityId(null);
-					} else {
-						documentResponseDto.setNationalityId(EncryptDecrypt.decrypt(document.getNationality()));
-					}
-					documentResponseDto.setIssuedDate(document.getIssuedDate());
-					documentResponseDto.setIssuedPlace(document.getIssuedPlace());
+					documentResponseDto.setDocument_id(document.getId());
+					documentResponseDto.setType(document.getType().toString());
 					documentResponseDto.setPath(document.getFilePath());
-					documentResponseDto.setUserId(user.getId());
+					documentResponseDto.setId_number(document.getNumber());
+					documentResponseDto.setIssued_date(document.getIssuedDate());
+					documentResponseDto.setExprity_date(document.getExpiryDate());
+					documentResponseDto.setUserId(document.getUser().getId());
 					documentDtoList.add(documentResponseDto);
 				}
 				return ResponseEntity.ok().body(documentDtoList);
@@ -341,92 +313,67 @@ public class InfoService {
 	}
 	
 	//update part
-	public ResponseEntity<?> updateDocuments(Long id, String citizenship, String pan, String nationalityId,
-			LocalDate issuedDate, String issuedPlace, MultipartFile file, Authentication auth) {
+	public ResponseEntity<?> updateDocuments(Long id, Set<String> type, String id_number, LocalDate issued_date,
+			LocalDate expiry_date, MultipartFile file, Authentication auth) {
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
 		Optional<User> user = userRepo.findById(userDetails.getId());
-		if(user.isPresent()) {
-			if(documentRepo.existsByUser(user.get())) {
-				Optional<Document> optionalDocument = documentRepo.findByIdAndUser(id, user.get());
-				if(optionalDocument.isPresent()) {
-					Document document = optionalDocument.get();
-					try {
-						if(documentRepo.existsByCitizenship(citizenship)  && citizenship != null) {
-							return ResponseEntity.badRequest().body(new MessageResponse("Error: Citizenship already exists."));
-						}
-						if(documentRepo.existsByPan(pan) && pan != null) {
-							return ResponseEntity.badRequest().body(new MessageResponse("Error: Pan already exists."));
-						}
-						if(documentRepo.existsByNationality(nationalityId) && nationalityId !=null) {
-							return ResponseEntity.badRequest().body(new MessageResponse("Error: Nationality id already exists."));
-						}
-						if(citizenship == null) {
-							document.setCitizenship(document.getCitizenship());
-						} else {
-							document.setCitizenship(EncryptDecrypt.encrypt(citizenship));
-						} 
-						
-						if(pan == null) {
-							document.setPan(document.getPan());
-						} else {
-							document.setPan(EncryptDecrypt.encrypt(pan));
-						}
-						
-						if (nationalityId == null) {
-							document.setNationality(document.getNationality());
-						} else {
-							document.setNationality(EncryptDecrypt.encrypt(nationalityId));
-						}
-						LocalDate currentDate = LocalDate.now();
-						if(issuedDate == null) {
-							document.setIssuedDate(document.getIssuedDate());
-						} else {
-							if(currentDate.isAfter(issuedDate)) {
-								document.setIssuedDate(issuedDate);
-							} else {
-								return ResponseEntity.badRequest().body(new MessageResponse("Error: issued Date should not exceed the current date " + currentDate));
-							}
-						}
-						
-						if(issuedPlace == null) {
-							document.setIssuedPlace(document.getIssuedPlace());
-						} else {
-							document.setIssuedPlace(issuedPlace);
-						}
-						if(file == null) {
-							document.setFilePath(document.getFilePath());
-						} else {
-							Path uploadsDir = Paths.get("src/main/resources/static/Document");
-							if(!Files.exists(uploadsDir)) {
-								Files.createDirectories(uploadsDir);
-							}
-							String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-							Path filePath = uploadsDir.resolve(fileName);
-							if(documentRepo.existsByFilePath(filePath.toString())) {
-								return ResponseEntity.badRequest().body(new MessageResponse("Error: Documents already exists with " + file));
-							} else {
-								String path = document.getFilePath();
-								if(path != null && !path.isEmpty()) {
-									Files.deleteIfExists(Paths.get(path));
-								}
-								Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-								document.setFilePath(filePath.toString());
-							}
-						}
-						documentRepo.save(document);
-						return ResponseEntity.ok().body(document);
-					} catch (Exception e) {
-					    return ResponseEntity.status(500).body("Error saving user: " + e.getMessage());
-					}
-				} else {
-					return ResponseEntity.badRequest().body(new MessageResponse("Error: User " + user.get().getId() + " has no authority to modify or update " +id)); 
-				}
-			} else {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
-			}
-		} else {
+		if(!user.isPresent())
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
-		}
+			if(!documentRepo.existsByUser(user.get()))
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
+			Optional<Document> optionalDocument = documentRepo.findByIdAndUser(id, user.get());
+			if(!optionalDocument.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: User " + user.get().getId() + " has no authority to modify or update " +id)); 
+			Document document = optionalDocument.get();
+			try {
+				if(type==null) {document.setType(document.getType());} else {
+					Set<String> str = type;
+					str.forEach(types -> {
+						switch(types) {
+						case "citizenship":
+							document.setType(DocumentType.CITIZENSHIP);
+							break;
+						case "pan":
+							document.setType(DocumentType.PAN);
+							break;
+						case "license":
+							document.setType(DocumentType.LICENSE);
+							break;
+						case "passport":
+							document.setType(DocumentType.PASSPORT);
+							break;
+						case "nationality":
+							document.setType(DocumentType.NATIONALITY);
+							break;
+						default:
+							document.setType(null);
+						}
+					});
+				}
+				
+				if(id_number==null) {document.setNumber(document.getNumber());} else {document.setNumber(id_number);}
+				if(issued_date ==null) {document.setIssuedDate(document.getIssuedDate());} else {document.setIssuedDate(issued_date);}
+				if(expiry_date == null) {document.setExpiryDate(document.getExpiryDate());} else {document.setExpiryDate(expiry_date);}
+				if(file == null) {document.setFilePath(document.getFilePath());} else {
+					Path uploadsDir = Paths.get("src/main/resources/static/Document");
+					if(!Files.exists(uploadsDir)) 
+						Files.createDirectories(uploadsDir);
+					String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+					Path filePath = uploadsDir.resolve(fileName);
+					if(documentRepo.existsByFilePath(filePath.toString()))
+						return ResponseEntity.badRequest().body(new MessageResponse("Error: Documents already exists with " + file));
+					String path = document.getFilePath();
+					if(path != null && !path.isEmpty()) 
+						Files.deleteIfExists(Paths.get(path));
+					Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+					document.setFilePath(filePath.toString());
+				}
+				document.setUser(user.get());
+				documentRepo.save(document);
+				return ResponseEntity.ok().body(document);
+			} catch (Exception e) {
+			    return ResponseEntity.status(500).body("Error saving user: " + e.getMessage());
+			}
 	}
 
 	
@@ -435,105 +382,72 @@ public class InfoService {
 			Set<String> relation, String phone, MultipartFile file, Authentication auth) throws IOException {
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
 		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
-		if(optionalUser.isPresent()) {
-			User user = optionalUser.get();
-			Optional<FamilyInfo> optionalFamily = familyRepo.findByIdAndUser(id, user);
-			if(optionalFamily.isPresent()) {
-				FamilyInfo family = optionalFamily.get();
-				if(firstName == null){
-					family.setFirstName(family.getFirstName());
-				} else {
-					family.setFirstName(firstName);
-				}
-				
-				if(middleName == null) {
-					family.setMiddleName(family.getMiddleName());
-				} else {
-					family.setMiddleName(middleName);
-				}
-				
-				if(lastName == null) {
-					family.setLastName(family.getLastName());
-				} else {
-					family.setLastName(lastName);
-				}
-				
-				if(relation == null) {
-					family.setRelation(family.getRelation());
-				} else {
-					Set<String> strRelation = relation;
-					strRelation.forEach(relations -> {
-						switch(relations) {
-						case "father":
-							family.setRelation(Relation.FATHER);
-							break;
-						case "mother":
-							family.setRelation(Relation.MOTHER);
-							break;
-						case "brother":
-							family.setRelation(Relation.BROTHER);
-							break;
-						case "sister":
-							family.setRelation(Relation.SISTER);
-							break;
-						case "grandmother":
-							family.setRelation(Relation.GRANDMOTHER);
-							break;
-						case "grandfather":
-							family.setRelation(Relation.GRANDFATHER);
-							break;	
-						case "wife":
-							family.setRelation(Relation.WIFE);
-							break;	
-						default:
-							family.setRelation(null);
-						}
-					});
-				}
-				
-				if(phone == null) {
-					family.setPhone(family.getPhone());
-				} else {
-					family.setPhone(phone);
-				}
-				
-				family.setUser(user);
-				
-				if(file==null) {
-					family.setFile(family.getFile());
-				} else {
-					Path uploadsDir = Paths.get("src/main/resources/static/Images");
-					if(!Files.exists(uploadsDir)) {
-						Files.createDirectories(uploadsDir);
-					}
-					String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-					Path filePath = uploadsDir.resolve(fileName);
-					if(familyRepo.existsByFile(filePath.toString())) {
-						return ResponseEntity.badRequest().body(new MessageResponse("Error: Documents already exists with " + file));
-					} else {
-						String path = family.getFile();
-						if(path != null && !path.isEmpty()) {
-							Files.deleteIfExists(Paths.get(path));
-						}
-						Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-						family.setFile(filePath.toString());
-					}
-				}
-				familyRepo.save(family);
-				return ResponseEntity.ok().body(family);
-			} else {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: User id " + user.getId() + " doesnot have an authority to modify this family details " +id));
-			}
-		} else {
+		if(!optionalUser.isPresent()) 
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
+		User user = optionalUser.get();
+		Optional<FamilyInfo> optionalFamily = familyRepo.findByIdAndUser(id, user);
+		if(!optionalFamily.isPresent()) 
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: User id " + user.getId() + " doesnot have an authority to modify this family details " +id));
+		FamilyInfo family = optionalFamily.get();
+		if(firstName == null){family.setFirstName(family.getFirstName());} else {family.setFirstName(firstName);}
+		if(middleName == null) {family.setMiddleName(family.getMiddleName());} else {family.setMiddleName(middleName);}
+		if(lastName == null) {family.setLastName(family.getLastName());} else {family.setLastName(lastName);}
+		if(relation == null) {family.setRelation(family.getRelation());} else {
+			Set<String> strRelation = relation;
+			strRelation.forEach(relations -> {
+				switch(relations) {
+				case "father":
+					family.setRelation(Relation.FATHER);
+					break;
+				case "mother":
+					family.setRelation(Relation.MOTHER);
+					break;
+				case "brother":
+					family.setRelation(Relation.BROTHER);
+					break;
+				case "sister":
+					family.setRelation(Relation.SISTER);
+					break;
+				case "grandmother":
+					family.setRelation(Relation.GRANDMOTHER);
+					break;
+				case "grandfather":
+					family.setRelation(Relation.GRANDFATHER);
+					break;	
+				case "wife":
+					family.setRelation(Relation.WIFE);
+					break;	
+				default:
+					family.setRelation(null);
+				}
+			});
 		}
+		if(phone == null) {family.setPhone(family.getPhone());} else {family.setPhone(phone);}
+		family.setUser(user);
+		if(file==null) {family.setFile(family.getFile());} else {
+			Path uploadsDir = Paths.get("src/main/resources/static/Images");
+			if(!Files.exists(uploadsDir))
+				Files.createDirectories(uploadsDir);
+			String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+			Path filePath = uploadsDir.resolve(fileName);
+			if(familyRepo.existsByFile(filePath.toString()))
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: Documents already exists with " + file));
+			String path = family.getFile();
+			if(path != null && !path.isEmpty())
+				Files.deleteIfExists(Paths.get(path));
+			Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+			family.setFile(filePath.toString());
+		}
+		familyRepo.save(family);
+		return ResponseEntity.ok().body(family);
 	}
 
 	public ResponseEntity<?> updateEmpBank(@Valid String emp_account_number, String emp_bank_branch,
 			MultipartFile qrPath, Long bank_id, Long id, Authentication auth) throws IOException {
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
 		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
-		if(optionalUser.isPresent()) {
+		if(!optionalUser.isPresent()) 
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
 			User user = optionalUser.get();
 			if(!empBankRepo.existsByUser(user))
 				return ResponseEntity.badRequest().body(new MessageResponse("You don't have any account "));
@@ -556,7 +470,7 @@ public class InfoService {
 					Files.deleteIfExists(Paths.get(path));
 				Files.copy(qrPath.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 				empBank.setQrPath(filePath.toString());
-				}
+			}
 			empBank.setUser(user);
 			if(bank_id == null) {empBank.setBank(empBank.getBank());} else {
 				Optional<Bank> bank = bankRepo.findById(bank_id);
@@ -566,9 +480,6 @@ public class InfoService {
 			}
 			empBankRepo.save(empBank);
 			return ResponseEntity.ok().body(empBank);
-		} else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: User not found by id" + userDetails.getId()));
-		}
 	}
 
 	public ResponseEntity<?> findAllTraining(Pageable pageable) {

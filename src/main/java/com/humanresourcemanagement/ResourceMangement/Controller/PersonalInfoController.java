@@ -186,14 +186,13 @@ public class PersonalInfoController {
 
 	@PutMapping("/getDocuments/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-	public ResponseEntity<?> updateDocumentsById(@PathVariable Long id,
-			@RequestParam(name="citizenship", required=false) String citizenship,
-			@RequestParam(name="pan", required=false)String pan,
-			@RequestParam(name="nationalityId", required=false) String nationalityId,
-			@RequestParam(name="issuedDate", required=false) LocalDate issuedDate,
-			@RequestParam(name="issuedPlace", required=false) String issuedPlace,
-		    @RequestPart("file") MultipartFile file, Authentication auth){
-		return infoService.updateDocuments(id,citizenship, pan, nationalityId, issuedDate, issuedPlace, file, auth);
+	public ResponseEntity<?> updateDocumentsById(@PathVariable Long id,@RequestParam(required=true) Set<String> type,
+			@RequestParam(required=true) String id_number,
+			@RequestParam(required=true) LocalDate issued_date,
+			@RequestParam(required=false) LocalDate expiry_date,
+		    @RequestPart("file") MultipartFile file,
+		    Authentication auth) throws IOException{
+		return infoService.updateDocuments(id,type, id_number, issued_date, expiry_date, file, auth);
 	}
 	
 	@PutMapping("/getFamily/{id}")

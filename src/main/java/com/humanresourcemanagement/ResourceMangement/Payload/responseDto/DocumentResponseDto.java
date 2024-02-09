@@ -1,17 +1,18 @@
 package com.humanresourcemanagement.ResourceMangement.Payload.responseDto;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 public class DocumentResponseDto {
-	private String citizenship;
+	private Long document_id;
 	
-	private String pan;
+	private String type;
 	
-	private String nationalityId;
+	private String id_number;
 	
-	private LocalDate issuedDate;
+	private LocalDate issued_date;
 	
-	private String issuedPlace;
+	private LocalDate exprity_date;
 	
 	private String path;
 	
@@ -22,56 +23,56 @@ public class DocumentResponseDto {
 		// TODO Auto-generated constructor stub
 	}
 
-	public DocumentResponseDto(String citizenship, String pan, String nationalityId, LocalDate issuedDate,
-			String issuedPlace, String path, Long userId) {
+	public DocumentResponseDto(Long document_id, String type, String id_number, LocalDate issued_date,
+			LocalDate exprity_date, String path, Long userId) {
 		super();
-		this.citizenship = citizenship;
-		this.pan = pan;
-		this.nationalityId = nationalityId;
-		this.issuedDate = issuedDate;
-		this.issuedPlace = issuedPlace;
+		this.document_id = document_id;
+		this.type = type;
+		this.id_number = id_number;
+		this.issued_date = issued_date;
+		this.exprity_date = exprity_date;
 		this.path = path;
 		this.userId = userId;
 	}
 
-	public String getCitizenship() {
-		return citizenship;
+	public Long getDocument_id() {
+		return document_id;
 	}
 
-	public void setCitizenship(String citizenship) {
-		this.citizenship = citizenship;
+	public void setDocument_id(Long document_id) {
+		this.document_id = document_id;
 	}
 
-	public String getPan() {
-		return pan;
+	public String getType() {
+		return type;
 	}
 
-	public void setPan(String pan) {
-		this.pan = pan;
+	public void setType(String type) {
+		this.type = type;
 	}
 
-	public String getNationalityId() {
-		return nationalityId;
+	public String getId_number() {
+		return id_number;
 	}
 
-	public void setNationalityId(String nationalityId) {
-		this.nationalityId = nationalityId;
+	public void setId_number(String id_number) {
+		this.id_number = id_number;
 	}
 
-	public LocalDate getIssuedDate() {
-		return issuedDate;
+	public LocalDate getIssued_date() {
+		return issued_date;
 	}
 
-	public void setIssuedDate(LocalDate issuedDate) {
-		this.issuedDate = issuedDate;
+	public void setIssued_date(LocalDate issued_date) {
+		this.issued_date = issued_date;
 	}
 
-	public String getIssuedPlace() {
-		return issuedPlace;
+	public LocalDate getExprity_date() {
+		return exprity_date;
 	}
 
-	public void setIssuedPlace(String issuedPlace) {
-		this.issuedPlace = issuedPlace;
+	public void setExprity_date(LocalDate exprity_date) {
+		this.exprity_date = exprity_date;
 	}
 
 	public String getPath() {
@@ -89,6 +90,6 @@ public class DocumentResponseDto {
 	public void setUserId(Long userId) {
 		this.userId = userId;
 	}
-	
+
 	
 }

@@ -4,5 +4,6 @@ public enum DocumentType {
 	CITIZENSHIP,
 	PASSPORT,
 	NATIONALITY,
-	LICENSE
+	LICENSE,
+	PAN
 }

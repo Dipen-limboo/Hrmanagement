@@ -11,11 +11,6 @@ import com.humanresourcemanagement.ResourceMangement.Entity.User;
 
 public interface DocumentRepo extends JpaRepository<Document, Long>, JpaSpecificationExecutor<Document> {
 
-	boolean existsByCitizenship(String citizenship);
-
-	boolean existsByPan(String pan);
-
-	boolean existsByNationality(String nationalityId);
 
 	List<Document> findByUser(User user);
 

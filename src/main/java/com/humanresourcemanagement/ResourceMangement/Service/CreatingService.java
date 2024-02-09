@@ -32,6 +32,7 @@ import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
 import com.humanresourcemanagement.ResourceMangement.Entity.Training;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
+import com.humanresourcemanagement.ResourceMangement.Enum.DocumentType;
 import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
 import com.humanresourcemanagement.ResourceMangement.Enum.Type;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
@@ -160,64 +161,7 @@ public class CreatingService {
 		return ResponseEntity.ok().body(bank);
 	}
 
-	public ResponseEntity<?> addDocument(String citizenship, String pan, String nationalityId, LocalDate issuedDate,
-			String issuedPlace, MultipartFile file, Authentication auth) {
-		try {
-			if(documentRepo.existsByCitizenship(citizenship)  && citizenship != null) {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: Citizenship already exists."));
-			}
-			if(documentRepo.existsByPan(pan) && pan != null) {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: Pan already exists."));
-			}
-			if(documentRepo.existsByNationality(nationalityId) && nationalityId !=null) {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: Nationality id already exists."));
-			}
-			Path uploadsDir = Paths.get("src/main/resources/static/Document");
-			if(!Files.exists(uploadsDir)) {
-				Files.createDirectories(uploadsDir);
-			}
-			
-			String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-			Path filePath = uploadsDir.resolve(fileName);
-			if(documentRepo.existsByFilePath(filePath.toString())) {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: Documents already exists with " + file));
-			}
-			Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-			
-			UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-			Long userId = userDetails.getId();
-			Optional<User> optionalUser= userRepo.findById(userId);
-			
-			Document document = new Document();
-			if(citizenship!=null) {
-				document.setCitizenship(EncryptDecrypt.encrypt(citizenship));
-			} else {
-				document.setCitizenship(null);
-			}
-			if(pan!=null) {
-				document.setPan(EncryptDecrypt.encrypt(pan));
-			} else {
-				document.setPan(null);
-			}
-			if(nationalityId!=null) {
-				document.setNationality(EncryptDecrypt.encrypt(nationalityId));
-			} else {
-				document.setNationality(null);
-			}
-			document.setIssuedDate(issuedDate);
-			document.setIssuedPlace(issuedPlace);
-			document.setFilePath(filePath.toString());
-			
-			if(optionalUser.isPresent()) {
-			document.setUser(optionalUser.get());	
-			}
-			documentRepo.save(document);
-			return ResponseEntity.ok().body(document);
-		} catch (Exception e) {
-		    return ResponseEntity.status(500).body("Error saving user: " + e.getMessage());
-		}
-	}
-
+	
 
 	public ResponseEntity<?> addFamily(@Valid String firstName, String middleName, String lastName,
 			Set<String> relation, String phone, MultipartFile file, Authentication auth) throws IOException {
@@ -445,6 +389,51 @@ public class CreatingService {
 		education.setUser(user);
 		educationRepo.save(education);
 		return ResponseEntity.ok().body(education);
+	}
+
+	public ResponseEntity<?> addDocument(Set<String> type, String id_number, LocalDate issued_date,
+			LocalDate expiry_date, MultipartFile file, Authentication auth) throws IOException {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Long userId = userDetails.getId();
+		Optional<User> optionalUser= userRepo.findById(userId);
+		Path uploadsDir = Paths.get("src/main/resources/static/Document");
+		if(!Files.exists(uploadsDir)) 
+			Files.createDirectories(uploadsDir);
+		String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+		Path filePath = uploadsDir.resolve(fileName);
+		if(documentRepo.existsByFilePath(filePath.toString())) 
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Documents already exists with " + file));
+		Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+		Document document = new Document();
+		document.setUser(optionalUser.get());
+		document.setFilePath(filePath.toString());
+		Set<String> str = type;
+		str.forEach(types -> {
+			switch(types) {
+			case "citizenship":
+				document.setType(DocumentType.CITIZENSHIP);
+				break;
+			case "pan":
+				document.setType(DocumentType.PAN);
+				break;
+			case "license":
+				document.setType(DocumentType.LICENSE);
+				break;
+			case "passport":
+				document.setType(DocumentType.PASSPORT);
+				break;
+			case "nationality":
+				document.setType(DocumentType.NATIONALITY);
+				break;
+			default:
+				document.setType(null);
+			}
+		});
+		document.setNumber(id_number);
+		document.setIssuedDate(issued_date);
+		document.setExpiryDate(expiry_date);
+		documentRepo.save(document);
+		return ResponseEntity.ok().body(document);
 	}
 
 }

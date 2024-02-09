@@ -2,8 +2,12 @@ package com.humanresourcemanagement.ResourceMangement.Entity;
 
 import java.time.LocalDate;
 
+import com.humanresourcemanagement.ResourceMangement.Enum.DocumentType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,20 +25,18 @@ public class Document {
 	@Column(name="document_id")
 	private Long id;
 	
-	@Column(name="citizenship_no")
-	private String citizenship;
+	@Enumerated(EnumType.STRING)
+	@Column(name="document_type")
+	private DocumentType type;
 	
-	@Column(name="pan_no")
-	private String pan;
-	
-	@Column(name="nationality_no")
-	private String nationality;
-	
+	@Column(name="id_number")
+	private String number;
+		
 	@Column(name="issued_date")
 	private LocalDate issuedDate;
 	
-	@Column(name="issued_place")
-	private String issuedPlace;
+	@Column(name="expiry_date")
+	private LocalDate expiryDate;
 	
 	@Column(name="document_filePath")
 	private String filePath;
@@ -48,16 +50,16 @@ public class Document {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Document(Long id, String citizenship, String pan, String nationality, LocalDate issuedDate,
-			String issuedPlace, String filePath) {
+	public Document(Long id, DocumentType type, String number, LocalDate issuedDate, LocalDate expiryDate,
+			String filePath, User user) {
 		super();
 		this.id = id;
-		this.citizenship = citizenship;
-		this.pan = pan;
-		this.nationality = nationality;
+		this.type = type;
+		this.number = number;
 		this.issuedDate = issuedDate;
-		this.issuedPlace = issuedPlace;
+		this.expiryDate = expiryDate;
 		this.filePath = filePath;
+		this.user = user;
 	}
 
 	public Long getId() {
@@ -68,28 +70,20 @@ public class Document {
 		this.id = id;
 	}
 
-	public String getCitizenship() {
-		return citizenship;
+	public DocumentType getType() {
+		return type;
 	}
 
-	public void setCitizenship(String citizenship) {
-		this.citizenship = citizenship;
+	public void setType(DocumentType type) {
+		this.type = type;
 	}
 
-	public String getPan() {
-		return pan;
+	public String getNumber() {
+		return number;
 	}
 
-	public void setPan(String pan) {
-		this.pan = pan;
-	}
-
-	public String getNationality() {
-		return nationality;
-	}
-
-	public void setNationality(String nationality) {
-		this.nationality = nationality;
+	public void setNumber(String number) {
+		this.number = number;
 	}
 
 	public LocalDate getIssuedDate() {
@@ -100,12 +94,12 @@ public class Document {
 		this.issuedDate = issuedDate;
 	}
 
-	public String getIssuedPlace() {
-		return issuedPlace;
+	public LocalDate getExpiryDate() {
+		return expiryDate;
 	}
 
-	public void setIssuedPlace(String issuedPlace) {
-		this.issuedPlace = issuedPlace;
+	public void setExpiryDate(LocalDate expiryDate) {
+		this.expiryDate = expiryDate;
 	}
 
 	public String getFilePath() {
@@ -123,6 +117,7 @@ public class Document {
 	public void setUser(User user) {
 		this.user = user;
 	}
+
 	
 }	
 	

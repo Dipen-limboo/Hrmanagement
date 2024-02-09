@@ -64,14 +64,13 @@ public class CreatingController {
 	
 	@PostMapping("/add_documents")
 	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN')")
-	public ResponseEntity<?> saveDocuments(@RequestParam(name="citizenship", required=false) String citizenship,
-			@RequestParam(name="pan", required=false)String pan,
-			@RequestParam(name="nationalityId", required=false) String nationalityId,
-			@RequestParam(name="issuedDate", required=false) LocalDate issuedDate,
-			@RequestParam(name="issuedPlace", required=false) String issuedPlace,
+	public ResponseEntity<?> saveDocuments(@RequestParam(required=true) Set<String> type,
+			@RequestParam(required=true) String id_number,
+			@RequestParam(required=true) LocalDate issued_date,
+			@RequestParam(required=false) LocalDate expiry_date,
 		    @RequestPart("file") MultipartFile file,
-		    Authentication auth){
-		return createService.addDocument(citizenship, pan, nationalityId, issuedDate, issuedPlace, file, auth);
+		    Authentication auth) throws IOException{
+		return createService.addDocument(type, id_number, issued_date, expiry_date, file, auth);
 	}
 	
 	@PostMapping("/add_familyInfo")
