@@ -22,10 +22,14 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Branch;
 import com.humanresourcemanagement.ResourceMangement.Entity.Department;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.EmpBank;
+import com.humanresourcemanagement.ResourceMangement.Entity.EmployeeOfficialInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Grade;
 import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
 import com.humanresourcemanagement.ResourceMangement.Entity.Organization;
+import com.humanresourcemanagement.ResourceMangement.Entity.Promotion;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
+import com.humanresourcemanagement.ResourceMangement.Entity.Transfer;
+import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BranchDto;
@@ -34,6 +38,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Designat
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.BranchResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EmpBankResponseDto;
@@ -41,16 +46,20 @@ import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.GradeRe
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.JobTypeResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.OrganizationResponseDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.TransferResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.WorkTypeResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.BranchRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.EmpBankRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.EmployeeOfficialInfoRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.GradeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.OrganizationRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.PromotionRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.TransferRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
 import com.humanresourcemanagement.ResourceMangement.Repository.WokingTypeRepo;
 
@@ -90,6 +99,15 @@ public class AdminService {
 	
 	@Autowired
 	EmpBankRepo empBankRepo;
+	
+	@Autowired
+	EmployeeOfficialInfoRepo empRepo;	
+	
+	@Autowired
+	TransferRepo transferRepo;
+	
+	@Autowired
+	PromotionRepo promotionRepo;
 	
 	public ResponseEntity<?> findDepartment() {
 		List<Department> departmentList = departRepo.findAll();
@@ -689,5 +707,121 @@ public class AdminService {
 		}
 		branchRepo.save(branch);
 		return ResponseEntity.ok().body(branch);
+	}
+
+	public ResponseEntity<?> findTransfer(Pageable pageable) {
+		Page<Transfer> transferList = transferRepo.findAll(pageable);
+		List<TransferResponseDto> transferResponseDtoList = new ArrayList<>();
+		if(transferList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No body is transfer"));
+		for (Transfer transfer: transferList) {
+			TransferResponseDto responseDto = new TransferResponseDto();
+			responseDto.setTransfer_id(transfer.getId());
+			responseDto.setBranch_id(transfer.getBranch().getId());
+			responseDto.setDesignation_id(transfer.getDesignation().getId());
+			responseDto.setSection_id(transfer.getSection().getId());
+			responseDto.setTransfer_date(transfer.getTransferDate());
+			responseDto.setUser_id(transfer.getUser().getId());
+			responseDto.setRemarks(transfer.getRemark());
+			transferResponseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(transferResponseDtoList);
+	}
+
+	public ResponseEntity<?> deleteTransferById(Long id) {
+		Optional<Transfer> optionalTransfer = transferRepo.findById(id);
+		if(!optionalTransfer.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any transfer information of transfer " +id));
+		transferRepo.deleteById(id);
+		return ResponseEntity.ok().body("Succesfully!! deleted tansfer with id ");
+	}
+
+	public ResponseEntity<?> getTransferById(Long id) {
+		Optional<Transfer> optionalTransfer = transferRepo.findById(id);
+		if(!optionalTransfer.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any transfer information of transfer " +id));
+		Transfer transfer = optionalTransfer.get();
+		TransferResponseDto responseDto = new TransferResponseDto();
+		responseDto.setTransfer_id(transfer.getId());
+		responseDto.setBranch_id(transfer.getBranch().getId());
+		responseDto.setDesignation_id(transfer.getDesignation().getId());
+		responseDto.setSection_id(transfer.getSection().getId());
+		responseDto.setTransfer_date(transfer.getTransferDate());
+		responseDto.setUser_id(transfer.getUser().getId());
+		responseDto.setRemarks(transfer.getRemark());
+		return ResponseEntity.ok().body(responseDto);		
+	}
+
+	public ResponseEntity<?> updateTransfer(Long id, @Valid TransferUpdateDto transferDto) {
+		Optional<Transfer> optionalTransfer = transferRepo.findById(id);
+		if(!optionalTransfer.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any transfer information of transfer " +id));
+		Transfer transfer = optionalTransfer.get();
+		User user = transfer.getUser();
+		Optional<EmployeeOfficialInfo> empOpt = empRepo.findByUser(user);
+		if(empOpt.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found in the Employee official list of user with id " + user.getId()));
+		EmployeeOfficialInfo emp = empOpt.get();
+		Promotion promo = promotionRepo.findFirstByUserOrderByIdDesc(user);
+		if(transferDto.getDesignation_id() != null && transferDto.getSection_id() != null) {
+			Optional<Designation> designation = designationRepo.findById(transferDto.getDesignation_id());
+			if(!designation.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("Designation not found in the list"));
+			Optional<SubDepartment> section = subDepartmentRepo.findById(transferDto.getSection_id());
+			if(!section.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("Section not found in the list"));
+			if(!designation.get().getDepartment().getId().equals(section.get().getDepartment().getId()))
+				return ResponseEntity.badRequest().body(new MessageResponse("Department are different in the section and designation.. "));
+		}
+		if((transferDto.getDesignation_id() != null && transferDto.getSection_id() == null) || (transferDto.getDesignation_id() == null && transferDto.getSection_id() != null)  ) {
+			Optional<Designation> designation = designationRepo.findById(transferDto.getDesignation_id());
+			if(!designation.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("Designation not found in the list"));
+			Optional<SubDepartment> section = subDepartmentRepo.findById(transferDto.getSection_id());
+			if(!section.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("Section not found in the list"));
+			if((transfer.getSection().getDepartment().getId()!= designation.get().getDepartment().getId()) || (section.get().getDepartment().getId()!=(transfer.getDesignation().getDepartment().getId())) )
+				return ResponseEntity.badRequest().body(new MessageResponse("Department are different in the section and designation.. "));
+		}
+		if(transferDto.getDesignation_id() == null) {transfer.setBranch(transfer.getBranch());} else {
+			Optional<Designation> designation = designationRepo.findById(transferDto.getDesignation_id());
+			if(!designation.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("Designation not found in the list"));
+			emp.setDesignation(designation.get());
+			transfer.setDesignation(designation.get());
+			promo.setDesignation(designation.get());
+		}
+		if(transferDto.getSection_id()==null) {transfer.setSection(transfer.getSection());} else {
+			Optional<SubDepartment> section = subDepartmentRepo.findById(transferDto.getSection_id());
+			if(!section.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("Section not found in the list"));
+			emp.setSection(section.get());
+			transfer.setSection(section.get());
+			promo.setSubDepartment(section.get());
+		}
+		if(transferDto.getBranch_id() == null) {transfer.setBranch(transfer.getBranch());} else {
+			Optional<Branch> branch = branchRepo.findById(transferDto.getBranch_id());
+			if(!branch.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("Branch not found in the list"));
+			emp.setBranch(branch.get());
+			transfer.setBranch(branch.get());
+			promo.setBranch(branch.get());
+		}
+		if(transferDto.getRemarks()==null) {transfer.setRemark(transfer.getRemark());} else {transfer.setRemark(transferDto.getRemarks()); promo.setRemarks(transferDto.getRemarks());}
+		if(transferDto.getTransferDate()==null) {transfer.setTransferDate(transfer.getTransferDate()); } else {
+			if((transferDto.getDesignation_id() == null || transferDto.getSection_id() ==null) || (transferDto.getDesignation_id() == null && transferDto.getSection_id() ==null) ) {transfer.setTransferDate(transferDto.getTransferDate());} else {
+				Promotion opt = promotionRepo.findByEndDateAndUser(promo.getJoinDate(), user);
+				System.out.println("------------------------------------------------------------------"+promo.getJoinDate());
+				opt.setEndDate(transferDto.getTransferDate());
+				promo.setJoinDate(transferDto.getTransferDate());
+				transfer.setTransferDate(transferDto.getTransferDate());
+				promotionRepo.save(opt);
+			}
+		}
+		promotionRepo.save(promo);
+		empRepo.save(emp);
+		transferRepo.save(transfer);
+		
+		return ResponseEntity.ok().body(transfer);		
 	}
 }

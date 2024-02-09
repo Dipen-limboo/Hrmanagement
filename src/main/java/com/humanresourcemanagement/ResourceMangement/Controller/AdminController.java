@@ -26,6 +26,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Designat
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Service.AdminService;
 
@@ -125,7 +126,17 @@ public class AdminController {
 		return service.findBranch();
 	}
 	
-	
+	@GetMapping("/getTransferList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> listOfTransferEmp(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
+		) {
+			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+			Pageable pageable = PageRequest.of(page -1, size, sort);
+		return service.findTransfer(pageable);
+	}
 	
 	
 	//delete
@@ -185,6 +196,15 @@ public class AdminController {
 		return service.deleteBranchById(id);
 	}
 	
+	@DeleteMapping("/deleteTransfer/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	@Transactional
+	public ResponseEntity<?> deleteTransfer(@PathVariable Long id){
+		return service.deleteTransferById(id);
+	}
+	
+	
+	
 	
 	//getById
 	@GetMapping("/getDepartment/{id}")
@@ -241,6 +261,13 @@ public class AdminController {
 	@Transactional
 	public ResponseEntity<?> getBranch(@PathVariable Long id){
 		return service.getBranchById(id);
+	}
+
+	@GetMapping("/getTransfer/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	@Transactional
+	public ResponseEntity<?> getTransfer(@PathVariable Long id){
+		return service.getTransferById(id);
 	}
 	
 	
@@ -306,5 +333,10 @@ public class AdminController {
 		return service.updateBranch(id, branchDto);
 	}
 	
-	
+	@PutMapping("/getTransfer/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	@Transactional
+	public ResponseEntity<?> updateTransferWithId(@PathVariable Long id, @Valid @RequestBody TransferUpdateDto transferDto ){
+		return service.updateTransfer(id, transferDto);
+	}
 }
