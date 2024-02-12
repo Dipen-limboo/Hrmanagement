@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeUpdateDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.OffiEmployeeUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.PromotionDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferDto;
 import com.humanresourcemanagement.ResourceMangement.Service.EmployeeService;
@@ -41,6 +42,31 @@ public class EmployeeController {
 		return empService.saveEmployee(id, employeeDto, auth);
 	}
 	
+	@GetMapping("/getOfficialEmployeeList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getListOfOfficailEmployee(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
+		) {
+		Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+		Pageable pageable = PageRequest.of(page -1, size, sort);
+		return empService.getAllOfficailEmployeeList(pageable);
+	}
+	
+	@GetMapping("/getOfficialEmployee/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> getOfficialEmployeeById(@PathVariable String id){
+		return empService.getEmployee(id);
+	}
+	
+	@PutMapping("/getOfficialEmployee/{id}")
+	@PreAuthorize("hasRole('ADMIN')")
+	@Transactional
+	public ResponseEntity<?> updateOfficialEmployeeById(@PathVariable String id, @RequestBody OffiEmployeeUpdateDto updateDto){
+		return empService.updateEmployee(id, updateDto);
+	}
+		
 	@PostMapping("/promoteEmployee/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> promoteUser(@PathVariable Long id, @Valid @RequestBody PromotionDto promotionDto, Authentication auth){

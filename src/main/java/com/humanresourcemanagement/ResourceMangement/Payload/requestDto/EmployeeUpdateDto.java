@@ -22,9 +22,6 @@ public class EmployeeUpdateDto {
 	private String remarks;
 	
 	@NotNull
-	private Long workingType;
-	
-	@NotNull
 	private Long jobType;
 	
 	@NotNull
@@ -86,15 +83,6 @@ public class EmployeeUpdateDto {
 
 	public void setRemarks(String remarks) {
 		this.remarks = remarks;
-	}
-
-
-	public Long getWorkingType() {
-		return workingType;
-	}
-
-	public void setWorkingType(Long workingType) {
-		this.workingType = workingType;
 	}
 
 	public Long getJobType() {

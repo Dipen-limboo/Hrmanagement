@@ -22,9 +22,12 @@ import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
 import com.humanresourcemanagement.ResourceMangement.Entity.Transfer;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
+import com.humanresourcemanagement.ResourceMangement.Enum.Status;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeUpdateDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.OffiEmployeeUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.PromotionDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EmployeeOfficialResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.PromotionResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Repository.BranchRepo;
@@ -137,7 +140,7 @@ public class EmployeeService {
 				}
 			}
 			
-			Optional<WorkingType> workingType = workingRepo.findById(employeeDto.getWorkingType());
+			Optional<WorkingType> workingType = workingRepo.findById((long) 1);
 			if(workingType.isEmpty())
 				return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of work"));
 			Optional<JobType> jobType = jobRepo.findById(employeeDto.getJobType());
@@ -439,6 +442,75 @@ public class EmployeeService {
 		transferRepo.save(transfer);
 		empRepo.save(emp);
 		return ResponseEntity.ok().body(transfer);
+	}
+
+
+	public ResponseEntity<?> getAllOfficailEmployeeList(Pageable pageable) {
+		Page<EmployeeOfficialInfo> empOffiList = empRepo.findAll(pageable);
+		List<EmployeeOfficialResponseDto> responseDtoList = new ArrayList<>();
+		if(empOffiList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any List of employee"));
+		for(EmployeeOfficialInfo emp: empOffiList) {
+			EmployeeOfficialResponseDto responseDto = new EmployeeOfficialResponseDto();
+			responseDto.setEmployee_official_id(emp.getId());
+			responseDto.setUser_id(emp.getUser().getId());
+			responseDto.setDesignation_id(emp.getDesignation().getId());
+			responseDto.setBranch_id(emp.getBranch().getId());
+			responseDto.setSection_id(emp.getSection().getId());
+			responseDto.setJob_type_id(emp.getJobType().getId());
+			responseDto.setWorking_type_id(emp.getWorkingType().getId());
+			responseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(responseDtoList);
+	}
+
+
+	public ResponseEntity<?> getEmployee(String id) {
+		Optional<EmployeeOfficialInfo> optionalEmp = empRepo.findById(id);
+		if(optionalEmp.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No employee Details with employeeId " +id));
+		EmployeeOfficialInfo emp = optionalEmp.get();
+		EmployeeOfficialResponseDto responseDto = new EmployeeOfficialResponseDto();
+		responseDto.setEmployee_official_id(emp.getId());
+		responseDto.setUser_id(emp.getUser().getId());
+		responseDto.setDesignation_id(emp.getDesignation().getId());
+		responseDto.setBranch_id(emp.getBranch().getId());
+		responseDto.setSection_id(emp.getSection().getId());
+		responseDto.setJob_type_id(emp.getJobType().getId());
+		responseDto.setWorking_type_id(emp.getWorkingType().getId());
+		return ResponseEntity.ok().body(responseDto);
+	}
+
+
+	public ResponseEntity<?> updateEmployee(String id, OffiEmployeeUpdateDto updateDto) {
+		Optional<EmployeeOfficialInfo> optionalEmp = empRepo.findById(id);
+		if(optionalEmp.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No employee Details with employeeId " +id));
+		EmployeeOfficialInfo emp = optionalEmp.get();
+		Optional<User> userOpt = userRepo.findById(emp.getUser().getId());
+		if(!userOpt.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("No employee found with user id " + emp.getUser().getId()));
+		User user = userOpt.get();
+		System.out.println("_________________________________________________" + updateDto.getWorking_type_id());
+		if(updateDto.getWorking_type_id()==null) {emp.setWorkingType(emp.getWorkingType());} else {
+			Optional<WorkingType> work = workingRepo.findById(updateDto.getWorking_type_id());
+			if(!work.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("No such type of working status"));
+			if(updateDto.getWorking_type_id()== 1) {user.setStatus(Status.ACTIVE);} else {user.setStatus(Status.DEACTIVE);}
+			emp.setWorkingType(work.get());
+		}
+		if(updateDto.getJob_type_id()==null) {emp.setJobType(emp.getJobType());} else {
+			Optional<JobType> job = jobRepo.findById(updateDto.getJob_type_id());
+			if(job.isEmpty())
+				return ResponseEntity.badRequest().body(new MessageResponse("No such type of job status"));
+			if(updateDto.getJob_type_id()==1) {user.setLeaveDate(null);} else {
+				user.setLeaveDate(user.getLeaveDate());
+			}
+			emp.setJobType(job.get());
+		}
+		userRepo.save(user);
+		empRepo.save(emp);
+		return ResponseEntity.ok(emp);
 	}
 
 	
