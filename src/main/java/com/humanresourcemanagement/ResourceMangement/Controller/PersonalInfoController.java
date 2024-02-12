@@ -135,7 +135,7 @@ public class PersonalInfoController {
 	
 	
 	
-	//get
+	//get by Auth list
 	@GetMapping("/getDocuments")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
 	@Transactional
@@ -148,13 +148,6 @@ public class PersonalInfoController {
 	@Transactional
 	public ResponseEntity<?> getFamilyInfosByAuth(Authentication auth){
 		return infoService.getFamily(auth);
-	}
-	
-	@GetMapping("/getEmpBank/{id}")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-	@Transactional
-	public ResponseEntity<?> getEmpBankByAuth(@PathVariable Long id, Authentication auth){
-		return infoService.getEmpBank(id, auth);
 	}
 	
 	@GetMapping("/getTraining")
@@ -170,6 +163,28 @@ public class PersonalInfoController {
 		return infoService.getEducaitonList(auth);
 	}
 	
+	@GetMapping("/getEmpBank")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> getEmpBankByAuth(Authentication auth){
+		return infoService.getEmpBankList(auth);
+	}
+	
+	
+	
+	
+	//get by auth and id
+	@GetMapping("/getDocument/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> getDocumentByAuthAndId(@PathVariable Long id, Authentication auth){
+		return infoService.getDocumentById(id, auth);
+	}
+	
+	@GetMapping("/getFamily/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> getFamilyByAuthAndId(@PathVariable Long id, Authentication auth){
+		return infoService.getFamilyById(id, auth);
+	}
+	
 	@GetMapping("/getTraining/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
 	public ResponseEntity<?> getTrainingByAuthAndId(@PathVariable Long id, Authentication auth){
@@ -182,15 +197,30 @@ public class PersonalInfoController {
 	public ResponseEntity<?> getEducationByAuthAndId(@PathVariable Long id, Authentication auth){
 		return infoService.getEducationById(id, auth);
 	}
+	
+	@GetMapping("/getEmpBank/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@Transactional
+	public ResponseEntity<?> getEmpBankByAuth(@PathVariable Long id, Authentication auth){
+		return infoService.getEmpBank(id, auth);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
 	//update
 
 	@PutMapping("/getDocuments/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-	public ResponseEntity<?> updateDocumentsById(@PathVariable Long id,@RequestParam(required=true) Set<String> type,
-			@RequestParam(required=true) String id_number,
-			@RequestParam(required=true) LocalDate issued_date,
+	public ResponseEntity<?> updateDocumentsById(@PathVariable Long id,@RequestParam(required=false) Set<String> type,
+			@RequestParam(required=false) String id_number,
+			@RequestParam(required=false) LocalDate issued_date,
 			@RequestParam(required=false) LocalDate expiry_date,
-		    @RequestPart("file") MultipartFile file,
+		    @RequestPart(required=false) MultipartFile file,
 		    Authentication auth) throws IOException{
 		return infoService.updateDocuments(id,type, id_number, issued_date, expiry_date, file, auth);
 	}

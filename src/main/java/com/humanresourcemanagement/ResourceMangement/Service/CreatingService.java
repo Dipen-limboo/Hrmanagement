@@ -429,7 +429,7 @@ public class CreatingService {
 				document.setType(null);
 			}
 		});
-		document.setNumber(id_number);
+		document.setNumber(EncryptDecrypt.encrypt(id_number));
 		document.setIssuedDate(issued_date);
 		document.setExpiryDate(expiry_date);
 		documentRepo.save(document);

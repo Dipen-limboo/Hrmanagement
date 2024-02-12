@@ -147,7 +147,7 @@ public class InfoService {
 				documentResponseDto.setDocument_id(document.getId());
 				documentResponseDto.setType(document.getType().toString());
 				documentResponseDto.setPath(document.getFilePath());
-				documentResponseDto.setId_number(document.getNumber());
+				documentResponseDto.setId_number(EncryptDecrypt.decrypt(document.getNumber()));
 				documentResponseDto.setIssued_date(document.getIssuedDate());
 				documentResponseDto.setExprity_date(document.getExpiryDate());
 				documentResponseDto.setUserId(document.getUser().getId());
@@ -264,7 +264,7 @@ public class InfoService {
 					documentResponseDto.setDocument_id(document.getId());
 					documentResponseDto.setType(document.getType().toString());
 					documentResponseDto.setPath(document.getFilePath());
-					documentResponseDto.setId_number(document.getNumber());
+					documentResponseDto.setId_number(EncryptDecrypt.decrypt(document.getNumber()));
 					documentResponseDto.setIssued_date(document.getIssuedDate());
 					documentResponseDto.setExprity_date(document.getExpiryDate());
 					documentResponseDto.setUserId(document.getUser().getId());
@@ -351,7 +351,7 @@ public class InfoService {
 					});
 				}
 				
-				if(id_number==null) {document.setNumber(document.getNumber());} else {document.setNumber(id_number);}
+				if(id_number==null) {document.setNumber(document.getNumber());} else {document.setNumber(EncryptDecrypt.encrypt(id_number));}
 				if(issued_date ==null) {document.setIssuedDate(document.getIssuedDate());} else {document.setIssuedDate(issued_date);}
 				if(expiry_date == null) {document.setExpiryDate(document.getExpiryDate());} else {document.setExpiryDate(expiry_date);}
 				if(file == null) {document.setFilePath(document.getFilePath());} else {
@@ -712,6 +712,79 @@ public class InfoService {
 		education.setUser(user);
 		educationRepo.save(education);
 		return ResponseEntity.ok().body(education);
+	}
+
+	public ResponseEntity<?> getEmpBankList(Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		List<EmpBank> empBankList = empBankRepo.findByUser(user);
+		List<EmpBankResponseDto> bankDtoList = new ArrayList<>();
+		if(empBankList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User"+user.getEmail() +" doesnot include his bank details"));
+		for(EmpBank empbank: empBankList) {
+			EmpBankResponseDto bankDto = new EmpBankResponseDto();
+			bankDto.setBank_id(empbank.getBank().getId());
+			bankDto.setEmp_account_number(empbank.getAccountNumber());
+			bankDto.setEmp_bank_branch(empbank.getBranch());
+			bankDto.setEmp_bank_id(empbank.getId());
+			bankDto.setUser_id(user.getId());
+			bankDto.setQrPath(empbank.getQrPath());
+			bankDto.setHoldername(user.getFirstName() + user.getMiddleName() + user.getLastName());
+			bankDtoList.add(bankDto);
+		}
+		return ResponseEntity.ok().body(bankDtoList);
+	}
+
+	public ResponseEntity<?> getDocumentById(Long id, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		if(!documentRepo.existsById(id))
+			return ResponseEntity.badRequest().body(new MessageResponse("Id " + id+ " is not found"));
+		Optional<Document> optionalDocument = documentRepo.findByIdAndUser(id, user);
+		if(optionalDocument.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("document is not found of user " + user.getEmail()));
+		Document document = optionalDocument.get();
+		DocumentResponseDto documentResponseDto= new DocumentResponseDto();
+		documentResponseDto.setDocument_id(document.getId());
+		documentResponseDto.setType(document.getType().toString());
+		documentResponseDto.setPath(document.getFilePath());
+		documentResponseDto.setId_number(EncryptDecrypt.decrypt(document.getNumber()));
+		documentResponseDto.setIssued_date(document.getIssuedDate());
+		documentResponseDto.setExprity_date(document.getExpiryDate());
+		documentResponseDto.setUserId(document.getUser().getId());
+		return ResponseEntity.ok().body(documentResponseDto);
+	}
+
+	public ResponseEntity<?> getFamilyById(Long id, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		if(!familyRepo.existsById(id))
+			return ResponseEntity.badRequest().body(new MessageResponse("Id "+id+" is invalid"));
+		Optional<FamilyInfo> optionalFamily = familyRepo.findByIdAndUser(id, user);
+		if(optionalFamily.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Family not found by Id and user"));
+		FamilyInfo family = optionalFamily.get();
+		FamilyDto familyDto = new FamilyDto();
+		familyDto.setFirstname(family.getFirstName());
+		familyDto.setMiddlename(family.getMiddleName());
+		familyDto.setLastname(family.getLastName());
+		familyDto.setPhone(family.getPhone());
+		familyDto.setFile(family.getFile());
+		familyDto.setUserId(user.getId());
+		String relation = family.getRelation().toString();
+		Set<String> str = new HashSet<>();
+		str.add(relation);
+		familyDto.setRelation(str);
+		return ResponseEntity.ok().body(familyDto);
 	}
 
 	
