@@ -23,10 +23,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.humanresourcemanagement.ResourceMangement.EncryptDecrypt.EncryptDecrypt;
 import com.humanresourcemanagement.ResourceMangement.Entity.Bank;
+import com.humanresourcemanagement.ResourceMangement.Entity.Contract;
 import com.humanresourcemanagement.ResourceMangement.Entity.Document;
 import com.humanresourcemanagement.ResourceMangement.Entity.Education;
 import com.humanresourcemanagement.ResourceMangement.Entity.EmpBank;
 import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
+import com.humanresourcemanagement.ResourceMangement.Entity.Promotion;
 import com.humanresourcemanagement.ResourceMangement.Entity.Training;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Enum.DocumentType;
@@ -34,17 +36,22 @@ import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
 import com.humanresourcemanagement.ResourceMangement.Enum.Type;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EducationUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TrainingUpdateDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.BankResponseDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.ContractResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.DocumentResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EducationResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EmpBankResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.FamilyDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.PromotionResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.TrainingResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.ContractRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DocumentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.EducationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.EmpBankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.FamilyRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.PromotionRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.TrainingRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
 import com.humanresourcemanagement.ResourceMangement.security.service.UserDetailsImpl;
@@ -73,6 +80,12 @@ public class InfoService {
 	
 	@Autowired
 	EmpBankRepo empBankRepo;
+	
+	@Autowired
+	ContractRepo contractRepo;
+	
+	@Autowired
+	PromotionRepo promotionRepo; 
 	
 	public ResponseEntity<?> findAllAccountOfUser(Authentication auth) {
 		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
@@ -785,6 +798,95 @@ public class InfoService {
 		str.add(relation);
 		familyDto.setRelation(str);
 		return ResponseEntity.ok().body(familyDto);
+	}
+
+	public ResponseEntity<?> findAllBank(Pageable pageable) {
+		Page<Bank> bankList = bankRepo.findAll(pageable);
+		List<BankResponseDto> responseDtoList = new ArrayList<>();
+		if(bankList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any bank is enlisted in database"));
+		for(Bank bank: bankList) {
+			BankResponseDto responseDto = new BankResponseDto();
+			responseDto.setBank_id(bank.getId());
+			responseDto.setBank_name(bank.getName());
+			responseDto.setBank_address(bank.getAddress());
+			responseDto.setAccount_number(bank.getAccountNumber());
+			responseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(responseDtoList);
+	}
+
+	public ResponseEntity<?> findAllContractOfUser(Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		List<Contract> contractList = contractRepo.findByUser(user);
+		List<ContractResponseDto> responseDtoList = new ArrayList<>();
+		if(contractList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any contract details in your database"));
+		for(Contract contract: contractList) {
+			ContractResponseDto responseDto = new ContractResponseDto();
+			responseDto.setContract_id(contract.getId());
+			responseDto.setJoin_date(contract.getJoinDate());
+			responseDto.setEnd_date(contract.getEndDate());
+			responseDto.setUser_id(contract.getUser().getId());
+			responseDto.setDesignation_id(contract.getDesignation().getId());
+			responseDto.setSection_id(contract.getSection().getId());
+			responseDto.setApprover_id(contract.getApprover().getId());
+			responseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(responseDtoList);
+	}
+
+	public ResponseEntity<?> getContractById(Long id, Authentication auth) {
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetails.getId());
+		if(optionalUser.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User not found with id " +userDetails.getId()));
+		User user = optionalUser.get();
+		if(!contractRepo.existsByUser(user))
+			return ResponseEntity.badRequest().body(new MessageResponse("You don't have any details"));
+		if(!contractRepo.existsById(id))
+			return ResponseEntity.badRequest().body(new MessageResponse("Invalid contract id " +id+"!!! "+id+" is not in databse."));
+		Optional<Contract> optionalContract = contractRepo.findByIdAndUser(id, user);
+		if(optionalContract.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("User "+user.getEmail()+" cannot get access to view contract with id " +id));
+		Contract contract = optionalContract.get();
+		ContractResponseDto responseDto = new ContractResponseDto();
+		responseDto.setContract_id(contract.getId());
+		responseDto.setJoin_date(contract.getJoinDate());
+		responseDto.setEnd_date(contract.getEndDate());
+		responseDto.setUser_id(contract.getUser().getId());
+		responseDto.setDesignation_id(contract.getDesignation().getId());
+		responseDto.setSection_id(contract.getSection().getId());
+		responseDto.setApprover_id(contract.getApprover().getId());
+		return ResponseEntity.ok().body(responseDto);
+	}
+
+	public ResponseEntity<?> getPromotionList(Authentication auth) {
+		UserDetailsImpl userDetials = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUser = userRepo.findById(userDetials.getId());
+		if(!optionalUser.isPresent()) 
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: user not found by id " + userDetials.getId()));
+		User user = optionalUser.get();
+		List<Promotion> promotionList = promotionRepo.findByUser(user);
+		List<PromotionResponseDto> promotionResponseDto = new ArrayList<>();
+			
+		if(promotionList.isEmpty()) 
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any detal of user with id " + userDetials.getId()));
+		for(Promotion promotion: promotionList) {
+			PromotionResponseDto responseDto = new PromotionResponseDto();
+			responseDto.setId(promotion.getId());
+			responseDto.setJoin_date(promotion.getJoinDate());
+			responseDto.setEnd_date(promotion.getEndDate());
+			responseDto.setDesignation(promotion.getDesignation().getName());
+			responseDto.setSub_department(promotion.getSubDepartment().getName());
+			responseDto.setApproved_by(promotion.getApprover().getUsername());
+			promotionResponseDto.add(responseDto);
+		}
+		return ResponseEntity.ok().body(promotionResponseDto);
 	}
 
 	

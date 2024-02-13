@@ -88,13 +88,17 @@ public class PersonalInfoController {
 		return infoService.findAllEducation(pageable);
 	}
 	
-	@GetMapping("/accountLists")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
-	public ResponseEntity<?> getAccountListOfUser(Authentication auth) {
-		return infoService.findAllAccountOfUser(auth);
+	@GetMapping("/getBankList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getBankList(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
+		) {
+			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+			Pageable pageable = PageRequest.of(page -1, size, sort);
+		return infoService.findAllBank(pageable);
 	}
-	
-	
 	
 	
 	
@@ -169,6 +173,23 @@ public class PersonalInfoController {
 		return infoService.getEmpBankList(auth);
 	}
 	
+	@GetMapping("/accountLists")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> getAccountListOfUser(Authentication auth) {
+		return infoService.findAllAccountOfUser(auth);
+	}
+	
+	@GetMapping("/getEmpContractList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> getContractListOfUser(Authentication auth) {
+		return infoService.findAllContractOfUser(auth);
+	}
+	
+	@GetMapping("/getPromotionList")
+	@PreAuthorize("hasRole('EMPLOYEE') or hasRole('ADMIN') or hasRole('SUPERADMIN') ")
+	public ResponseEntity<?> listOfPromotionIndividual(Authentication auth){
+		return infoService.getPromotionList(auth);
+	}
 	
 	
 	
@@ -205,7 +226,11 @@ public class PersonalInfoController {
 		return infoService.getEmpBank(id, auth);
 	}
 	
-	
+	@GetMapping("/getContractByAuth/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> getContractByAuthAndId(@PathVariable Long id, Authentication auth){
+		return infoService.getContractById(id, auth);
+	}
 	
 	
 	

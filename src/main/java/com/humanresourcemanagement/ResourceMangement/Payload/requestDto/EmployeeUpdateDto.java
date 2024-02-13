@@ -108,6 +108,14 @@ public class EmployeeUpdateDto {
 	public void setGrade(Long grade) {
 		this.grade = grade;
 	}
+
+	public LocalDate getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(LocalDate endDate) {
+		this.endDate = endDate;
+	}
 	
 	
 }

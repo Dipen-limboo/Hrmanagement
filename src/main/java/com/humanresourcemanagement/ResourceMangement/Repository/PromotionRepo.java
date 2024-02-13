@@ -25,4 +25,6 @@ public interface PromotionRepo extends JpaRepository<Promotion, Long>, JpaSpecif
 	Optional<Promotion> findByUserAndSubDepartmentAndDesignation(User user, SubDepartment subDepartment,
 			Designation designation);
 
+	Optional<Promotion> findByUserAndStatus(User user, boolean b);
+
 }

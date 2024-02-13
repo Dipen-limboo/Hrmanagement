@@ -13,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import com.humanresourcemanagement.ResourceMangement.Entity.Branch;
+import com.humanresourcemanagement.ResourceMangement.Entity.Contract;
 import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.EmployeeOfficialInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Grade;
@@ -23,14 +24,18 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Transfer;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
 import com.humanresourcemanagement.ResourceMangement.Enum.Status;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.ContractUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EmployeeUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.OffiEmployeeUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.PromotionDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.RenewContractDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.ContractResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EmployeeOfficialResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.PromotionResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Repository.BranchRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.ContractRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.EmployeeOfficialInfoRepo;
@@ -82,240 +87,186 @@ public class EmployeeService {
 	@Autowired
 	TransferRepo transferRepo;
 	
+	@Autowired
+	ContractRepo contractRepo;
+	
+	
 	//update user
 	public ResponseEntity<?> saveEmployee(Long id, @Valid EmployeeUpdateDto employeeDto, Authentication auth) {
 		Optional<User> optionalUser = userRepo.findById(id);
-		if(optionalUser.isPresent()) {
-			User user = optionalUser.get();
-			
-			Promotion promotedUser = new Promotion();
-			EmployeeOfficialInfo emp = new EmployeeOfficialInfo();
-			promotedUser.setUser(user);
-			emp.setUser(user);
-			emp.setId("emp0"+user.getId());
-			
-			LocalDate now = LocalDate.now();
-			if(employeeDto.getJoinDate() == null) {
-				user.setJoinDate(user.getJoinDate());
-			} else {
-				if(now.isAfter(employeeDto.getJoinDate())) {
-					user.setJoinDate(employeeDto.getJoinDate());
-					promotedUser.setJoinDate(employeeDto.getJoinDate());
-				} else {
-					return ResponseEntity.badRequest().body(new MessageResponse("Error: You should add the date in AD. Join date mustnot exceed the current date"));
-				} 
-			}
-			
-			promotedUser.setEndDate(null);
-		
-			UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-			Optional<User> optionalUserr = userRepo.findById(userDetails.getId());
-			if(optionalUserr.isPresent()) {
-				promotedUser.setApprover(optionalUserr.get());
-				
-			}
-			
-			if(employeeDto.getSubDepartment() == null) {
-				promotedUser.setSubDepartment(null);
-			} else {
-				Long subdepartId = employeeDto.getSubDepartment();
-				Optional<SubDepartment> optionalSubDepartment = subDepartmentRepo.findById(subdepartId);
-				if(optionalSubDepartment.isPresent()) {
-					promotedUser.setSubDepartment(optionalSubDepartment.get());
-					emp.setSection(optionalSubDepartment.get());
-				}  else {
-					return ResponseEntity.badRequest().body(new MessageResponse("Error: SubDepartment not found by id " + subdepartId));
-				}
-			}
-			
-			if(employeeDto.getDesignation() == null) {
-				promotedUser.setDesignation(null);
-			} else {
-				Optional<Designation> designation = designationRepo.findById(employeeDto.getDesignation());
-				if(designation.isPresent()) {
-					promotedUser.setDesignation(designation.get());
-					emp.setDesignation(designation.get());
-				} else {
-					return ResponseEntity.badRequest().body(new MessageResponse("Error: Designation not found by id" + employeeDto.getDesignation()));
-				}
-			}
-			
-			Optional<WorkingType> workingType = workingRepo.findById((long) 1);
-			if(workingType.isEmpty())
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of work"));
-			Optional<JobType> jobType = jobRepo.findById(employeeDto.getJobType());
-			if(jobType.isEmpty())
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of job"));
-			Optional<Grade> grade = gradeRepo.findById(employeeDto.getGrade());
-			if(!grade.isPresent())
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of grade"));
-			Optional<Branch> branch = branchRepo.findById(employeeDto.getBranch());
-			if(!branch.isPresent())
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of branch"));
-			emp.setWorkingType(workingType.get());
-			emp.setJobType(jobType.get());
-			emp.setBranch(branch.get());
-			emp.setGrade(grade.get());
-			
-			promotedUser.setBranch(branch.get());
-			promotedUser.setRemarks(employeeDto.getRemarks());
-			
-			if(promotedUser.getSubDepartment().getDepartment().getId()== promotedUser.getDesignation().getDepartment().getId()) {
-				userRepo.save(user);
-				promotionRepo.save(promotedUser);
-				empRepo.save(emp);
-				return ResponseEntity.ok().body(promotedUser);
-			} else {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: department are different in subDepartment and desgination"));
-			}
-		} else {
+		if(!optionalUser.isPresent()) 
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: user not found by id " + id));
+		
+		User user = optionalUser.get();
+		Promotion promotedUser = new Promotion();
+		EmployeeOfficialInfo emp = new EmployeeOfficialInfo();
+		Contract contract = new Contract();
+		
+		if(empRepo.existsById("emp0"+user.getId()))
+			return ResponseEntity.badRequest().body(new MessageResponse("Employee already exists"));
+		promotedUser.setUser(user);
+		emp.setUser(user);
+		emp.setId("emp0"+user.getId());
+		
+		LocalDate now = LocalDate.now();
+		if(employeeDto.getJoinDate() == null) {
+			user.setJoinDate(user.getJoinDate());
+		} else {
+			user.setJoinDate(employeeDto.getJoinDate());
+			promotedUser.setJoinDate(employeeDto.getJoinDate());
 		}
+		
+		promotedUser.setEndDate(null);
 	
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUserr = userRepo.findById(userDetails.getId());
+		if(optionalUserr.isPresent()) 
+			promotedUser.setApprover(optionalUserr.get());
+		
+		Long subdepartId = employeeDto.getSubDepartment();
+		Optional<SubDepartment> optionalSubDepartment = subDepartmentRepo.findById(subdepartId);
+		if(!optionalSubDepartment.isPresent()) 
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: SubDepartment not found by id " + subdepartId));
+		promotedUser.setSubDepartment(optionalSubDepartment.get());
+		emp.setSection(optionalSubDepartment.get());
+	
+		Optional<Designation> designation = designationRepo.findById(employeeDto.getDesignation());
+		if(!designation.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Designation not found by id" + employeeDto.getDesignation()));
+		promotedUser.setDesignation(designation.get());
+		emp.setDesignation(designation.get());
+		
+			
+		
+		Optional<WorkingType> workingType = workingRepo.findById((long) 1);
+		if(workingType.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of work"));
+		Optional<JobType> jobType = jobRepo.findById(employeeDto.getJobType());
+		if(jobType.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of job"));
+		Optional<Grade> grade = gradeRepo.findById(employeeDto.getGrade());
+		if(!grade.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of grade"));
+		Optional<Branch> branch = branchRepo.findById(employeeDto.getBranch());
+		if(!branch.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of branch"));
+		if(employeeDto.getJobType()==2  || employeeDto.getJobType()==3) {
+			contract.setJoinDate(employeeDto.getJoinDate());
+			contract.setEndDate(employeeDto.getEndDate());
+			contract.setUser(user);
+			contract.setApprover(optionalUserr.get());
+			contract.setDesignation(designation.get());
+			contract.setSection(optionalSubDepartment.get());
+		}
+		emp.setWorkingType(workingType.get());
+		emp.setJobType(jobType.get());
+		emp.setBranch(branch.get());
+		emp.setGrade(grade.get());
+		
+		promotedUser.setBranch(branch.get());
+		promotedUser.setRemarks(employeeDto.getRemarks());
+		
+		if(promotedUser.getSubDepartment().getDepartment().getId()!= promotedUser.getDesignation().getDepartment().getId()) 
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: department are different in subDepartment and desgination"));
+		userRepo.save(user);
+		promotionRepo.save(promotedUser);
+		empRepo.save(emp);
+		contractRepo.save(contract);
+		return ResponseEntity.ok().body(promotedUser);
 	}
 	
 	
 	public ResponseEntity<?> promoteEmployee(Long id, @Valid PromotionDto promotionDto, Authentication auth) {
 		Optional<User> optionalUser = userRepo.findById(id);
-		if(optionalUser.isPresent()) {
-			User user = optionalUser.get();
-			Optional<EmployeeOfficialInfo> employee = empRepo.findByUser(user); 
-			if(!employee.isPresent())
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: Doesnot have employee detials of user " + user.getId()));
-			EmployeeOfficialInfo emp = employee.get();
- 			Promotion promotion = promotionRepo.findFirstByUserOrderByIdDesc(user);
-			Promotion newPromotion = new Promotion();
-				if(LocalDate.now().isAfter(promotionDto.getJoinDate())) {
-					promotion.setEndDate(promotionDto.getJoinDate());
-					promotion.setStatus(false);
-					newPromotion.setJoinDate(promotionDto.getJoinDate());
-				} else {
-					return ResponseEntity.badRequest().body(new MessageResponse("Error: Date must be in AD and is should not exceed the current date"));
-				}
-				newPromotion.setUser(user);
-				Optional<Designation> designation = designationRepo.findById(promotionDto.getDesignation());
-				if(designation.isPresent()) {
-					if(promotion.getDesignation().getId() == designation.get().getId())
-						return ResponseEntity.badRequest().body(new MessageResponse("Cannot promote in the current desgination"));
-					newPromotion.setDesignation(designation.get());
-					emp.setDesignation(designation.get());
-				} else {
-					return ResponseEntity.badRequest().body(new MessageResponse("Error: Designation not found by id" + promotionDto.getDesignation()));
-				}
-				
-				Optional<SubDepartment> subDepartment = subDepartmentRepo.findById(promotionDto.getSubDepartment());
-				if(subDepartment.isPresent()) {
-					newPromotion.setSubDepartment(subDepartment.get());
-					emp.setSection(subDepartment.get());
-				} else {
-					return ResponseEntity.badRequest().body(new MessageResponse("Error: Sub Department not found by id" + promotionDto.getSubDepartment()));
-				}
-				
-				UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
-				Optional<User> optionalUserr = userRepo.findById(userDetails.getId());
-				if(optionalUserr.isPresent()) {
-					newPromotion.setApprover(optionalUserr.get());
-				}
-				
-				if(promotionDto.getBranch() == null) {newPromotion.setBranch(null);} else {
-					Optional<Branch> branch = branchRepo.findById(promotionDto.getBranch());
-					if(!branch.isPresent())
-						return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of branch"));
-					newPromotion.setBranch(branch.get());
-					emp.setBranch(branch.get());
-				}
-				
-				if(newPromotion.getSubDepartment().getDepartment().getId() == newPromotion.getDesignation().getDepartment().getId()) {
-					empRepo.save(emp);
-					promotionRepo.save(promotion);
-					promotionRepo.save(newPromotion);
-					return ResponseEntity.ok().body(newPromotion);
-				} else {
-					return ResponseEntity.badRequest().body(new MessageResponse("Error: department are different in subDepartment and desgination"));
-				}
-			
-		} else {
+		if(!optionalUser.isPresent()) 
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: user not found by id " + id));
+		User user = optionalUser.get();
+		Optional<EmployeeOfficialInfo> employee = empRepo.findByUser(user); 
+		if(!employee.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Doesnot have employee detials of user " + user.getId()));
+		EmployeeOfficialInfo emp = employee.get();
+		Promotion promotion = promotionRepo.findFirstByUserOrderByIdDesc(user);
+		Promotion newPromotion = new Promotion();
+		promotion.setEndDate(promotionDto.getJoinDate());
+		promotion.setStatus(false);
+		newPromotion.setJoinDate(promotionDto.getJoinDate());
+		newPromotion.setUser(user);
+		Optional<Designation> designation = designationRepo.findById(promotionDto.getDesignation());
+		if(!designation.isPresent()) 
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Designation not found by id" + promotionDto.getDesignation()));
+		if(promotion.getDesignation().getId() == designation.get().getId())
+			return ResponseEntity.badRequest().body(new MessageResponse("Cannot promote in the current desgination"));
+		newPromotion.setDesignation(designation.get());
+		emp.setDesignation(designation.get());
+		
+		Optional<SubDepartment> subDepartment = subDepartmentRepo.findById(promotionDto.getSubDepartment());
+		if(!subDepartment.isPresent())
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Sub Department not found by id" + promotionDto.getSubDepartment()));
+		newPromotion.setSubDepartment(subDepartment.get());
+		emp.setSection(subDepartment.get());
+		
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> optionalUserr = userRepo.findById(userDetails.getId());
+		if(optionalUserr.isPresent()) 
+			newPromotion.setApprover(optionalUserr.get());
+	
+		if(promotionDto.getBranch() == null) {newPromotion.setBranch(null);} else {
+			Optional<Branch> branch = branchRepo.findById(promotionDto.getBranch());
+			if(!branch.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("Error: Not such type of branch"));
+			newPromotion.setBranch(branch.get());
+			emp.setBranch(branch.get());
 		}
-	}
-
-
-	public ResponseEntity<?> getPromotionList(Authentication auth) {
-		UserDetailsImpl userDetials = (UserDetailsImpl) auth.getPrincipal();
-		Optional<User> optionalUser = userRepo.findById(userDetials.getId());
-		if(optionalUser.isPresent()) {
-			User user = optionalUser.get();
-			List<Promotion> promotionList = promotionRepo.findByUser(user);
-			List<PromotionResponseDto> promotionResponseDto = new ArrayList<>();
-			
-			if(promotionList.isEmpty()) {
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any detal of user with id " + userDetials.getId()));
-			} else {
-				for(Promotion promotion: promotionList) {
-					PromotionResponseDto responseDto = new PromotionResponseDto();
-					responseDto.setId(promotion.getId());
-					responseDto.setJoin_date(promotion.getJoinDate());
-					responseDto.setEnd_date(promotion.getEndDate());
-					responseDto.setDesignation(promotion.getDesignation().getName());
-					responseDto.setSub_department(promotion.getSubDepartment().getName());
-					responseDto.setApproved_by(promotion.getApprover().getUsername());
-					promotionResponseDto.add(responseDto);
-				}
-			}
-			return ResponseEntity.ok().body(promotionResponseDto);
-		}else {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: user not found by id " + userDetials.getId()));
-		}
+		
+		if(newPromotion.getSubDepartment().getDepartment().getId() != newPromotion.getDesignation().getDepartment().getId())
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: department are different in subDepartment and desgination"));
+		empRepo.save(emp);
+		promotionRepo.save(promotion);
+		promotionRepo.save(newPromotion);
+		return ResponseEntity.ok().body(newPromotion);
+		
 	}
 
 
 	public ResponseEntity<?> getAllPromotionList(Pageable pageable) {
 		Page<Promotion> promotionList = promotionRepo.findAll(pageable);
 		List<PromotionResponseDto> promotionResponseDto = new ArrayList<>();
-		
-		if(promotionList.isEmpty()) {
+		if(promotionList.isEmpty()) 
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any details!! "));
-		} else {
-			for(Promotion promotion: promotionList.getContent()) {
-				PromotionResponseDto responseDto = new PromotionResponseDto();
-				responseDto.setId(promotion.getId());
-				responseDto.setJoin_date(promotion.getJoinDate());
-				responseDto.setEnd_date(promotion.getEndDate());
-				responseDto.setDesignation(promotion.getDesignation().getName());
-				responseDto.setSub_department(promotion.getSubDepartment().getName());
-				responseDto.setApproved_by(promotion.getApprover().getUsername());
-				promotionResponseDto.add(responseDto);
-			}
+		for(Promotion promotion: promotionList.getContent()) {
+			PromotionResponseDto responseDto = new PromotionResponseDto();
+			responseDto.setId(promotion.getId());
+			responseDto.setJoin_date(promotion.getJoinDate());
+			responseDto.setEnd_date(promotion.getEndDate());
+			responseDto.setDesignation(promotion.getDesignation().getName());
+			responseDto.setSub_department(promotion.getSubDepartment().getName());
+			responseDto.setApproved_by(promotion.getApprover().getUsername());
+			promotionResponseDto.add(responseDto);
 		}
 		return ResponseEntity.ok().body(promotionResponseDto);
-		}
+	}
 
 
 	public ResponseEntity<?> getPromotionListById(Long id) {
 		Optional<User> optionalUser = userRepo.findById(id);
 		if(!optionalUser.isPresent()) 
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: user not found by id " + id));
-	
-		
-		
-			User user = optionalUser.get();
-			List<Promotion> promotionList = promotionRepo.findByUser(user);
-			List<PromotionResponseDto> promotionResponseDto = new ArrayList<>();
-			if(promotionList.isEmpty())
-				return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any details!! "));
-			for(Promotion promotion: promotionList) {
-				PromotionResponseDto responseDto = new PromotionResponseDto();
-				responseDto.setId(promotion.getId());
-				responseDto.setJoin_date(promotion.getJoinDate());
-				responseDto.setEnd_date(promotion.getEndDate());
-				responseDto.setDesignation(promotion.getDesignation().getName());
-				responseDto.setSub_department(promotion.getSubDepartment().getName());
-				responseDto.setApproved_by(promotion.getApprover().getUsername());
-				promotionResponseDto.add(responseDto);
-			}
-			
-			return ResponseEntity.ok().body(promotionResponseDto);
-		
+		User user = optionalUser.get();
+		List<Promotion> promotionList = promotionRepo.findByUser(user);
+		List<PromotionResponseDto> promotionResponseDto = new ArrayList<>();
+		if(promotionList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: There is no any details!! "));
+		for(Promotion promotion: promotionList) {
+			PromotionResponseDto responseDto = new PromotionResponseDto();
+			responseDto.setId(promotion.getId());
+			responseDto.setJoin_date(promotion.getJoinDate());
+			responseDto.setEnd_date(promotion.getEndDate());
+			responseDto.setDesignation(promotion.getDesignation().getName());
+			responseDto.setSub_department(promotion.getSubDepartment().getName());
+			responseDto.setApproved_by(promotion.getApprover().getUsername());
+			promotionResponseDto.add(responseDto);
+		}
+		return ResponseEntity.ok().body(promotionResponseDto);
 	}
 
 	@Transactional
@@ -348,7 +299,7 @@ public class EmployeeService {
 	    } else {
 	    	promotion.setDesignation(promotion.getDesignation());
 	    }
-    	if(promotionDto.getJoinDate() != null && LocalDate.now().isAfter(promotionDto.getJoinDate())) {
+    	if(promotionDto.getJoinDate() != null) {
 	    	promotion.setJoinDate(promotionDto.getJoinDate());
 	    	promo.setEndDate(promotionDto.getJoinDate());
 	    } else {	
@@ -491,7 +442,6 @@ public class EmployeeService {
 		if(!userOpt.isPresent())
 			return ResponseEntity.badRequest().body(new MessageResponse("No employee found with user id " + emp.getUser().getId()));
 		User user = userOpt.get();
-		System.out.println("_________________________________________________" + updateDto.getWorking_type_id());
 		if(updateDto.getWorking_type_id()==null) {emp.setWorkingType(emp.getWorkingType());} else {
 			Optional<WorkingType> work = workingRepo.findById(updateDto.getWorking_type_id());
 			if(!work.isPresent())
@@ -511,6 +461,110 @@ public class EmployeeService {
 		userRepo.save(user);
 		empRepo.save(emp);
 		return ResponseEntity.ok(emp);
+	}
+
+
+	public ResponseEntity<?> renew(Long id, @Valid RenewContractDto renewDto, Authentication auth) {
+		Optional<User> optionalUser = userRepo.findById(id);
+		if(!optionalUser.isPresent()) 
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: user not found by id " + id));
+		User user = optionalUser.get();
+		Contract contract = new Contract();
+		Optional<Contract> optContract = contractRepo.findByUserAndContractStatus(user, true);
+		if(optContract.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any contract of given user"));
+		Contract pastContract = optContract.get();
+				Optional<Designation> designation = designationRepo.findById(renewDto.getDesignation_id());
+		if(designation.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Designation not found!!"));
+		Optional<SubDepartment> section = subDepartmentRepo.findById(renewDto.getSection_id());
+		if(section.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Section not found!!"));
+		if(!designation.get().getDepartment().getId().equals(section.get().getDepartment().getId()))
+			return ResponseEntity.badRequest().body(new MessageResponse("Designation and Section are not from same department"));
+		if(pastContract.getEndDate().isAfter(renewDto.getJoin_date())) 
+			pastContract.setEndDate(renewDto.getJoin_date());
+		
+		contract.setJoinDate(renewDto.getJoin_date());
+		contract.setEndDate(renewDto.getEnd_date());		
+		UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
+		Optional<User> approver = userRepo.findById(userDetails.getId());
+		if(approver.isPresent())
+			contract.setApprover(approver.get());
+		contract.setUser(user);
+		if(!pastContract.getDesignation().equals(designation.get())  || !pastContract.getSection().equals(section.get())) {
+			Optional<EmployeeOfficialInfo> empInfo = empRepo.findByUser(user);
+			if(!empInfo.isPresent())
+				return ResponseEntity.badRequest().body(new MessageResponse("No any employee information of user " + user.getId()));
+			Optional<Promotion> optionaPromotion = promotionRepo.findByUserAndStatus(user, true);
+			if(optionaPromotion.isEmpty())
+				return ResponseEntity.badRequest().body(new MessageResponse("No any promotion details of user " +user.getId()));
+			Promotion currentPromotion = optionaPromotion.get();
+			currentPromotion.setEndDate(renewDto.getJoin_date());
+			currentPromotion.setStatus(false);
+			empInfo.get().setDesignation(designation.get());
+			empInfo.get().setSection(section.get());
+			Promotion promotion = new Promotion();
+			promotion.setJoinDate(renewDto.getJoin_date());
+			promotion.setEndDate(null);
+			promotion.setDesignation(designation.get());
+			promotion.setSubDepartment(section.get());
+			promotion.setBranch(currentPromotion.getBranch());
+			promotion.setApprover(approver.get());
+			promotion.setUser(user);
+			promotionRepo.save(promotion);
+			promotionRepo.save(currentPromotion);
+			empRepo.save(empInfo.get());
+		}
+		contract.setDesignation(designation.get());
+		contract.setSection(section.get());
+		pastContract.setContractStatus(false);
+		contractRepo.save(pastContract);
+		contractRepo.save(contract);
+		return ResponseEntity.ok().body(contract);
+	}
+
+
+	public ResponseEntity<?> findContract(Long id) {
+		Optional<Contract> optionalContract = contractRepo.findById(id);
+		if(optionalContract.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Invalid id "+id));
+		Contract contract = optionalContract.get();
+		ContractResponseDto responseDto = new ContractResponseDto();
+		responseDto.setContract_id(contract.getId());
+		responseDto.setJoin_date(contract.getJoinDate());
+		responseDto.setEnd_date(contract.getEndDate());
+		responseDto.setUser_id(contract.getUser().getId());
+		responseDto.setDesignation_id(contract.getDesignation().getId());
+		responseDto.setSection_id(contract.getSection().getId());
+		responseDto.setApprover_id(contract.getApprover().getId());
+		return ResponseEntity.ok().body(responseDto);
+	}
+
+
+	public ResponseEntity<?> findAllContract(Pageable pageable) {
+		Page<Contract> contractList = contractRepo.findAll(pageable);
+		List<ContractResponseDto> responseDtoList = new ArrayList<>();
+		if(contractList.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("No any contract details in your database"));
+		for(Contract contract: contractList) {
+			ContractResponseDto responseDto = new ContractResponseDto();
+			responseDto.setContract_id(contract.getId());
+			responseDto.setJoin_date(contract.getJoinDate());
+			responseDto.setEnd_date(contract.getEndDate());
+			responseDto.setUser_id(contract.getUser().getId());
+			responseDto.setDesignation_id(contract.getDesignation().getId());
+			responseDto.setSection_id(contract.getSection().getId());
+			responseDto.setApprover_id(contract.getApprover().getId());
+			responseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(responseDtoList);
+	}
+
+
+	public ResponseEntity<?> updateContract(Long id, @Valid ContractUpdateDto updateDto) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	
