@@ -563,8 +563,88 @@ public class EmployeeService {
 
 
 	public ResponseEntity<?> updateContract(Long id, @Valid ContractUpdateDto updateDto) {
-		// TODO Auto-generated method stub
-		return null;
+		if(contractRepo.existsByIdAndContractStatus(id, false))
+			return ResponseEntity.badRequest().body(new MessageResponse("you cannot invoke the past contract "));
+		Optional<Contract> optionalContract = contractRepo.findById(id);
+		System.out.println("_____________________________1");
+		if(optionalContract.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Contract id "+ id +" not found!!"));
+		Contract contract = optionalContract.get();
+		System.out.println("_____________________________2");
+		Optional<Promotion> optionalPromotion = promotionRepo.findByUserAndJoinDate(contract.getUser(), contract.getJoinDate());
+		if(!optionalPromotion.isEmpty()) {
+			Promotion promotion = optionalPromotion.get();
+			System.out.println("_____________________________3" + contract.getJoinDate());
+
+			Optional<Promotion> optPromotion = promotionRepo.findByUserAndEndDate(promotion.getUser(), promotion.getJoinDate());
+			System.out.println("_____________________________4" + promotion.getJoinDate());
+			if(!optPromotion.isPresent()) {} 
+				Promotion pastPromotion = optPromotion.get();
+
+				Optional<EmployeeOfficialInfo> emp = empRepo.findByUser(contract.getUser());
+				if(emp.isEmpty())
+					return ResponseEntity.badRequest().body(new MessageResponse("Employee official information not found of this user!!"));
+				if(updateDto.getJoin_date()==null) {
+					pastPromotion.setEndDate(pastPromotion.getEndDate());
+					promotion.setJoinDate(promotion.getJoinDate());
+				} else {
+					pastPromotion.setEndDate(updateDto.getJoin_date());
+					promotion.setJoinDate(updateDto.getJoin_date());
+				}
+				
+				if(updateDto.getEnd_date()==null) {promotion.setEndDate(promotion.getEndDate());} else {promotion.setEndDate(updateDto.getEnd_date());}
+				if(updateDto.getDesignation_id()==null) {
+					promotion.setDesignation(promotion.getDesignation());
+					emp.get().setDesignation(emp.get().getDesignation());
+				} else {
+					Optional<Designation> desgination = designationRepo.findById(updateDto.getDesignation_id());
+					if(desgination.isEmpty())
+						return ResponseEntity.badRequest().body(new MessageResponse("Designation not found!!"));
+					promotion.setDesignation(desgination.get());
+					if(promotionRepo.existsByUserAndStatus(contract.getUser(), promotion.isStatus()==true)) {
+						emp.get().setDesignation(desgination.get());	
+					}
+				}
+				if(updateDto.getSection_id() == null) {
+					promotion.setSubDepartment(promotion.getSubDepartment());
+					emp.get().setSection(emp.get().getSection());
+				} else {
+					Optional<SubDepartment> section = subDepartmentRepo.findById(updateDto.getSection_id());
+					if(section.isEmpty())
+						return ResponseEntity.badRequest().body(new MessageResponse("Section not found!!"));
+					promotion.setSubDepartment(section.get());
+					if(promotionRepo.existsByUserAndStatus(contract.getUser(), promotion.isStatus()==true))
+						emp.get().setSection(section.get());
+				}
+				if(!promotion.getDesignation().getDepartment().getId().equals(promotion.getSubDepartment().getDepartment().getId()))
+					return ResponseEntity.badRequest().body(new MessageResponse("Designation and Section are from different department"));
+				pastPromotion.setUser(contract.getUser());
+				emp.get().setUser(contract.getUser());
+				promotionRepo.save(promotion);
+				empRepo.save(emp.get());
+				promotionRepo.save(pastPromotion);
+			
+		}
+		System.out.println("_____________________________5");
+
+		if(updateDto.getJoin_date()==null) {contract.setJoinDate(contract.getJoinDate());} else {contract.setJoinDate(updateDto.getJoin_date());}
+		if(updateDto.getEnd_date()==null) {contract.setEndDate(contract.getEndDate());} else {contract.setEndDate(updateDto.getEnd_date());}
+		if(updateDto.getDesignation_id()==null) {contract.setDesignation(contract.getDesignation());} else {
+			Optional<Designation> desgination = designationRepo.findById(updateDto.getDesignation_id());
+			if(desgination.isEmpty())
+				return ResponseEntity.badRequest().body(new MessageResponse("Designation not found!!"));
+			contract.setDesignation(desgination.get());
+		}
+		if(updateDto.getSection_id()==null) {contract.setSection(contract.getSection());} else {
+			Optional<SubDepartment> section = subDepartmentRepo.findById(updateDto.getSection_id());
+			if(section.isEmpty())
+				return ResponseEntity.badRequest().body(new MessageResponse("Section not found!!"));
+			contract.setSection(section.get());
+		}
+		if(!contract.getDesignation().getDepartment().getId().equals(contract.getSection().getDepartment().getId()))
+			return ResponseEntity.badRequest().body(new MessageResponse("Designation and Section are from different department"));
+		contractRepo.save(contract);
+		return ResponseEntity.ok().body(contract);
 	}
 
 	

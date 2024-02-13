@@ -27,4 +27,10 @@ public interface PromotionRepo extends JpaRepository<Promotion, Long>, JpaSpecif
 
 	Optional<Promotion> findByUserAndStatus(User user, boolean b);
 
+	Optional<Promotion> findByUserAndJoinDate(User user, LocalDate joinDate);
+
+	Optional<Promotion> findByUserAndEndDate(User user, LocalDate joinDate);
+
+	boolean existsByUserAndStatus(User user, boolean b);
+
 }

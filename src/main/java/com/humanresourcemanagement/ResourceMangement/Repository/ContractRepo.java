@@ -19,4 +19,6 @@ public interface ContractRepo extends JpaRepository<Contract, Long>, JpaSpecific
 
 	boolean existsByUser(User user);
 
+	boolean existsByIdAndContractStatus(Long id, boolean b);
+
 }
