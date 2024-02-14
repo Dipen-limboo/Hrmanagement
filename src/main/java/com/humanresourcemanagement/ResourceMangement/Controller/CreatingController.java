@@ -25,6 +25,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Educatio
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TimeSheetDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TrainingDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Service.CreatingService;
@@ -139,5 +140,12 @@ public class CreatingController {
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> saveBranch(@Valid @RequestBody BranchDto branchDto){
 		return createService.addBranch(branchDto);
+	}
+	
+	
+	@PostMapping("/addTimeSheet")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> saveTime(@Valid @RequestBody TimeSheetDto timeDto){
+		return createService.addTime(timeDto);
 	}
 }

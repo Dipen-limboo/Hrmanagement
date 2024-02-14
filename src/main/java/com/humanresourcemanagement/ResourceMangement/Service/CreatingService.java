@@ -29,6 +29,7 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Grade;
 import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
 import com.humanresourcemanagement.ResourceMangement.Entity.Organization;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
+import com.humanresourcemanagement.ResourceMangement.Entity.TimeSheet;
 import com.humanresourcemanagement.ResourceMangement.Entity.Training;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
@@ -43,6 +44,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Educatio
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TimeSheetDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TrainingDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
@@ -58,6 +60,7 @@ import com.humanresourcemanagement.ResourceMangement.Repository.GradeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.OrganizationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.TimeSheetRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.TrainingRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
 import com.humanresourcemanagement.ResourceMangement.Repository.WokingTypeRepo;
@@ -112,6 +115,9 @@ public class CreatingService {
 	
 	@Autowired
 	EducationRepo educationRepo;
+	
+	@Autowired
+	TimeSheetRepo timeRepo;
 	
 	@Autowired
 	EncryptDecrypt encryptSer;
@@ -434,6 +440,19 @@ public class CreatingService {
 		document.setExpiryDate(expiry_date);
 		documentRepo.save(document);
 		return ResponseEntity.ok().body(document);
+	}
+
+	public ResponseEntity<?> addTime(@Valid TimeSheetDto timeDto) {
+		TimeSheet time = new TimeSheet();
+		time.setStartTime(timeDto.getStartTime());
+		time.setEndTime(timeDto.getEndTime());
+		Long org_id = timeDto.getOrganization_id();
+		Optional<Organization> org = orgRepo.findById(org_id);
+		if(org.isEmpty())
+			return ResponseEntity.badRequest().body(new MessageResponse("Organization not found with id " + org_id));
+		time.setOrganization(org.get());
+		timeRepo.save(time);
+		return ResponseEntity.ok().body(time);
 	}
 
 }

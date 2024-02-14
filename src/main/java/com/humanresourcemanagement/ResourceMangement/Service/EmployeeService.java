@@ -107,8 +107,6 @@ public class EmployeeService {
 		promotedUser.setUser(user);
 		emp.setUser(user);
 		emp.setId("emp0"+user.getId());
-		
-		LocalDate now = LocalDate.now();
 		if(employeeDto.getJoinDate() == null) {
 			user.setJoinDate(user.getJoinDate());
 		} else {
@@ -187,6 +185,8 @@ public class EmployeeService {
 		EmployeeOfficialInfo emp = employee.get();
 		Promotion promotion = promotionRepo.findFirstByUserOrderByIdDesc(user);
 		Promotion newPromotion = new Promotion();
+		if(!promotionDto.getJoinDate().isAfter(promotion.getJoinDate()))
+			return ResponseEntity.badRequest().body(new MessageResponse("Join date must be after the join date  of last promotion"));
 		promotion.setEndDate(promotionDto.getJoinDate());
 		promotion.setStatus(false);
 		newPromotion.setJoinDate(promotionDto.getJoinDate());
@@ -209,7 +209,6 @@ public class EmployeeService {
 		Optional<User> optionalUserr = userRepo.findById(userDetails.getId());
 		if(optionalUserr.isPresent()) 
 			newPromotion.setApprover(optionalUserr.get());
-	
 		if(promotionDto.getBranch() == null) {newPromotion.setBranch(null);} else {
 			Optional<Branch> branch = branchRepo.findById(promotionDto.getBranch());
 			if(!branch.isPresent())
@@ -311,8 +310,6 @@ public class EmployeeService {
 	    promotionRepo.save(promotion);
 		promotionRepo.save(promo);
 		return ResponseEntity.ok().body(promotion);
-	     
-	    
 	}
 
 
@@ -364,6 +361,8 @@ public class EmployeeService {
 			Promotion promo = promotionRepo.findFirstByUserOrderByIdDesc(user);
 			if(!LocalDate.now().isAfter(transferDto.getTransferDate()))
 				return ResponseEntity.badRequest().body(new MessageResponse("Date must not exceed toady's date"));
+			if(!transferDto.getTransferDate().isAfter(promo.getJoinDate()))
+				return ResponseEntity.badRequest().body(new MessageResponse("Join date must be after the join date  of last promotion"));
 			promo.setEndDate(transferDto.getTransferDate());
 			promo.setStatus(false);
 			newPromotion.setBranch(branch.get());
@@ -566,24 +565,21 @@ public class EmployeeService {
 		if(contractRepo.existsByIdAndContractStatus(id, false))
 			return ResponseEntity.badRequest().body(new MessageResponse("you cannot invoke the past contract "));
 		Optional<Contract> optionalContract = contractRepo.findById(id);
-		System.out.println("_____________________________1");
 		if(optionalContract.isEmpty())
 			return ResponseEntity.badRequest().body(new MessageResponse("Contract id "+ id +" not found!!"));
 		Contract contract = optionalContract.get();
-		System.out.println("_____________________________2");
 		Optional<Promotion> optionalPromotion = promotionRepo.findByUserAndJoinDate(contract.getUser(), contract.getJoinDate());
 		if(!optionalPromotion.isEmpty()) {
 			Promotion promotion = optionalPromotion.get();
-			System.out.println("_____________________________3" + contract.getJoinDate());
-
 			Optional<Promotion> optPromotion = promotionRepo.findByUserAndEndDate(promotion.getUser(), promotion.getJoinDate());
-			System.out.println("_____________________________4" + promotion.getJoinDate());
 			if(!optPromotion.isPresent()) {} 
 				Promotion pastPromotion = optPromotion.get();
 
 				Optional<EmployeeOfficialInfo> emp = empRepo.findByUser(contract.getUser());
 				if(emp.isEmpty())
 					return ResponseEntity.badRequest().body(new MessageResponse("Employee official information not found of this user!!"));
+				if(!updateDto.getJoin_date().isAfter(promotion.getJoinDate()))
+					return ResponseEntity.badRequest().body(new MessageResponse("Join date must not be before past join_date"));
 				if(updateDto.getJoin_date()==null) {
 					pastPromotion.setEndDate(pastPromotion.getEndDate());
 					promotion.setJoinDate(promotion.getJoinDate());
@@ -625,8 +621,6 @@ public class EmployeeService {
 				promotionRepo.save(pastPromotion);
 			
 		}
-		System.out.println("_____________________________5");
-
 		if(updateDto.getJoin_date()==null) {contract.setJoinDate(contract.getJoinDate());} else {contract.setJoinDate(updateDto.getJoin_date());}
 		if(updateDto.getEnd_date()==null) {contract.setEndDate(contract.getEndDate());} else {contract.setEndDate(updateDto.getEnd_date());}
 		if(updateDto.getDesignation_id()==null) {contract.setDesignation(contract.getDesignation());} else {

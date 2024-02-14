@@ -90,7 +90,7 @@ public class UserController {
 	}
 	
 	@PutMapping("/userRole/{id}")
-	@PreAuthorize("hasRole('SUPERADMIN')")
+	@PreAuthorize("hasRole('ADMIN')")
 	@Transactional
 	public ResponseEntity<?> changeUserRole(@PathVariable Long id, @RequestBody ChangeRoleDto changeRoleDto, Authentication auth){
 		return userService.changeRole(id, changeRoleDto, auth);
