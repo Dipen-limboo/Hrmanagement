@@ -26,6 +26,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Designat
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TimeSheetUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Service.AdminService;
@@ -139,6 +140,19 @@ public class AdminController {
 	}
 	
 	
+	@GetMapping("/getTimeSheetList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> listOfTimeSheet(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
+		) {
+			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+			Pageable pageable = PageRequest.of(page -1, size, sort);
+		return service.findTimeSheet(pageable);
+	}
+	
+	
 	//delete
 	@DeleteMapping("deleteDepartment/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
@@ -201,6 +215,13 @@ public class AdminController {
 	@Transactional
 	public ResponseEntity<?> deleteTransfer(@PathVariable Long id){
 		return service.deleteTransferById(id);
+	}
+	
+	@DeleteMapping("/deleteTimeSheet/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	@Transactional
+	public ResponseEntity<?> deleteTimeSheet(@PathVariable Long id){
+		return service.deleteTimeSheetById(id);
 	}
 	
 	
@@ -270,6 +291,12 @@ public class AdminController {
 		return service.getTransferById(id);
 	}
 	
+	@GetMapping("/getTimeSheet/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	@Transactional
+	public ResponseEntity<?> getTimeSheet(@PathVariable Long id){
+		return service.getTimeSheetById(id);
+	}
 	
 	
 	
@@ -338,5 +365,11 @@ public class AdminController {
 	@Transactional
 	public ResponseEntity<?> updateTransferWithId(@PathVariable Long id, @Valid @RequestBody TransferUpdateDto transferDto ){
 		return service.updateTransfer(id, transferDto);
+	}
+	
+	@PutMapping("/getTimeSheet/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	public ResponseEntity<?> updateTimeSheetById(@PathVariable Long id, @RequestBody TimeSheetUpdateDto timeDto){
+		return service.updateTimeSheet(id, timeDto);
 	}
 }

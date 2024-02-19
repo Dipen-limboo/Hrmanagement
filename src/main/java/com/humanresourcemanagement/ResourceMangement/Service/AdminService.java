@@ -28,6 +28,7 @@ import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
 import com.humanresourcemanagement.ResourceMangement.Entity.Organization;
 import com.humanresourcemanagement.ResourceMangement.Entity.Promotion;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
+import com.humanresourcemanagement.ResourceMangement.Entity.TimeSheet;
 import com.humanresourcemanagement.ResourceMangement.Entity.Transfer;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
@@ -38,6 +39,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Designat
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TimeSheetUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.BranchResponseDto;
@@ -46,6 +48,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.GradeRe
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.JobTypeResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.OrganizationResponseDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.TimeSheetResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.TransferResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.WorkTypeResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
@@ -59,6 +62,7 @@ import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.OrganizationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.PromotionRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.TimeSheetRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.TransferRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
 import com.humanresourcemanagement.ResourceMangement.Repository.WokingTypeRepo;
@@ -105,6 +109,9 @@ public class AdminService {
 	
 	@Autowired
 	TransferRepo transferRepo;
+	
+	@Autowired
+	TimeSheetRepo timeRepo;
 	
 	@Autowired
 	PromotionRepo promotionRepo;
@@ -823,5 +830,58 @@ public class AdminService {
 		transferRepo.save(transfer);
 		
 		return ResponseEntity.ok().body(transfer);		
+	}
+
+	public ResponseEntity<?> findTimeSheet(Pageable pageable) {
+		Page<TimeSheet> timeSheetList = timeRepo.findAll(pageable);
+		List<TimeSheetResponseDto> responseDtoList = new ArrayList<>();
+		if(timeSheetList.isEmpty())
+			return ResponseEntity.badRequest().body("Succesfull!! but the time sheet is empty");
+		for(TimeSheet time: timeSheetList) {
+			TimeSheetResponseDto responseDto = new TimeSheetResponseDto();
+			responseDto.setTimeSheet_id(time.getId());
+			responseDto.setOrganization_id(time.getOrganization().getId());
+			responseDto.setStart_time(time.getStartTime());
+			responseDto.setEnd_time(time.getEndTime());
+			responseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(responseDtoList);
+	}
+
+	public ResponseEntity<?> getTimeSheetById(Long id) {
+		Optional<TimeSheet> optionalTimeSheet = timeRepo.findById(id);
+		if(optionalTimeSheet.isEmpty())
+			return ResponseEntity.badRequest().body("Successfull but the time sheet with id " + id + " not found!!");
+		TimeSheet time = optionalTimeSheet.get();
+		TimeSheetResponseDto responseDto = new TimeSheetResponseDto();
+		responseDto.setTimeSheet_id(time.getId());
+		responseDto.setOrganization_id(time.getOrganization().getId());
+		responseDto.setStart_time(time.getStartTime());
+		responseDto.setEnd_time(time.getEndTime());
+		return ResponseEntity.ok().body(responseDto);
+	}
+
+	public ResponseEntity<?> deleteTimeSheetById(Long id) {
+		if(!timeRepo.existsById(id))
+			return ResponseEntity.badRequest().body("Successfull but the given id is not found in database" );
+		timeRepo.deleteById(id);
+		return ResponseEntity.ok().body("Succesfully deleted the id " + id);
+	}
+
+	public ResponseEntity<?> updateTimeSheet(Long id, TimeSheetUpdateDto timeDto) {
+		Optional<TimeSheet> optionalTimeSheet = timeRepo.findById(id);
+		if(optionalTimeSheet.isEmpty())
+			return ResponseEntity.badRequest().body("Successfull but the time sheet with id " + id + " not found!!");
+		TimeSheet time = optionalTimeSheet.get();
+		if(timeDto.getStartTime()==null) {time.setStartTime(time.getStartTime());} else {time.setStartTime(timeDto.getStartTime());}
+		if(timeDto.getEndTime()==null) {time.setEndTime(time.getEndTime());} else {time.setEndTime(timeDto.getEndTime());}
+		if(timeDto.getOrganization_id()==null) {time.setOrganization(time.getOrganization());} else {
+			Optional<Organization> org = orgRepo.findById(timeDto.getOrganization_id());
+			if(org.isEmpty())
+				return ResponseEntity.badRequest().body("Department not found!!!");
+			timeDto.setOrganization_id(org.get().getId());
+		}
+		timeRepo.save(time);
+		return ResponseEntity.ok().body(time);
 	}
 }
