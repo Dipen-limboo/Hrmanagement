@@ -27,12 +27,14 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Educatio
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TrainingUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Service.InfoService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/employee")
+@SecurityRequirement(name="Bearer Authentication")
 public class PersonalInfoController {
 	
 	@Autowired

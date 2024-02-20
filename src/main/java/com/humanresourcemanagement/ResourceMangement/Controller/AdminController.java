@@ -33,12 +33,14 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WeekendU
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Service.AdminService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/superAdmin")
+@SecurityRequirement(name="Bearer Authentication")
 public class AdminController {
 
 	@Autowired

@@ -30,11 +30,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "Tbl_Emp_info",
-       uniqueConstraints = {
-           @UniqueConstraint(columnNames = "username"),
-           @UniqueConstraint(columnNames = "email")
-       })
+@Table(name = "Tbl_Emp_info")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
   @Id

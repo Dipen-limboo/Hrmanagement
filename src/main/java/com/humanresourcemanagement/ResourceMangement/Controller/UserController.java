@@ -33,6 +33,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.Respons
 import com.humanresourcemanagement.ResourceMangement.Service.ResetPasswordService;
 import com.humanresourcemanagement.ResourceMangement.Service.UserServiceImpl;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -41,6 +42,7 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/users")
+@SecurityRequirement(name="Bearer Authentication")
 public class UserController {
 	@Autowired
 	UserServiceImpl userService;

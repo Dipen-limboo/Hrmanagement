@@ -32,11 +32,13 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WeekendD
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Service.CreatingService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/create")
+@SecurityRequirement(name="Bearer Authentication")
 public class CreatingController {
 	@Autowired
 	CreatingService createService;
