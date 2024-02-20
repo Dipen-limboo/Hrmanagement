@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.constraints.NotNull;
 
-public class TimeSheetDto {
+public class RoasterDto {
 	@JsonFormat(pattern="HH:mm:ss")
 	private LocalTime startTime;
 	
@@ -16,12 +16,12 @@ public class TimeSheetDto {
 	@NotNull
 	private Long organization_id;
 
-	public TimeSheetDto() {
+	public RoasterDto() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public TimeSheetDto(LocalTime startTime, LocalTime endTime, Long organization_id) {
+	public RoasterDto(LocalTime startTime, LocalTime endTime, Long organization_id) {
 		super();
 		this.startTime = startTime;
 		this.endTime = endTime;

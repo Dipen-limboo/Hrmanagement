@@ -2,7 +2,7 @@ package com.humanresourcemanagement.ResourceMangement.Payload.responseDto;
 
 import java.time.LocalTime;
 
-public class TimeSheetResponseDto {
+public class RoasterResponseDto {
 
 	private Long timeSheet_id;
 	
@@ -12,12 +12,12 @@ public class TimeSheetResponseDto {
 	
 	private Long organization_id;
 
-	public TimeSheetResponseDto() {
+	public RoasterResponseDto() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public TimeSheetResponseDto(Long timeSheet_id, LocalTime start_time, LocalTime end_time, Long organization_id) {
+	public RoasterResponseDto(Long timeSheet_id, LocalTime start_time, LocalTime end_time, Long organization_id) {
 		super();
 		this.timeSheet_id = timeSheet_id;
 		this.start_time = start_time;

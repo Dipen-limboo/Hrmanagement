@@ -28,10 +28,11 @@ import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
 import com.humanresourcemanagement.ResourceMangement.Entity.LeaveInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Organization;
 import com.humanresourcemanagement.ResourceMangement.Entity.Promotion;
+import com.humanresourcemanagement.ResourceMangement.Entity.Roaster;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
-import com.humanresourcemanagement.ResourceMangement.Entity.TimeSheet;
 import com.humanresourcemanagement.ResourceMangement.Entity.Transfer;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
+import com.humanresourcemanagement.ResourceMangement.Entity.Weekend;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BankDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.BranchDto;
@@ -40,9 +41,10 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Designat
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.LeaveUpdateDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.RoasterUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TimeSheetUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferUpdateDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WeekendUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.BranchResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EmpBankResponseDto;
@@ -51,8 +53,9 @@ import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.JobType
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.LeaveResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.OrganizationResponseDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.TimeSheetResponseDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.RoasterResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.TransferResponseDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.WeekendResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.WorkTypeResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.BranchRepo;
@@ -65,10 +68,11 @@ import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.LeaveRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.OrganizationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.PromotionRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.RoasterRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
-import com.humanresourcemanagement.ResourceMangement.Repository.TimeSheetRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.TransferRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
+import com.humanresourcemanagement.ResourceMangement.Repository.WeekendRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.WokingTypeRepo;
 
 import jakarta.validation.Valid;
@@ -115,10 +119,13 @@ public class AdminService {
 	TransferRepo transferRepo;
 	
 	@Autowired
-	TimeSheetRepo timeRepo;
+	RoasterRepo roasterRepo;
 	
 	@Autowired
 	LeaveRepo leaveRepo;
+	
+	@Autowired
+	WeekendRepo weekRepo;
 
 	@Autowired
 	PromotionRepo promotionRepo;
@@ -840,12 +847,12 @@ public class AdminService {
 	}
 
 	public ResponseEntity<?> findTimeSheet(Pageable pageable) {
-		Page<TimeSheet> timeSheetList = timeRepo.findAll(pageable);
-		List<TimeSheetResponseDto> responseDtoList = new ArrayList<>();
+		Page<Roaster> timeSheetList = roasterRepo.findAll(pageable);
+		List<RoasterResponseDto> responseDtoList = new ArrayList<>();
 		if(timeSheetList.isEmpty())
 			return ResponseEntity.badRequest().body("Succesfull!! but the time sheet is empty");
-		for(TimeSheet time: timeSheetList) {
-			TimeSheetResponseDto responseDto = new TimeSheetResponseDto();
+		for(Roaster time: timeSheetList) {
+			RoasterResponseDto responseDto = new RoasterResponseDto();
 			responseDto.setTimeSheet_id(time.getId());
 			responseDto.setOrganization_id(time.getOrganization().getId());
 			responseDto.setStart_time(time.getStartTime());
@@ -856,11 +863,11 @@ public class AdminService {
 	}
 
 	public ResponseEntity<?> getTimeSheetById(Long id) {
-		Optional<TimeSheet> optionalTimeSheet = timeRepo.findById(id);
+		Optional<Roaster> optionalTimeSheet = roasterRepo.findById(id);
 		if(optionalTimeSheet.isEmpty())
 			return ResponseEntity.badRequest().body("Successfull but the time sheet with id " + id + " not found!!");
-		TimeSheet time = optionalTimeSheet.get();
-		TimeSheetResponseDto responseDto = new TimeSheetResponseDto();
+		Roaster time = optionalTimeSheet.get();
+		RoasterResponseDto responseDto = new RoasterResponseDto();
 		responseDto.setTimeSheet_id(time.getId());
 		responseDto.setOrganization_id(time.getOrganization().getId());
 		responseDto.setStart_time(time.getStartTime());
@@ -869,17 +876,17 @@ public class AdminService {
 	}
 
 	public ResponseEntity<?> deleteTimeSheetById(Long id) {
-		if(!timeRepo.existsById(id))
+		if(!roasterRepo.existsById(id))
 			return ResponseEntity.badRequest().body("Successfull but the given id is not found in database" );
-		timeRepo.deleteById(id);
+		roasterRepo.deleteById(id);
 		return ResponseEntity.ok().body("Succesfully deleted the id " + id);
 	}
 
-	public ResponseEntity<?> updateTimeSheet(Long id, TimeSheetUpdateDto timeDto) {
-		Optional<TimeSheet> optionalTimeSheet = timeRepo.findById(id);
+	public ResponseEntity<?> updateTimeSheet(Long id, RoasterUpdateDto timeDto) {
+		Optional<Roaster> optionalTimeSheet = roasterRepo.findById(id);
 		if(optionalTimeSheet.isEmpty())
 			return ResponseEntity.badRequest().body("Successfull but the time sheet with id " + id + " not found!!");
-		TimeSheet time = optionalTimeSheet.get();
+		Roaster time = optionalTimeSheet.get();
 		if(timeDto.getStartTime()==null) {time.setStartTime(time.getStartTime());} else {time.setStartTime(timeDto.getStartTime());}
 		if(timeDto.getEndTime()==null) {time.setEndTime(time.getEndTime());} else {time.setEndTime(timeDto.getEndTime());}
 		if(timeDto.getOrganization_id()==null) {time.setOrganization(time.getOrganization());} else {
@@ -888,7 +895,7 @@ public class AdminService {
 				return ResponseEntity.badRequest().body("Department not found!!!");
 			timeDto.setOrganization_id(org.get().getId());
 		}
-		timeRepo.save(time);
+		roasterRepo.save(time);
 		return ResponseEntity.ok().body(time);
 	}
 
@@ -954,6 +961,54 @@ public class AdminService {
 		if(updateDto.isIs_leave_forwareded() == leave.isAccumulatable()) {leave.setAccumulatable(leave.isAccumulatable());} else {leave.setAccumulatable(updateDto.isIs_leave_forwareded());}
 		leaveRepo.save(leave);
 		return ResponseEntity.ok().body(leave);
+	}
+
+	public ResponseEntity<?> findAllWeekend(Pageable pageable) {
+		Page<Weekend> weekendList = weekRepo.findAll(pageable);
+		List<WeekendResponseDto> responseDtoList = new ArrayList<>();
+		if(weekendList.isEmpty())
+			return ResponseEntity.badRequest().body("There is no any weekend list saved!!");
+		for(Weekend week:  weekendList) {
+			WeekendResponseDto responseDto = new WeekendResponseDto();
+			responseDto.setWeekend_id(week.getId());
+			responseDto.setWeekend_date(week.getDate());
+			responseDto.setEmployee_id(week.getEmployee().getId());
+			responseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(responseDtoList);
+	}
+
+	public ResponseEntity<?> deleteWeekendById(Long id) {
+		if(!weekRepo.existsById(id))
+			return ResponseEntity.badRequest().body("Weekend not found with weekend id " + id);
+		weekRepo.deleteById(id);
+		return ResponseEntity.ok().body("Successfully!! Deleted the weekend id " +id);
+	}
+
+	public ResponseEntity<?> getWeekendById(Long id) {
+		Optional<Weekend> optionalWeekend = weekRepo.findById(id);
+		if(optionalWeekend.isEmpty())
+			return ResponseEntity.badRequest().body("Weekend not found with weekend id " + id); 
+		Weekend week = optionalWeekend.get();
+		WeekendResponseDto responseDto = new WeekendResponseDto();
+		responseDto.setWeekend_id(week.getId());
+		responseDto.setWeekend_date(week.getDate());
+		responseDto.setEmployee_id(week.getEmployee().getId());
+		return ResponseEntity.ok().body(responseDto);
+	}
+
+	public ResponseEntity<?> updateWeekend(Long id, WeekendUpdateDto updateDto) {
+		Optional<Weekend> optionalWeekend = weekRepo.findById(id);
+		if(optionalWeekend.isEmpty())
+			return ResponseEntity.badRequest().body("Weekend not found with weekend id " + id); 
+		Weekend week = optionalWeekend.get();
+		Optional<EmployeeOfficialInfo> employee = empRepo.findById(updateDto.getEmployee_id());
+		if(employee.isEmpty())
+			return ResponseEntity.badRequest().body("Employee not found with id " + updateDto.getEmployee_id());
+		week.setEmployee(employee.get());
+		week.setDate(updateDto.getWeekend_date());
+		weekRepo.save(week);
+		return ResponseEntity.ok().body(week);
 	}
 
 

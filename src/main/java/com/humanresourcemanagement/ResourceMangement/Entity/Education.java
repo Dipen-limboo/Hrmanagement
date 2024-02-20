@@ -2,6 +2,8 @@ package com.humanresourcemanagement.ResourceMangement.Entity;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,6 +16,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name="Tbl_education")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Education {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

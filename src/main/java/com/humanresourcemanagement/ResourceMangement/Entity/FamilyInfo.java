@@ -1,6 +1,7 @@
 package com.humanresourcemanagement.ResourceMangement.Entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
 
 import jakarta.persistence.Column;
@@ -17,6 +18,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name="Tbl_Emp_Family_info")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class FamilyInfo {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

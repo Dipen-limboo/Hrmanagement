@@ -1,10 +1,13 @@
 package com.humanresourcemanagement.ResourceMangement.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 
 
 @Entity
 @Table(name="Tbl_Job_Type")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class JobType {
 
 	@Id

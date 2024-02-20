@@ -25,9 +25,10 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Educatio
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.LeaveDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.RoasterDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TimeSheetDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TrainingDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WeekendDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Service.CreatingService;
 
@@ -144,9 +145,9 @@ public class CreatingController {
 	}
 	
 	
-	@PostMapping("/addTimeSheet")
+	@PostMapping("/addRoaster")
 	@PreAuthorize("hasRole('ADMIN')")
-	public ResponseEntity<?> saveTime(@Valid @RequestBody TimeSheetDto timeDto){
+	public ResponseEntity<?> saveTime(@Valid @RequestBody RoasterDto timeDto){
 		return createService.addTime(timeDto);
 	}
 	
@@ -154,6 +155,13 @@ public class CreatingController {
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<?> saveLeaveInfo(@Valid @RequestBody LeaveDto leaveDto){
 		return createService.addLeave(leaveDto);
+	}
+	
+	
+	@PostMapping("/addWeekend")
+	@PreAuthorize("hasRole('ADMIN')")
+	public ResponseEntity<?> saveWeekend(@Valid @RequestBody WeekendDto weekendDto){
+		return createService.addWeekend(weekendDto);
 	}
 
 }

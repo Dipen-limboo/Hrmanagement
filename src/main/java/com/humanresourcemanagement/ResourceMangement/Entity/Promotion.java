@@ -2,6 +2,7 @@ package com.humanresourcemanagement.ResourceMangement.Entity;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.humanresourcemanagement.ResourceMangement.Enum.Status;
 
 import jakarta.persistence.Column;
@@ -16,6 +17,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name="Tbl_Promotion")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Promotion {
 	@Id
 	@GeneratedValue(strategy =  GenerationType.IDENTITY)

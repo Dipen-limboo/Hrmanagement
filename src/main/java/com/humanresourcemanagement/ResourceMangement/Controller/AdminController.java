@@ -26,9 +26,10 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Designat
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.LeaveUpdateDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.RoasterUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TimeSheetUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferUpdateDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WeekendUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Service.AdminService;
 
@@ -141,7 +142,7 @@ public class AdminController {
 	}
 	
 	
-	@GetMapping("/getTimeSheetList")
+	@GetMapping("/getRoasterList")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> listOfTimeSheet(@RequestParam(defaultValue = "1") int page,
 			@RequestParam(defaultValue = "10") int size,
@@ -157,6 +158,18 @@ public class AdminController {
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> listOfLeaveType(){
 		return service.findAllLeave();
+	}
+	
+	@GetMapping("/getWeekendList")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> listOfWeekend(@RequestParam(defaultValue = "1") int page,
+			@RequestParam(defaultValue = "10") int size,
+			@RequestParam(name = "sort", required = false, defaultValue = "id") String id,
+			@RequestParam(name = "order", required = false, defaultValue = "desc") String sortDir
+		) {
+			Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(id).ascending() : Sort.by(id).descending();
+			Pageable pageable = PageRequest.of(page -1, size, sort);
+		return service.findAllWeekend(pageable);
 	}
 	
 	
@@ -226,7 +239,7 @@ public class AdminController {
 		return service.deleteTransferById(id);
 	}
 	
-	@DeleteMapping("/deleteTimeSheet/{id}")
+	@DeleteMapping("/deleteRoaster/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> deleteTimeSheet(@PathVariable Long id){
 		return service.deleteTimeSheetById(id);
@@ -237,7 +250,12 @@ public class AdminController {
 	public ResponseEntity<?> deleteleaveInfo(@PathVariable Long id){
 		return service.deleteLeaveInfoById(id);
 	}
-
+	
+	@DeleteMapping("/deleteWeekend/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> deleteWeekend(@PathVariable Long id){
+		return service.deleteWeekendById(id);
+	}
 
 	
 	
@@ -306,7 +324,7 @@ public class AdminController {
 		return service.getTransferById(id);
 	}
 	
-	@GetMapping("/getTimeSheet/{id}")
+	@GetMapping("/getRoaster/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	@Transactional
 	public ResponseEntity<?> getTimeSheet(@PathVariable Long id){
@@ -318,7 +336,14 @@ public class AdminController {
 	public ResponseEntity<?> getleaveInfo(@PathVariable Long id){
 		return service.getLeaveInfoById(id);
 	}
-
+	
+	@GetMapping("/getWeekend/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getWeekend(@PathVariable Long id){
+		return service.getWeekendById(id);
+	}
+	
+	
 	
 	
 	//update
@@ -388,9 +413,9 @@ public class AdminController {
 		return service.updateTransfer(id, transferDto);
 	}
 	
-	@PutMapping("/getTimeSheet/{id}")
+	@PutMapping("/getRoaster/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') ")
-	public ResponseEntity<?> updateTimeSheetById(@PathVariable Long id, @RequestBody TimeSheetUpdateDto timeDto){
+	public ResponseEntity<?> updateTimeSheetById(@PathVariable Long id, @RequestBody RoasterUpdateDto timeDto){
 		return service.updateTimeSheet(id, timeDto);
 	}
 	
@@ -398,6 +423,12 @@ public class AdminController {
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	public ResponseEntity<?> updateLeaveInfoById(@PathVariable Long id, @RequestBody LeaveUpdateDto updateDto){
 		return service.updateLeaveInfo(id, updateDto);
+	}
+	
+	@PutMapping("/getWeekend/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> updateWeekendById(@PathVariable Long id, @RequestBody WeekendUpdateDto updateDto){
+		return service.updateWeekend(id, updateDto);
 	}
 
 }

@@ -4,7 +4,7 @@ import java.time.LocalTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-public class TimeSheetUpdateDto {
+public class RoasterUpdateDto {
 	@JsonFormat(pattern="HH:mm:ss")
 	private LocalTime startTime;
 	
@@ -13,12 +13,12 @@ public class TimeSheetUpdateDto {
 	
 	private Long organization_id;
 
-	public TimeSheetUpdateDto() {
+	public RoasterUpdateDto() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public TimeSheetUpdateDto(LocalTime startTime, LocalTime endTime, Long organization_id) {
+	public RoasterUpdateDto(LocalTime startTime, LocalTime endTime, Long organization_id) {
 		super();
 		this.startTime = startTime;
 		this.endTime = endTime;

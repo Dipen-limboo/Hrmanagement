@@ -24,15 +24,17 @@ import com.humanresourcemanagement.ResourceMangement.Entity.Designation;
 import com.humanresourcemanagement.ResourceMangement.Entity.Document;
 import com.humanresourcemanagement.ResourceMangement.Entity.Education;
 import com.humanresourcemanagement.ResourceMangement.Entity.EmpBank;
+import com.humanresourcemanagement.ResourceMangement.Entity.EmployeeOfficialInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Grade;
 import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
 import com.humanresourcemanagement.ResourceMangement.Entity.LeaveInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Organization;
+import com.humanresourcemanagement.ResourceMangement.Entity.Roaster;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
-import com.humanresourcemanagement.ResourceMangement.Entity.TimeSheet;
 import com.humanresourcemanagement.ResourceMangement.Entity.Training;
 import com.humanresourcemanagement.ResourceMangement.Entity.User;
+import com.humanresourcemanagement.ResourceMangement.Entity.Weekend;
 import com.humanresourcemanagement.ResourceMangement.Entity.WorkingType;
 import com.humanresourcemanagement.ResourceMangement.Enum.DocumentType;
 import com.humanresourcemanagement.ResourceMangement.Enum.Relation;
@@ -45,9 +47,10 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Educatio
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.LeaveDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.RoasterDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
-import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TimeSheetDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TrainingDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WeekendDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.WorkTypeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Repository.BankRepo;
@@ -57,15 +60,17 @@ import com.humanresourcemanagement.ResourceMangement.Repository.DesignationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.DocumentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.EducationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.EmpBankRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.EmployeeOfficialInfoRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.FamilyRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.GradeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.LeaveRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.OrganizationRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.RoasterRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
-import com.humanresourcemanagement.ResourceMangement.Repository.TimeSheetRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.TrainingRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.UserRepository;
+import com.humanresourcemanagement.ResourceMangement.Repository.WeekendRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.WokingTypeRepo;
 import com.humanresourcemanagement.ResourceMangement.security.service.UserDetailsImpl;
 
@@ -79,6 +84,9 @@ public class CreatingService {
 	
 	@Autowired
 	DepartmentRepo departRepo;
+	
+	@Autowired
+	EmployeeOfficialInfoRepo empRepo;
 	
 	@Autowired
 	DocumentRepo documentRepo;
@@ -120,10 +128,13 @@ public class CreatingService {
 	EducationRepo educationRepo;
 	
 	@Autowired
-	TimeSheetRepo timeRepo;
+	RoasterRepo roasterRepo;
 	
 	@Autowired
 	LeaveRepo leaveRepo;
+	
+	@Autowired
+	WeekendRepo weekRepo;
 	
 	@Autowired
 	EncryptDecrypt encryptSer;
@@ -448,8 +459,8 @@ public class CreatingService {
 		return ResponseEntity.ok().body(document);
 	}
 
-	public ResponseEntity<?> addTime(@Valid TimeSheetDto timeDto) {
-		TimeSheet time = new TimeSheet();
+	public ResponseEntity<?> addTime(@Valid RoasterDto timeDto) {
+		Roaster time = new Roaster();
 		time.setStartTime(timeDto.getStartTime());
 		time.setEndTime(timeDto.getEndTime());
 		Long org_id = timeDto.getOrganization_id();
@@ -457,7 +468,7 @@ public class CreatingService {
 		if(org.isEmpty())
 			return ResponseEntity.badRequest().body(new MessageResponse("Organization not found with id " + org_id));
 		time.setOrganization(org.get());
-		timeRepo.save(time);
+		roasterRepo.save(time);
 		return ResponseEntity.ok().body(time);
 	}
 
@@ -472,6 +483,17 @@ public class CreatingService {
 		leave.setAccumulatable(leaveDto.isIs_leave_forwareded());
 		leaveRepo.save(leave);
 		return ResponseEntity.ok().body(leave);
+	}
+
+	public ResponseEntity<?> addWeekend(@Valid WeekendDto weekendDto) {
+		Weekend week = new Weekend();
+		Optional<EmployeeOfficialInfo> employee = empRepo.findById(weekendDto.getEmp_id());
+		if(employee.isEmpty())
+			return ResponseEntity.badRequest().body("Employee not found with id " + weekendDto.getEmp_id());
+		week.setEmployee(employee.get());
+		week.setDate(weekendDto.getWeekend_date());
+		weekRepo.save(week);
+		return ResponseEntity.ok().body(week);
 	}
 
 	

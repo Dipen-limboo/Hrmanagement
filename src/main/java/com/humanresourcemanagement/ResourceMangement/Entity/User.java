@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.humanresourcemanagement.ResourceMangement.Enum.ERole;
 import com.humanresourcemanagement.ResourceMangement.Enum.Gender;
 import com.humanresourcemanagement.ResourceMangement.Enum.Martial;
@@ -34,6 +35,7 @@ import jakarta.validation.constraints.Size;
            @UniqueConstraint(columnNames = "username"),
            @UniqueConstraint(columnNames = "email")
        })
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

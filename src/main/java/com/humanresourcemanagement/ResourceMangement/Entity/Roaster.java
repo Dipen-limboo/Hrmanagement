@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name="Tbl_roaster")
-public class TimeSheet {
+public class Roaster {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@Column(name="timesheet_id")
@@ -30,12 +30,12 @@ public class TimeSheet {
 	@JoinColumn(name="organization_id")
 	private Organization organization;
 
-	public TimeSheet() {
+	public Roaster() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public TimeSheet(Long id, LocalTime startTime, LocalTime endTime, Organization organization) {
+	public Roaster(Long id, LocalTime startTime, LocalTime endTime, Organization organization) {
 		super();
 		this.id = id;
 		this.startTime = startTime;

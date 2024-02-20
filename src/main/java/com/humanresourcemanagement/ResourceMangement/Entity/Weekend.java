@@ -1,5 +1,7 @@
 package com.humanresourcemanagement.ResourceMangement.Entity;
 
+import java.time.LocalDate;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -13,27 +15,32 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="tbl_grade")
+@Table(name="tbl_weekend")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Grade {
+public class Weekend {
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(name="grade_id")
-	private Long id; 
+	@Column(name="weekend_id")
+	private Long id;
 	
-	@Column(name="grade_type")
-	private String grade;
+	@Column(name="weekend_date")
+	private LocalDate date;
+	
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="emp_id")
+	private EmployeeOfficialInfo employee;
 
-	
-	public Grade() {
+	public Weekend() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public Grade(Long id, String grade) {
+	public Weekend(Long id, LocalDate date, EmployeeOfficialInfo employee) {
 		super();
 		this.id = id;
-		this.grade = grade;
+		this.date = date;
+		this.employee = employee;
 	}
 
 	public Long getId() {
@@ -44,14 +51,20 @@ public class Grade {
 		this.id = id;
 	}
 
-	public String getGrade() {
-		return grade;
+	public LocalDate getDate() {
+		return date;
 	}
 
-	public void setGrade(String grade) {
-		this.grade = grade;
+	public void setDate(LocalDate date) {
+		this.date = date;
 	}
 
-	
+	public EmployeeOfficialInfo getEmployee() {
+		return employee;
+	}
+
+	public void setEmployee(EmployeeOfficialInfo employee) {
+		this.employee = employee;
+	}
 	
 }

@@ -1,10 +1,13 @@
 package com.humanresourcemanagement.ResourceMangement.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name="Tbl_Bank_Setup")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Bank {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
