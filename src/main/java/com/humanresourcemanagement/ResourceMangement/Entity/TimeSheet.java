@@ -13,7 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="Tbl_timesheet")
+@Table(name="Tbl_roaster")
 public class TimeSheet {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

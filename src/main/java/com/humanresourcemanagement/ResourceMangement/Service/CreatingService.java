@@ -27,6 +27,7 @@ import com.humanresourcemanagement.ResourceMangement.Entity.EmpBank;
 import com.humanresourcemanagement.ResourceMangement.Entity.FamilyInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Grade;
 import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
+import com.humanresourcemanagement.ResourceMangement.Entity.LeaveInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Organization;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
 import com.humanresourcemanagement.ResourceMangement.Entity.TimeSheet;
@@ -43,6 +44,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Designat
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.EducationDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.LeaveDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TimeSheetDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TrainingDto;
@@ -58,6 +60,7 @@ import com.humanresourcemanagement.ResourceMangement.Repository.EmpBankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.FamilyRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.GradeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.LeaveRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.OrganizationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.TimeSheetRepo;
@@ -118,6 +121,9 @@ public class CreatingService {
 	
 	@Autowired
 	TimeSheetRepo timeRepo;
+	
+	@Autowired
+	LeaveRepo leaveRepo;
 	
 	@Autowired
 	EncryptDecrypt encryptSer;
@@ -454,5 +460,20 @@ public class CreatingService {
 		timeRepo.save(time);
 		return ResponseEntity.ok().body(time);
 	}
+
+	public ResponseEntity<?> addLeave(@Valid LeaveDto leaveDto) {
+		if(leaveRepo.existsByLeaveName(leaveDto.getLeave_name()))
+			return ResponseEntity.badRequest().body("Leave name is already exists in the system");
+		LeaveInfo leave = new LeaveInfo();
+		leave.setLeaveName(leaveDto.getLeave_name());
+		leave.setMaxDays(leaveDto.getMax_days());
+		leave.setStatus(leaveDto.isStatus());
+		leave.setCasable(leaveDto.isIs_cashable());
+		leave.setAccumulatable(leaveDto.isIs_leave_forwareded());
+		leaveRepo.save(leave);
+		return ResponseEntity.ok().body(leave);
+	}
+
+	
 
 }

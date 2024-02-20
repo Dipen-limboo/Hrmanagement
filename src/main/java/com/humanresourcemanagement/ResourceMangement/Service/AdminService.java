@@ -25,6 +25,7 @@ import com.humanresourcemanagement.ResourceMangement.Entity.EmpBank;
 import com.humanresourcemanagement.ResourceMangement.Entity.EmployeeOfficialInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Grade;
 import com.humanresourcemanagement.ResourceMangement.Entity.JobType;
+import com.humanresourcemanagement.ResourceMangement.Entity.LeaveInfo;
 import com.humanresourcemanagement.ResourceMangement.Entity.Organization;
 import com.humanresourcemanagement.ResourceMangement.Entity.Promotion;
 import com.humanresourcemanagement.ResourceMangement.Entity.SubDepartment;
@@ -46,6 +47,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.BranchR
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.EmpBankResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.GradeResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.JobTypeResponseDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.LeaveResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.MessageResponse;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.OrganizationResponseDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.responseDto.TimeSheetResponseDto;
@@ -59,6 +61,7 @@ import com.humanresourcemanagement.ResourceMangement.Repository.EmpBankRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.EmployeeOfficialInfoRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.GradeRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.JobTypeRepo;
+import com.humanresourcemanagement.ResourceMangement.Repository.LeaveRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.OrganizationRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.PromotionRepo;
 import com.humanresourcemanagement.ResourceMangement.Repository.SubDepartmentRepo;
@@ -113,6 +116,9 @@ public class AdminService {
 	@Autowired
 	TimeSheetRepo timeRepo;
 	
+	@Autowired
+	LeaveRepo leaveRepo;
+
 	@Autowired
 	PromotionRepo promotionRepo;
 	
@@ -884,4 +890,46 @@ public class AdminService {
 		timeRepo.save(time);
 		return ResponseEntity.ok().body(time);
 	}
+
+	public ResponseEntity<?> findAllLeave() {
+		List<LeaveInfo> leaveList = leaveRepo.findAll();
+		List<LeaveResponseDto> responseDtoList = new ArrayList<>();
+		if(leaveList.isEmpty())
+			return ResponseEntity.badRequest().body("Succesfull but the Leave list is empty");
+		for(LeaveInfo leave: leaveList) {
+			LeaveResponseDto responseDto = new LeaveResponseDto();
+			responseDto.setLeave_id(leave.getId());
+			responseDto.setLeave_name(leave.getLeaveName());
+			responseDto.setMax_days(leave.getMaxDays());
+			responseDto.setIs_cashable(leave.isCasable());
+			responseDto.setStatus(leave.isStatus());
+			responseDto.setIs_leave_forwareded(leave.isAccumulatable());
+			responseDtoList.add(responseDto);
+		}
+		return ResponseEntity.ok().body(responseDtoList);
+	}
+
+	public ResponseEntity<?> deleteLeaveInfoById(Long id) {
+		if(!leaveRepo.existsById(id))
+			return ResponseEntity.badRequest().body("Leave id " + id+ " not found!!");
+		leaveRepo.deleteById(id);
+		return ResponseEntity.ok().body("Successfully deleted the leave id " + id);
+	}
+
+	public ResponseEntity<?> getLeaveInfoById(Long id) {
+		Optional<LeaveInfo> optionalLeave = leaveRepo.findById(id);
+		if(optionalLeave.isEmpty())
+			return ResponseEntity.badRequest().body("Leave id " + id+ " not found!!");
+		LeaveInfo leave = optionalLeave.get();
+		LeaveResponseDto responseDto = new LeaveResponseDto();
+		responseDto.setLeave_id(leave.getId());
+		responseDto.setLeave_name(leave.getLeaveName());
+		responseDto.setMax_days(leave.getMaxDays());
+		responseDto.setIs_cashable(leave.isCasable());
+		responseDto.setStatus(leave.isStatus());
+		responseDto.setIs_leave_forwareded(leave.isAccumulatable());
+		return ResponseEntity.ok().body(responseDto);
+	}
+
+
 }

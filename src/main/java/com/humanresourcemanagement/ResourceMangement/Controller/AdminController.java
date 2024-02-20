@@ -152,6 +152,14 @@ public class AdminController {
 		return service.findTimeSheet(pageable);
 	}
 	
+	@GetMapping("/getLeaveLists")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> listOfLeaveType(){
+		return service.findAllLeave();
+	}
+	
+	
+	
 	
 	//delete
 	@DeleteMapping("deleteDepartment/{id}")
@@ -219,11 +227,17 @@ public class AdminController {
 	
 	@DeleteMapping("/deleteTimeSheet/{id}")
 	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
-	@Transactional
 	public ResponseEntity<?> deleteTimeSheet(@PathVariable Long id){
 		return service.deleteTimeSheetById(id);
 	}
 	
+	@DeleteMapping("/deleteLeaveInfo/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> deleteleaveInfo(@PathVariable Long id){
+		return service.deleteLeaveInfoById(id);
+	}
+
+
 	
 	
 	
@@ -298,6 +312,12 @@ public class AdminController {
 		return service.getTimeSheetById(id);
 	}
 	
+	@GetMapping("/getLeaveInfo/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> getleaveInfo(@PathVariable Long id){
+		return service.getLeaveInfoById(id);
+	}
+
 	
 	
 	//update
@@ -372,4 +392,5 @@ public class AdminController {
 	public ResponseEntity<?> updateTimeSheetById(@PathVariable Long id, @RequestBody TimeSheetUpdateDto timeDto){
 		return service.updateTimeSheet(id, timeDto);
 	}
+
 }
