@@ -25,6 +25,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Departme
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.LeaveUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TimeSheetUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferUpdateDto;
@@ -205,7 +206,7 @@ public class AdminController {
 	}
 	
 	@DeleteMapping("/deleteAccount/{id}")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') ")
 	@Transactional
 	public ResponseEntity<?> deleteAccount(@PathVariable Long id){
 		return service.delete(id);
@@ -285,7 +286,7 @@ public class AdminController {
 	}
 
 	@GetMapping("/getAccount/{id}")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
 	@Transactional
 	public ResponseEntity<?> getAccountById(@PathVariable Long id){
 		return service.getAccount(id);
@@ -369,13 +370,13 @@ public class AdminController {
 	}
 	
 	@PutMapping("/getAccount/{id}")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') ")
 	public ResponseEntity<?> updateAccountById(@PathVariable Long id, @RequestBody BankDto bankDto){
 		return service.updateAccount(id, bankDto);
 	}
 	
 	@PutMapping("/getBranch/{id}")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') ")
 	public ResponseEntity<?> updateBranchById(@PathVariable Long id, @RequestBody BranchDto branchDto){
 		return service.updateBranch(id, branchDto);
 	}
@@ -388,9 +389,15 @@ public class AdminController {
 	}
 	
 	@PutMapping("/getTimeSheet/{id}")
-	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') or hasRole('EMPLOYEE')")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN') ")
 	public ResponseEntity<?> updateTimeSheetById(@PathVariable Long id, @RequestBody TimeSheetUpdateDto timeDto){
 		return service.updateTimeSheet(id, timeDto);
+	}
+	
+	@PutMapping("/getLeaveInfo/{id}")
+	@PreAuthorize("hasRole('ADMIN') or hasRole('SUPERADMIN')")
+	public ResponseEntity<?> updateLeaveInfoById(@PathVariable Long id, @RequestBody LeaveUpdateDto updateDto){
+		return service.updateLeaveInfo(id, updateDto);
 	}
 
 }

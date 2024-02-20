@@ -39,6 +39,7 @@ import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.Departme
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.DesignationDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.GradeDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.JobTypeDto;
+import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.LeaveUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.SubDepartmentDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TimeSheetUpdateDto;
 import com.humanresourcemanagement.ResourceMangement.Payload.requestDto.TransferUpdateDto;
@@ -929,6 +930,30 @@ public class AdminService {
 		responseDto.setStatus(leave.isStatus());
 		responseDto.setIs_leave_forwareded(leave.isAccumulatable());
 		return ResponseEntity.ok().body(responseDto);
+	}
+
+	public ResponseEntity<?> updateLeaveInfo(Long id, LeaveUpdateDto updateDto) {
+		Optional<LeaveInfo> optionalLeave = leaveRepo.findById(id);
+		if(optionalLeave.isEmpty())
+			return ResponseEntity.badRequest().body("Leave id " + id+ " not found!!");
+		LeaveInfo leave = optionalLeave.get();
+		if(updateDto.getLeave_name()==null) {leave.setLeaveName(leave.getLeaveName());} else {leave.setLeaveName(updateDto.getLeave_name());}
+		if(updateDto.getMax_days()==0) {leave.setMaxDays(leave.getMaxDays());} else {leave.setMaxDays(updateDto.getMax_days());}
+		if(updateDto.isIs_cashable() == leave.isCasable()) {
+			leave.setCasable(leave.isCasable());
+		} else {
+			leave.setCasable(updateDto.isIs_cashable());
+			}
+		if(updateDto.isStatus() == leave.isStatus()) 
+		{
+			leave.setStatus(leave.isStatus());
+		}
+		else {
+			leave.setStatus(updateDto.isStatus());
+			}
+		if(updateDto.isIs_leave_forwareded() == leave.isAccumulatable()) {leave.setAccumulatable(leave.isAccumulatable());} else {leave.setAccumulatable(updateDto.isIs_leave_forwareded());}
+		leaveRepo.save(leave);
+		return ResponseEntity.ok().body(leave);
 	}
 
 

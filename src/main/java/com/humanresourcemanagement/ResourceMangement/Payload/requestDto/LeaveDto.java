@@ -1,6 +1,5 @@
 package com.humanresourcemanagement.ResourceMangement.Payload.requestDto;
 
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
@@ -9,7 +8,7 @@ public class LeaveDto {
 	private String leave_name;
 	
 	@NotNull
-	private boolean is_cashable;
+	private Boolean is_cashable;
 	
 	@NotNull
 	private int max_days;
@@ -17,7 +16,7 @@ public class LeaveDto {
 	private boolean status = false;
 	
 	@NotNull
-	private boolean is_leave_forwareded;
+	private Boolean is_leave_forwareded;
 
 	public LeaveDto() {
 		super();

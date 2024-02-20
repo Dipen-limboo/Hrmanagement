@@ -1,15 +1,20 @@
 package com.humanresourcemanagement.ResourceMangement.Payload.requestDto;
 
+import jakarta.validation.constraints.NotNull;
+
 public class LeaveUpdateDto {
 	private String leave_name;
 
-	private boolean is_cashable;
+	@NotNull
+	private Boolean is_cashable;
 	
-	private int max_days;
+	private int max_days =0;
 	
-	private boolean status;
+	@NotNull
+	private Boolean status;
 	
-	private boolean is_leave_forwareded;
+	@NotNull
+	private Boolean is_leave_forwareded;
 
 	public LeaveUpdateDto() {
 		super();
