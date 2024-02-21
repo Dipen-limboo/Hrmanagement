@@ -47,9 +47,6 @@ public class UserController {
 	@Autowired
 	UserServiceImpl userService;
 	
-	@Autowired
-	ResetPasswordService passwordService;
-	
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody ResponseFormDto loginRequest) {
 		return userService.signIn(loginRequest);
@@ -60,22 +57,10 @@ public class UserController {
 	public ResponseEntity<?> registerUser(@Valid @RequestBody EmployeeRegisterDto employeeDto, Authentication auth, HttpServletRequest request) throws UnsupportedEncodingException, MessagingException {
 		return userService.signup(employeeDto, auth, request);
 	}
-	
 		
 	@PostMapping("/changePassword")
 	public ResponseEntity<?> verifyingSignUpRequest(@RequestParam(required = true) String token,@Valid @RequestBody ChangedPasswordDto verifiedDto){
 		return userService.verified(token, verifiedDto);
-	}
-	
-	@PostMapping("/generate-token")
-	@Transactional
-	public ResponseEntity<?> generateTokenByMail(@Valid @RequestBody RestPasswordDto resetPasswordDto){
-		return passwordService.generateToken(resetPasswordDto);
-	}
-
-	@PostMapping("/reset-password")
-	public ResponseEntity<?> resetPassword(@Valid @RequestBody NewPasswordDto passwordDto){
-		return passwordService.reset(passwordDto);
 	}
 	
 	@GetMapping("/listOfuser")
